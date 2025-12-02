@@ -152,11 +152,22 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     scroll-behavior: smooth;
     font-style: normal;
     color: #a59e9b;
     background: #ffffff;
     font-family: var(--font-unageo-sans), sans-serif;
+  }
+}
+
+@layer utilities {
+  /* Custom Utilities */
+
+  .container {
+    width: 100%;
+    max-width: 1536px; /* 90rem */
+    margin-inline: auto;
   }
 }
