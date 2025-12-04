@@ -59,7 +59,7 @@ export default function ImgContainerResponsive() {
             />
           </div>
 
-          <div className="flex-1 h-full overflow-hidden cursor-pointer rounded-tl-[60px] rounded-br-[60px] transform scale-y-[-1] rotate-180 group transition-all duration-300 ease-out hover:scale-[1.03]">
+          <div className="flex-1 h-full overflow-hidden cursor-pointer rounded-tl-[60px] rounded-br-[60px] transform scale-y-[1] group transition-all duration-300 ease-out hover:scale-[1.03]">
             <Image
               alt="Beauty services"
               src={HomeHeroImage2}
