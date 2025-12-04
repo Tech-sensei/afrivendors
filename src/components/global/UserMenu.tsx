@@ -63,7 +63,7 @@ export function UserMenu({
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
-                    className="h-10 w-10 rounded-full p-0 hover:opacity-90 bg-transparent"
+                    className="h-10 w-10 rounded-full p-0 hover:opacity-90 bg-transparent cursor-pointer"
                 >
                     <Avatar className="h-10 w-10">
                         <AvatarFallback className="bg-primary-100 text-white font-semibold font-unbounded text-base transition-all duration-200">
@@ -121,7 +121,7 @@ export function UserMenu({
                                 />
                                 <span
                                     className={cn(
-                                        "text-sm",
+                                        "text-base",
                                         isActive ? "font-semibold text-secondary-000" : "font-normal text-secondary-000"
                                     )}
                                 >
@@ -143,7 +143,7 @@ export function UserMenu({
                     }}
                 >
                     <LogOut className="mr-3 shrink-0 size-5 text-accent-80" strokeWidth={2} />
-                    <span className="text-sm font-normal text-secondary-000">Log Out</span>
+                    <span className="text-base font-normal text-secondary-000">Log Out</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

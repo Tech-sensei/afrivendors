@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, ArrowRight, Bell, Menu } from "lucide-react";
@@ -14,10 +15,13 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { UserMenu } from "./UserMenu";
+import { NotificationPanel } from "./NotificationPanel";
 
 const Header = () => {
   // Hardcoded user status - replace with actual auth state later
   const isLoggedIn = true; // Change to false to see logged-out state
+
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const navLinks = [
     { label: "Browse", href: "/browse" },
@@ -161,12 +165,13 @@ const Header = () => {
                 {/* Notification Icon with Badge */}
                 <button
                   type="button"
-                  className="relative p-2 text-secondary-000 hover:text-accent-80 transition-colors"
+                  onClick={() => setIsNotificationOpen(true)}
+                  className="relative p-2 text-secondary-000 hover:text-accent-80 transition-colors cursor-pointer"
                   aria-label="Notifications"
                 >
                   <Bell className="size-6" />
                   {notificationCount > 0 && (
-                    <span className="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-xs font-semibold rounded-full">
+                    <span className="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-primary-100 text-white text-xs font-semibold rounded-full">
                       {notificationCount}
                     </span>
                   )}
@@ -202,6 +207,16 @@ const Header = () => {
           </div>
         </div>
       </div>
+
+      {/* Notification Panel */}
+      <NotificationPanel
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        onNavigate={(page) => {
+          console.log("Navigate to:", page);
+          // Add navigation logic here
+        }}
+      />
     </header>
   );
 };
