@@ -13,7 +13,7 @@ const AboutCTASection = ({ bgColor, title, description }: AboutCTASectionProps) 
   return (
     <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-8 lg:px-24">
       <motion.div
-        className={`max-w-7xl mx-auto pt-6 px-6 rounded-t-4xl flex flex-col md:flex-row items-center md:-start justify-between gap-12 w-full ${bgColor}`}
+        className={`max-w-[1440px] mx-auto pt-6 px-6 rounded-t-4xl flex flex-col md:flex-row items-center md:-start justify-between gap-12 w-full ${bgColor}`}
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}

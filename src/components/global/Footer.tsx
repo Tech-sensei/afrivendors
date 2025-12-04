@@ -33,7 +33,7 @@ const Footer = () => {
   return (
     <footer className="bg-[#562A03] rounded-t-[40px] lg:rounded-t-[56px] container overflow-hidden">
       {/* main footer content */}
-      <div className="mx-auto w-full max-w-7xl px-4  sm:px-8 lg:px-0 py-12 sm:py-16 md:py-20 lg:py-24">
+      <div className="mx-auto w-full max-w-[1440px] px-6 sm:px-8 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 xl:gap-20">
           {/* Logo and App Store Badge */}
           <div className="flex flex-col gap-6 lg:min-w-[200px]">
@@ -129,14 +129,14 @@ const Footer = () => {
 
       {/* Bottom section with email and copyright */}
       <div className="border-t border-white/10 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-0 py-3 sm:py-4 flex flex-row items-center justify-between gap-2 sm:gap-4">
+        <div className="mx-auto max-w-7xl px-6 sm:px-0 py-3 sm:py-4 flex flex-row items-center justify-between gap-2 sm:gap-4">
           <Link
             href="mailto:info@afrivendor.co.uk"
-            className="text-accent-60 hover:text-primary-100 transition-colors text-xs sm:text-sm md:text-base font-normal order-2 sm:order-1"
+            className="text-accent-80 hover:text-primary-100 transition-colors text-xs sm:text-sm md:text-base font-normal order-2 sm:order-1"
           >
             info@afrivendor.co.uk
           </Link>
-          <p className="text-accent-60 text-xs sm:text-sm md:text-base font-normal order-1 sm:order-2">
+          <p className="text-accent-80 text-xs sm:text-sm md:text-base font-normal order-1 sm:order-2">
             © {currentYear} Afrivendors.co.uk ltd
           </p>
         </div>

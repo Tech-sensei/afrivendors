@@ -22,7 +22,7 @@ const features = [
 const WhyUsSection = () => {
   return (
     <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-8 lg:px-24 bg-[#F7F4F2]">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[1440px] mx-auto">
         <div className="flex flex-col lg:flex-row gap-20 justify-between items-center w-full">
           {/* left contents */}
           <motion.div

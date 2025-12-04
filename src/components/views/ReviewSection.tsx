@@ -48,7 +48,7 @@ const StarRating = ({ rating }: { rating: number }) => {
   return (
     <div className="flex gap-1">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} size={16} className={i < rating ? "fill-[#E1B62C91] text-[#1D0D04]" : "text-gray-300"} />
+        <Star key={i} size={16} className={i < rating ? "fill-primary-100 text-[#1D0D04]" : "text-gray-300"} />
       ))}
     </div>
   );
@@ -79,8 +79,8 @@ export default function Reviews() {
   const visibleReviews = [reviews[current], reviews[(current + 1) % reviews.length], reviews[(current + 2) % reviews.length]];
 
   return (
-    <section className="w-full bg-white py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-6 sm:px-8 lg:px-24 bg-white">
+      <div className="max-w-[1440px] mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -89,16 +89,14 @@ export default function Reviews() {
           viewport={{ once: true }}
           className="mb-8"
         >
-          <h2 className="text-2xl md:text-3xl lg:text-[40px] font-semibold font-unbounded text-secondary-000 leading-[125%] mb-2">
-            Reviews
-          </h2>
-          <p className="text-accent-60 text-base tracking-[-0.16px]">What are clients saying?</p>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold font-unbounded text-secondary-000 leading-[125%] mb-2">Reviews</h2>
+          <p className="text-accent-80 text-base tracking-[-0.16px]">What are clients saying?</p>
         </motion.div>
 
         {/* Reviews Carousel */}
         <div className="relative" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
           <div className="flex gap-6 overflow-hidden">
-            <AnimatePresence mode="wait">
+            <AnimatePresence >
               {visibleReviews.map((review, idx) => (
                 <motion.div
                   key={`${current}-${idx}`}
@@ -142,6 +140,7 @@ export default function Reviews() {
 
           {/* Navigation Buttons */}
           <button
+            type="button"
             onClick={prev}
             className="absolute left-14 md:left-1 top-1/2 -translate-y-1/2 -translate-x-16 p-2 hover:bg-gray-200 rounded-full transition-colors inline-flex items-center justify-center gap-2 border border-[#1D0D04] cursor-pointer"
             aria-label="Previous review"

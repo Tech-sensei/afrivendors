@@ -57,8 +57,8 @@ export default function FAQ() {
   };
 
   return (
-    <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-8 lg:px-24 bg-[#F7F4F2]">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-6 sm:px-8 lg:px-24 bg-[#F7F4F2]">
+      <div className="max-w-[1440px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Section */}
           <div className="flex flex-col justify-between ">
@@ -68,7 +68,7 @@ export default function FAQ() {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-2xl md:text-3xl lg:text-[40px] font-semibold font-unbounded text-secondary-000 leading-[125%] mb-8">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold font-unbounded text-secondary-000 leading-[125%] mb-8">
                 Frequently Asked <br /> Questions?
               </h2>
             </motion.div>
@@ -82,7 +82,7 @@ export default function FAQ() {
               className="bg-[#FFFCFB] flex flex-col items-start gap-5 rounded-2xl p-6 lg:max-w-[600px] "
             >
               <h3 className="text-xl font-semibold text-secondary-000 leading-[160%] tracking-[-0.2px]">Still Have Questions?</h3>
-              <p className="text-accent-60 text-base font-normal leading-[150%] tracking-[-0.16px]">
+              <p className="text-accent-80 text-base font-normal leading-[150%] tracking-[-0.16px]">
                 Didn't find the answer you were looking for? Our team is always here to help. Whether you're a vendor trying to grow your
                 business or a customer looking for the right service, we'll make sure you get the support you need.
               </p>
@@ -136,7 +136,7 @@ export default function FAQ() {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 pb-4 pt-2 border-t border-gray-200 text-accent-60 text-base leading-normal tracking-[-1%]">
+                        <div className="px-4 pb-4 pt-2 border-t border-gray-200 text-accent-80 text-base leading-normal tracking-[-1%]">
                           {item.answer}
                         </div>
                       </motion.div>

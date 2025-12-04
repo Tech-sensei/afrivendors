@@ -7,8 +7,8 @@ import { ArrowRight } from "lucide-react";
 
 const VendorCTASection = () => {
   return (
-    <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-8 lg:px-24 bg-secondary-000">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-6 sm:px-8 lg:px-24 bg-secondary-000">
+      <div className="max-w-[1440px] mx-auto">
         <div className="flex flex-col lg:flex-row gap-20 justify-between items-start w-full">
           {/* left contents */}
           <motion.div

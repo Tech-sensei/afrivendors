@@ -18,7 +18,7 @@ const vendorFeatures = [
 ];
 
 const FeatureList = ({ features, delay = 0 }: { features: string[]; delay?: number }) => (
-  <ul className="flex flex-col gap-4 ml-1">
+  <div className="flex flex-col gap-4 ml-1">
     {features.map((feature, index) => (
       <motion.li
         key={index}
@@ -32,13 +32,13 @@ const FeatureList = ({ features, delay = 0 }: { features: string[]; delay?: numb
         <p className="text-base md:text-lg font-normal leading-[150%] tracking-[-0.18px] text-accent-100">{feature}</p>
       </motion.li>
     ))}
-  </ul>
+  </div>
 );
 
 const WhatwedoSection = () => {
   return (
     <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-8 lg:px-24">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[1440px] mx-auto">
         <div className="flex items-start justify-between gap-20 w-full">
           {/* Left contents */}
           <motion.div
