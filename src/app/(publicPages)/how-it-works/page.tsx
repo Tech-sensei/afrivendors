@@ -1,6 +1,6 @@
 import FAQ from "@/components/views/FAQSection";
 import Reviews from "@/components/views/ReviewSection";
-import AboutCTASection from "@/app/about-us/views/AboutCTASection";
+import AboutCTASection from "@/app/(publicPages)/about-us/views/AboutCTASection";
 
 const HowItWorksPage = () => {
   return (

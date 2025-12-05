@@ -1,9 +1,9 @@
 // Tailwind‑only version
 import Image from "next/image";
-import HomeHeroImage1 from "../../public/assets/images/homeHeroImg1.png";
-import HomeHeroImage2 from "../../public/assets/images/homeHeroImg2.png";
-import HomeHeroImage3 from "../../public/assets/images/homeHeroImg3.png";
-import HomeHeroImage4 from "../../public/assets/images/homeHeroImg4.png";
+import HomeHeroImage1 from "../../../public/assets/images/homeHeroImg1.png";
+import HomeHeroImage2 from "../../../public/assets/images/homeHeroImg2.png";
+import HomeHeroImage3 from "../../../public/assets/images/homeHeroImg3.png";
+import HomeHeroImage4 from "../../../public/assets/images/homeHeroImg4.png";
 
 export default function ImgContainerResponsive() {
   return (

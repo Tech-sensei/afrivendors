@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import ImgContainerResponsive from "../ImgContainerResponsive";
+import ImgContainerResponsive from "./ImgContainerResponsive";
 import svgPaths from "../../lib/svgPath1";
 
 const HomeHeroSection = () => {

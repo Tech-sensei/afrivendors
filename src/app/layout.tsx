@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Unbounded } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import Footer from "@/components/global/Footer";
-import Header from "@/components/global/Header";
 
 const unboundedSans = Unbounded({
   variable: "--font-unbounded-sans",
@@ -37,9 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${unboundedSans.variable} ${unageo.variable} antialiased`}>
-        <Header />
         {children}
-        <Footer />
       </body>
     </html>
   );

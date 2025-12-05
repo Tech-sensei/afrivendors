@@ -9,17 +9,18 @@ import NewVendorsSection from "@/components/views/NewVendorsSection";
 import HomeHeroSection from "@/components/views/HomeHeroSection";
 
 export default function Home() {
-  return (
-    <>
-      <HomeHeroSection />
-      <BrowseCategoriesSection />
-      <FeaturedVendorsSection />
-      <TrendingVendorsSection />
-      <NewVendorsSection />
-      <VendorCTASection />
-      <Reviews />
-      <CTASection />
-      <FAQ />
-    </>
-  );
+    return (
+        <>
+            <HomeHeroSection />
+            <BrowseCategoriesSection />
+            <FeaturedVendorsSection />
+            <TrendingVendorsSection />
+            <NewVendorsSection />
+            <VendorCTASection />
+            <Reviews />
+            <CTASection />
+            <FAQ />
+        </>
+    );
 }
+

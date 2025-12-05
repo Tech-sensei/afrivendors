@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import svgPaths from "@/lib/svgPath2";
-import AboutHeroImg from "../../../../public/assets/images/aboutHeroImg.png";
+import AboutHeroImg from "../../../../../public/assets/images/aboutHeroImg.png";
 import Image from "next/image";
 
 export function AboutImgContainer() {
