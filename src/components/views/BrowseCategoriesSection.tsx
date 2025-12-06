@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Card, CardContent } from "../ui/card";
+import { useRouter } from "next/navigation";
 
 const categories = [
   { id: "wellness-beauty", name: "Wellness & Beauty", icon: Sparkles, count: 2 },
@@ -29,6 +30,7 @@ const categories = [
 ];
 
 const BrowseCategoriesSection = () => {
+  const router = useRouter();
   return (
     <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-6 sm:px-8 lg:px-24 bg-white">
       <div className="max-w-[1440px] mx-auto">
@@ -58,7 +60,7 @@ const BrowseCategoriesSection = () => {
               >
                 <Card
                   className=" py-0 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl rounded-3xl border-2 border-[#EFE6E1] shadow-[0_2px_8px_rgba(35,19,5,0.06)]"
-                  onClick={() => console.log(category.name)}
+                  onClick={() => router.push("/categories")}
                 >
                   <CardContent className="flex flex-col items-center text-center gap-3 p-4">
                     <div className="h-16 w-16 rounded-full flex items-center justify-center bg-[rgba(188, 109, 57, 0.1)]">

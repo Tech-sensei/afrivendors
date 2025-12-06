@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,6 +24,7 @@ interface Filters {
 }
 
 const CategoryPage = ({ onNavigate, initialCategory }: CategoryPageProps) => {
+  const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('rating');
   const [filters, setFilters] = useState<Filters>({
@@ -195,7 +197,7 @@ const CategoryPage = ({ onNavigate, initialCategory }: CategoryPageProps) => {
                     key={vendor.id}
                     vendor={vendor}
                     index={index}
-                    onClick={() => onNavigate('vendor', { vendor })}
+                    onClick={() => router.push(`/categories/${vendor.id}`)}
                   />
                 ))}
               </div>

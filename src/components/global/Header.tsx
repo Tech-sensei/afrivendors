@@ -19,13 +19,13 @@ import { NotificationPanel } from "./NotificationPanel";
 
 const Header = () => {
   // Hardcoded user status - replace with actual auth state later
-  // const isLoggedIn = true; // Change to false to see logged-out state
-  const isLoggedIn = false; // Change to false to see logged-out state
+  const isLoggedIn = true; // Change to false to see logged-out state
+  // const isLoggedIn = false; // Change to false to see logged-out state
 
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const navLinks = [
-    { label: "Browse", href: "/browse" },
+    { label: "Browse", href: "/categories" },
     { label: "About", href: "/about-us" },
     { label: "How it Works", href: "/how-it-works" },
     { label: "Contact Us", href: "/contact-us" },
@@ -49,7 +49,7 @@ const Header = () => {
                 className="lg:hidden p-2 text-secondary-000 hover:text-accent-80 transition-colors"
                 aria-label="Open menu"
               >
-                <Menu className="size-8" />
+                <Menu className="size-6" />
               </button>
             </SheetTrigger>
             <SheetContent
@@ -118,9 +118,9 @@ const Header = () => {
             <Image
               src={Logo}
               alt="Afrivendor Logo"
-              width={186}
+              width={220}
               height={23}
-              className="h-5 w-auto"
+              className="h-6 sm:h-7 w-auto hover:opacity-80 transition-opacity duration-300"
               priority
             />
           </Link>

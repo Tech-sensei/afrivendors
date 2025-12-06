@@ -7,9 +7,9 @@ const Footer = () => {
 
   const footerSections = {
     forCustomers: [
-      { label: "About Us", href: "/about" },
-      { label: "Help & Support", href: "/support" },
-      { label: "FAQs", href: "/faqs" },
+      { label: "About Us", href: "/about-us" },
+      { label: "Help & Support", href: "/help-and-support" },
+      { label: "FAQs", href: "/help-and-support" },
       { label: "Blog", href: "/blog" },
     ],
     forVendors: [
@@ -18,8 +18,8 @@ const Footer = () => {
       { label: "Support", href: "/vendor/support" },
     ],
     legal: [
-      { label: "Privacy Policy", href: "/privacy" },
-      { label: "Terms Of Use", href: "/terms" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Terms Of Use", href: "/terms-of-use" },
       { label: "Terms Of Service", href: "/terms-of-service" },
     ],
     social: [
