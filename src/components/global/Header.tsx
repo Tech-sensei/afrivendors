@@ -101,7 +101,7 @@ const Header = () => {
                         className="w-full bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full h-12"
                         asChild
                       >
-                        <Link href="/login" className="flex items-center justify-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]">
+                        <Link href="/sign-up-choice" className="flex items-center justify-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]">
                           Log In/Sign Up
                           <ArrowRight className="size-4" />
                         </Link>
@@ -199,7 +199,7 @@ const Header = () => {
                 className="hidden md:flex bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full"
                 asChild
               >
-                <Link href="/login" className="flex items-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]">
+                <Link href="/sign-up-choice" className="flex items-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]">
                   Log In/Sign Up
                   <ArrowRight className="size-4" />
                 </Link>

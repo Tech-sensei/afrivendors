@@ -79,12 +79,12 @@ const SignUpChoice = () => {
                             <OptionCard
                                 title="For Customers"
                                 description="Search, book services as a customer, sign up here"
-                                onClick={() => router.push('/sign-up?type=customer')}
+                                onClick={() => router.push('/sign-in')}
                             />
                             <OptionCard
                                 title="For Vendors"
                                 description="View and manage bookings, earnings and chats"
-                                onClick={() => router.push('/sign-up?type=vendor')}
+                                onClick={() => router.push('/sign-up')}
                             />
                         </div>
                     </div>
@@ -104,16 +104,19 @@ const SignUpChoice = () => {
                 </div>
 
                 {/* Right Column - Hero Image (50%, Desktop only) */}
-                <figure className="hidden lg:block relative bg-secondary-000 rounded-tl-[188px] overflow-hidden h-screen">
+                <div className="hidden lg:block relative bg-secondary-000 overflow-hidden h-screen">
                     <Image
                         src={signUpChoiceImg}
-                        alt="Afrivendor"
-                        className="w-full h-full object-cover object-center"
+                        alt="Sign Up Choice"
+                        fill
+                        sizes="50vw"
+                        className="object-cover object-top"
+                        priority
 
                     />
 
                     <div className="absolute inset-0 bg-[rgba(29,13,4,0.2)]" />
-                </figure>
+                </div>
             </div>
         </div>
     );

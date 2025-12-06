@@ -7,7 +7,7 @@ import { Badge } from "../ui/badge";
 import { Star, MapPin } from "lucide-react";
 import { Button } from "../ui/button";
 
-const VendorCard = ({ vendor, index }: { vendor: any; index: number }) => {
+const VendorCard = ({ vendor, index, onClick }: { vendor: any; index: number; onClick?: () => void }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -16,7 +16,7 @@ const VendorCard = ({ vendor, index }: { vendor: any; index: number }) => {
     >
       <Card
         className="cursor-pointer transition-all duration-300 hover:scale-[1.02] overflow-hidden group py-0 rounded-2xl border border-[#EFE6E1] shadow-[0_4px_12px_rgba(35,19,5,0.08)]"
-        onClick={() => console.log(vendor)}
+        onClick={onClick || (() => console.log(vendor))}
       >
         {/* Image Section */}
         <div className="relative h-56 overflow-hidden">
@@ -35,7 +35,7 @@ const VendorCard = ({ vendor, index }: { vendor: any; index: number }) => {
         <CardContent className="p-5">
           <div className="mb-3">
             <h4 className="mb-2 font-unbounded text-base font-semibold text-secondary-000 leading-[1.3]">{vendor.name}</h4>
-            <p className="line-clamp-2 text-sm font-normal text-secondary-300 leading-[150%]">{vendor.description}</p>
+            <p className="line-clamp-2 text-sm font-normal text-accent-80 leading-[150%]">{vendor.description}</p>
           </div>
 
           {/* Rating & Reviews */}
