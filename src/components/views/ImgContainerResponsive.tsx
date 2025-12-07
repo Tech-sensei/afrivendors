@@ -1,9 +1,5 @@
 // Tailwind‑only version
 import Image from "next/image";
-import HomeHeroImage1 from "../../../public/assets/images/homeHeroImg1.png";
-import HomeHeroImage2 from "../../../public/assets/images/homeHeroImg2.png";
-import HomeHeroImage3 from "../../../public/assets/images/homeHeroImg3.png";
-import HomeHeroImage4 from "../../../public/assets/images/homeHeroImg4.png";
 
 export default function ImgContainerResponsive() {
   return (
@@ -14,7 +10,9 @@ export default function ImgContainerResponsive() {
         <div className="flex-1 h-full overflow-hidden relative group cursor-pointer rounded-tl-[clamp(60px,15vw,183px)] rounded-br-[clamp(60px,15vw,183px)] -mr-[10%] z-1 transition-all duration-500 ease-out hover:z-10 hover:scale-105">
           <Image
             alt="Happy family"
-            src={HomeHeroImage1}
+            src="/assets/images/homeHeroImg1.png"
+            width={500}
+            height={500}
             className="w-full h-full object-cover brightness-[0.95] transition-all duration-500 ease-out group-hover:brightness-110 group-hover:scale-110"
           />
         </div>
@@ -23,7 +21,9 @@ export default function ImgContainerResponsive() {
         <div className="flex-1 h-full overflow-hidden relative group cursor-pointer rounded-tl-[clamp(60px,15vw,183px)] rounded-br-[clamp(60px,15vw,183px)] -mr-[10%] z-2 transition-all duration-500 ease-out hover:z-10 hover:scale-105 transform scale-y-[1]">
           <Image
             alt="Beauty services"
-            src={HomeHeroImage2}
+            src="/assets/images/homeHeroImg2.png"
+            width={500}
+            height={500}
             className="w-full h-full object-cover brightness-[0.95] transition-all duration-500 ease-out group-hover:brightness-110 group-hover:scale-110"
           />
         </div>
@@ -32,7 +32,9 @@ export default function ImgContainerResponsive() {
         <div className="flex-1 h-full overflow-hidden relative group cursor-pointer rounded-tl-[clamp(60px,15vw,183px)] rounded-br-[clamp(60px,15vw,183px)] -mr-[10%] z-3 transition-all duration-500 ease-out hover:z-10 hover:scale-105">
           <Image
             alt="Catering services"
-            src={HomeHeroImage3}
+            src="/assets/images/homeHeroImg3.png"
+            width={500}
+            height={500}
             className="w-full h-full object-cover brightness-[0.95] transition-all duration-500 ease-out group-hover:brightness-110 group-hover:scale-110"
           />
         </div>
@@ -41,7 +43,9 @@ export default function ImgContainerResponsive() {
         <div className="flex-1 h-full overflow-hidden relative group cursor-pointer rounded-tl-[clamp(60px,15vw,183px)] rounded-br-[clamp(60px,15vw,183px)] z-4 transition-all duration-500 ease-out hover:z-10 hover:scale-105">
           <Image
             alt="Wedding and events"
-            src={HomeHeroImage4}
+            src="/assets/images/homeHeroImg4.png"
+            width={500}
+            height={500}
             className="w-full h-full object-cover brightness-[0.95] transition-all duration-500 ease-out group-hover:brightness-110 group-hover:scale-110"
           />
         </div>
@@ -54,7 +58,9 @@ export default function ImgContainerResponsive() {
           <div className="flex-1 h-full overflow-hidden cursor-pointer rounded-tl-[60px] rounded-br-[60px] group transition-all duration-300 ease-out hover:scale-[1.03]">
             <Image
               alt="Happy family"
-              src={HomeHeroImage1}
+              src="/assets/images/homeHeroImg1.png"
+              width={500}
+              height={500}
               className="w-full h-full object-cover brightness-[0.95] transition-all duration-300 ease-out group-hover:brightness-110"
             />
           </div>
@@ -62,7 +68,9 @@ export default function ImgContainerResponsive() {
           <div className="flex-1 h-full overflow-hidden cursor-pointer rounded-tl-[60px] rounded-br-[60px] transform scale-y-[1] group transition-all duration-300 ease-out hover:scale-[1.03]">
             <Image
               alt="Beauty services"
-              src={HomeHeroImage2}
+              src="/assets/images/homeHeroImg2.png"
+              width={500}
+              height={500}
               className="w-full h-full object-cover brightness-[0.95] transition-all duration-300 ease-out group-hover:brightness-110"
             />
           </div>
@@ -73,7 +81,9 @@ export default function ImgContainerResponsive() {
           <div className="flex-1 h-full overflow-hidden cursor-pointer rounded-tl-[60px] rounded-br-[60px] group transition-all duration-300 ease-out hover:scale-[1.03]">
             <Image
               alt="Catering services"
-              src={HomeHeroImage3}
+              src="/assets/images/homeHeroImg3.png"
+              width={500}
+              height={500}
               className="w-full h-full object-cover brightness-[0.95] transition-all duration-300 ease-out group-hover:brightness-110"
             />
           </div>
@@ -81,7 +91,9 @@ export default function ImgContainerResponsive() {
           <div className="flex-1 h-full overflow-hidden cursor-pointer rounded-tl-[60px] rounded-br-[60px] group transition-all duration-300 ease-out hover:scale-[1.03]">
             <Image
               alt="Wedding and events"
-              src={HomeHeroImage4}
+              src="/assets/images/homeHeroImg4.png"
+              width={500}
+              height={500}
               className="w-full h-full object-cover brightness-[0.95] transition-all duration-300 ease-out group-hover:brightness-110"
             />
           </div>

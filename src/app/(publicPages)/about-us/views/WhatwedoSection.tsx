@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { CheckCircle2 } from "lucide-react";

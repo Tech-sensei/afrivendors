@@ -4,16 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, ArrowRight, Bell, Menu } from "lucide-react";
-import Logo from "../../../public/assets/images/Logo.svg";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { UserMenu } from "./UserMenu";
 import { NotificationPanel } from "./NotificationPanel";
 
@@ -52,17 +44,10 @@ const Header = () => {
                 <Menu className="size-6" />
               </button>
             </SheetTrigger>
-            <SheetContent
-              side="left"
-              className="w-[85%] sm:w-[400px] rounded-r-3xl border-l-0 p-0"
-            >
+            <SheetContent side="left" className="w-[85%] sm:w-[400px] rounded-r-3xl border-l-0 p-0">
               <SheetHeader className="px-6 pt-8 pb-6">
-                <SheetTitle className="text-secondary-000 font-bold text-3xl tracking-[-0.02em]">
-                  Menu
-                </SheetTitle>
-                <p className="text-secondary-000 text-base font-normal mt-2">
-                  Browse and explore Afrivendor
-                </p>
+                <SheetTitle className="text-secondary-000 font-bold text-3xl tracking-[-0.02em]">Menu</SheetTitle>
+                <p className="text-secondary-000 text-base font-normal mt-2">Browse and explore Afrivendor</p>
               </SheetHeader>
 
               {/* Mobile Menu Content */}
@@ -89,7 +74,10 @@ const Header = () => {
                       className="w-full border-secondary-000 text-secondary-000 bg-white hover:bg-secondary-000 hover:text-white rounded-full transition-all duration-300 h-12"
                       asChild
                     >
-                      <Link href="/vendor/register" className="text-secondary-000 font-semibold text-base transition-colors tracking-[-0.01em]">
+                      <Link
+                        href="/vendor/register"
+                        className="text-secondary-000 font-semibold text-base transition-colors tracking-[-0.01em]"
+                      >
                         Become a Vendor
                       </Link>
                     </Button>
@@ -101,7 +89,10 @@ const Header = () => {
                         className="w-full bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full h-12"
                         asChild
                       >
-                        <Link href="/sign-up-choice" className="flex items-center justify-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]">
+                        <Link
+                          href="/sign-up-choice"
+                          className="flex items-center justify-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]"
+                        >
                           Log In/Sign Up
                           <ArrowRight className="size-4" />
                         </Link>
@@ -116,7 +107,7 @@ const Header = () => {
           {/* Logo */}
           <Link href="/" className="shrink-0">
             <Image
-              src={Logo}
+              src="/assets/images/Logo.svg"
               alt="Afrivendor Logo"
               width={220}
               height={23}
@@ -158,7 +149,9 @@ const Header = () => {
               className="hidden lg:flex border-secondary-000 text-secondary-000 bg-white hover:bg-secondary-000 hover:text-white rounded-full transition-all duration-300"
               asChild
             >
-              <Link href="/vendor/register" className="text-secondary-000 font-semibold text-base transition-colors tracking-[-0.01em]">Become a Vendor</Link>
+              <Link href="/vendor/register" className="text-secondary-000 font-semibold text-base transition-colors tracking-[-0.01em]">
+                Become a Vendor
+              </Link>
             </Button>
 
             {isLoggedIn ? (
@@ -195,11 +188,11 @@ const Header = () => {
               </>
             ) : (
               /* Log In/Sign Up Button - Desktop */
-              <Button
-                className="hidden md:flex bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full"
-                asChild
-              >
-                <Link href="/sign-up-choice" className="flex items-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]">
+              <Button className="hidden md:flex bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full" asChild>
+                <Link
+                  href="/sign-up-choice"
+                  className="flex items-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]"
+                >
                   Log In/Sign Up
                   <ArrowRight className="size-4" />
                 </Link>

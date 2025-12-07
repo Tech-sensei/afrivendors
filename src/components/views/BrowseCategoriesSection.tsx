@@ -1,18 +1,5 @@
 "use client";
-import {
-  ArrowRight,
-  Star,
-  MapPin,
-  Sparkles,
-  Scissors,
-  UtensilsCrossed,
-  PartyPopper,
-  Briefcase,
-  Dumbbell,
-  Camera,
-  Sofa,
-  Palette,
-} from "lucide-react";
+import { Sparkles, Scissors, UtensilsCrossed, PartyPopper, Briefcase, Dumbbell, Camera, Sofa, Palette } from "lucide-react";
 import { motion } from "motion/react";
 import { Card, CardContent } from "../ui/card";
 import { useRouter } from "next/navigation";

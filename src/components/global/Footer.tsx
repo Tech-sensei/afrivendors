@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import FooterLogo from "../../../public/assets/images/footerLogo.svg";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -39,7 +38,13 @@ const Footer = () => {
           <div className="flex flex-col gap-6 lg:min-w-[200px]">
             {/* Logo */}
             <Link href="/" className="w-fit">
-              <Image src={FooterLogo} alt="Afrivendors Logo" width={102} height={50} className="w-20 sm:w-[90px] md:w-[102px] h-auto" />
+              <Image
+                src="/assets/images/footerLogo.svg"
+                alt="Afrivendors Logo"
+                width={102}
+                height={50}
+                className="w-20 sm:w-[90px] md:w-[102px] h-auto"
+              />
             </Link>
 
             {/* App Store Badge */}

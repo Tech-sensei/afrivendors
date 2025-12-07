@@ -1,7 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
 import svgPaths from "@/lib/svgPath2";
-import AboutHeroImg from "../../../../../public/assets/images/aboutHeroImg.png";
 import Image from "next/image";
 
 export function AboutImgContainer() {
@@ -21,7 +20,9 @@ export function AboutImgContainer() {
         className="relative overflow-hidden w-full rounded-tl-[clamp(60px,15vw,183px)] rounded-br-[clamp(60px,15vw,183px)] h-[380px]"
       >
         <Image
-          src={AboutHeroImg}
+          src="/assets/images/aboutHeroImg.png"
+          width={500}
+          height={500}
           alt="African artisan at work"
           className="w-full h-full object-cover brightness-[0.95] transition-all duration-500 ease-out hover:brightness-110 hover:scale-110"
         />
