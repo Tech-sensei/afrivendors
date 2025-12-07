@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, ArrowRight, Bell, Menu } from "lucide-react";
@@ -15,6 +15,11 @@ const Header = () => {
   // const isLoggedIn = false; // Change to false to see logged-out state
 
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const navLinks = [
     { label: "Browse", href: "/categories" },
@@ -34,75 +39,87 @@ const Header = () => {
       <div className="container mx-auto px-4 md:px-6 lg:px-24">
         <div className="flex items-center justify-between h-20 gap-4">
           {/* Mobile Menu Button */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <button
-                type="button"
-                className="lg:hidden p-2 text-secondary-000 hover:text-accent-80 transition-colors"
-                aria-label="Open menu"
-              >
-                <Menu className="size-6" />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[85%] sm:w-[400px] rounded-r-3xl border-l-0 p-0">
-              <SheetHeader className="px-6 pt-8 pb-6">
-                <SheetTitle className="text-secondary-000 font-bold text-3xl tracking-[-0.02em]">Menu</SheetTitle>
-                <p className="text-secondary-000 text-base font-normal mt-2">Browse and explore Afrivendor</p>
-              </SheetHeader>
+          {isMounted && (
+            <Sheet>
+              <SheetTrigger asChild>
+                <button
+                  type="button"
+                  className="lg:hidden p-2 text-secondary-000 hover:text-accent-80 transition-colors"
+                  aria-label="Open menu"
+                >
+                  <Menu className="size-6" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[85%] sm:w-[400px] rounded-r-3xl border-l-0 p-0">
+                <SheetHeader className="px-6 pt-8 pb-6">
+                  <SheetTitle className="text-secondary-000 font-bold text-3xl tracking-[-0.02em]">Menu</SheetTitle>
+                  <p className="text-secondary-000 text-base font-normal mt-2">Browse and explore Afrivendor</p>
+                </SheetHeader>
 
-              {/* Mobile Menu Content */}
-              <div className="flex flex-col px-6 pb-6">
-                {/* Mobile Navigation Links */}
-                <nav className="flex flex-col gap-1">
-                  {navLinks.map((link) => (
-                    <SheetClose key={link.href} asChild>
-                      <Link
-                        href={link.href}
-                        className="text-secondary-000 font-normal text-base transition-colors tracking-[-0.01em] py-3 px-4 rounded-lg hover:bg-primary-300/50"
-                      >
-                        {link.label}
-                      </Link>
-                    </SheetClose>
-                  ))}
-                </nav>
+                {/* Mobile Menu Content */}
+                <div className="flex flex-col px-6 pb-6">
+                  {/* Mobile Navigation Links */}
+                  <nav className="flex flex-col gap-1">
+                    {navLinks.map((link) => (
+                      <SheetClose key={link.href} asChild>
+                        <Link
+                          href={link.href}
+                          className="text-secondary-000 font-normal text-base transition-colors tracking-[-0.01em] py-3 px-4 rounded-lg hover:bg-primary-300/50"
+                        >
+                          {link.label}
+                        </Link>
+                      </SheetClose>
+                    ))}
+                  </nav>
 
-                {/* Mobile Action Buttons */}
-                <div className="flex flex-col gap-4 mt-8 pt-6 border-t border-accent-20">
-                  <SheetClose asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full border-secondary-000 text-secondary-000 bg-white hover:bg-secondary-000 hover:text-white rounded-full transition-all duration-300 h-12"
-                      asChild
-                    >
-                      <Link
-                        href="/vendor/register"
-                        className="text-secondary-000 font-semibold text-base transition-colors tracking-[-0.01em]"
-                      >
-                        Become a Vendor
-                      </Link>
-                    </Button>
-                  </SheetClose>
-
-                  {!isLoggedIn && (
+                  {/* Mobile Action Buttons */}
+                  <div className="flex flex-col gap-4 mt-8 pt-6 border-t border-accent-20">
                     <SheetClose asChild>
                       <Button
-                        className="w-full bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full h-12"
+                        variant="outline"
+                        className="w-full border-secondary-000 text-secondary-000 bg-white hover:bg-secondary-000 hover:text-white rounded-full transition-all duration-300 h-12"
                         asChild
                       >
                         <Link
-                          href="/sign-up-choice"
-                          className="flex items-center justify-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]"
+                          href="/vendor/register"
+                          className="text-secondary-000 font-semibold text-base transition-colors tracking-[-0.01em]"
                         >
-                          Log In/Sign Up
-                          <ArrowRight className="size-4" />
+                          Become a Vendor
                         </Link>
                       </Button>
                     </SheetClose>
-                  )}
+
+                    {!isLoggedIn && (
+                      <SheetClose asChild>
+                        <Button
+                          className="w-full bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full h-12"
+                          asChild
+                        >
+                          <Link
+                            href="/sign-up-choice"
+                            className="flex items-center justify-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]"
+                          >
+                            Log In/Sign Up
+                            <ArrowRight className="size-4" />
+                          </Link>
+                        </Button>
+                      </SheetClose>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          )}
+
+          {!isMounted && (
+            <button
+              type="button"
+              className="lg:hidden p-2 text-secondary-000 hover:text-accent-80 transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="size-6" />
+            </button>
+          )}
 
           {/* Logo */}
           <Link href="/" className="shrink-0">
