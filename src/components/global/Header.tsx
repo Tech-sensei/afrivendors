@@ -11,8 +11,8 @@ import { NotificationPanel } from "./NotificationPanel";
 
 const Header = () => {
   // Hardcoded user status - replace with actual auth state later
-  const isLoggedIn = true; // Change to false to see logged-out state
-  // const isLoggedIn = false; // Change to false to see logged-out state
+  // const isLoggedIn = true; // Change to false to see logged-out state
+  const isLoggedIn = false; // Change to false to see logged-out state
 
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
