@@ -5,13 +5,12 @@ import { Toaster } from "@/components/ui/sonner"
 
 const unboundedSans = localFont({
   src: [
-
     { path: "../../public/fonts/Unbounded/Unbounded-Regular.ttf", weight: "400", style: "normal" },
     { path: "../../public/fonts/Unbounded/Unbounded-Medium.ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/Unbounded/Unbounded-Semibold.ttf", weight: "600", style: "normal" },
+    { path: "../../public/fonts/Unbounded/Unbounded-SemiBold.ttf", weight: "600", style: "normal" },
     { path: "../../public/fonts/Unbounded/Unbounded-Bold.ttf", weight: "700", style: "normal" },
     { path: "../../public/fonts/Unbounded/Unbounded-Black.ttf", weight: "900", style: "normal" },
-    { path: "../../public/fonts/Unbounded/Unbounded-Extrabold.ttf", weight: "800", style: "normal" },
+    { path: "../../public/fonts/Unbounded/Unbounded-ExtraBold.ttf", weight: "800", style: "normal" },
   ],
   variable: "--font-unbounded-sans",
   display: "swap",
