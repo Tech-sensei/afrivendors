@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
@@ -20,7 +20,7 @@ const countries = [
     { code: '+233', name: 'Ghana', flag: '🇬🇭' }
 ];
 
-const SignUpPage = () => {
+const SignUpPageContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const email = searchParams.get('email') || '';
@@ -428,6 +428,20 @@ const SignUpPage = () => {
                 phoneCode={formData.phoneCode}
             />
         </div>
+    );
+}
+
+const SignUpPage = () => {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-accent-10 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="font-unageo text-base text-accent-80">Loading...</p>
+                </div>
+            </div>
+        }>
+            <SignUpPageContent />
+        </Suspense>
     );
 }
 

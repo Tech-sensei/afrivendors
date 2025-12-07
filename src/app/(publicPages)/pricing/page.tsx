@@ -88,7 +88,6 @@ const PricingPage = () => {
     const router = useRouter();
 
     const handleGetStarted = (plan: string) => {
-        console.log('Selected plan:', plan);
         router.push('/sign-up?type=vendor');
     };
 
