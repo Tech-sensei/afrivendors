@@ -17,7 +17,7 @@ export function AboutImgContainer() {
           scale: 1.02,
           transition: { duration: 0.3, ease: "easeOut" },
         }}
-        className="relative overflow-hidden w-full rounded-tl-[clamp(60px,15vw,183px)] rounded-br-[clamp(60px,15vw,183px)] h-[380px]"
+        className="relative overflow-hidden w-full rounded-tl-[clamp(60px,15vw,183px)] rounded-br-[clamp(60px,15vw,183px)] aspect-1122/375"
       >
         <Image
           src="/assets/images/aboutHeroImg.png"
@@ -51,7 +51,7 @@ const AboutHeroSection = () => {
             {/* Hero Header Image */}
             <div className="mb-8 w-full max-w-4xl px-4 sm:px-6 md:px-8 lg:px-0">
               <div className="w-full max-w-full overflow-hidden">
-                <div className="content-stretch flex flex-col gap-[8px] items-center relative w-full" data-name="Home-Hero-Header">
+                <div className="content-stretch flex flex-col gap-2 items-center relative w-full" data-name="Home-Hero-Header">
                   <p className="font-unbounded font-medium leading-[normal] w-full relative shrink-0 text-center text-[#562A03] text-[clamp(28px,6vw,76px)] tracking-[-0.06em]">
                     {`   About Afrivendor `}
                   </p>
@@ -65,7 +65,7 @@ const AboutHeroSection = () => {
             </div>
 
             {/* Sub-heading */}
-            <p className="mb-10 max-w-4xl px-4 sm:px-0 text-secondary-100 text-[clamp(16px,2vw,20px)] leading-[1.6]">
+            <p className="mb-10 max-w-4xl sm:px-0 text-secondary-100 text-[clamp(16px,2vw,20px)] leading-[1.6]">
               Afrivendor is more than just a marketplace. We're building a community where local vendors thrive and customers discover
               exceptional services right in their neighborhood.
             </p>

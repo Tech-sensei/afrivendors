@@ -1,12 +1,18 @@
 import FAQ from '@/components/views/FAQSection'
-import React from 'react'
+import ContactHeroSection from './views/ContactHeroSection'
+import NeedAssistanceSection from './views/NeedAssistanceSection'
+import YourVoiceMattersSection from './views/YourVoiceMattersSection'
+import ContactFormSection from './views/ContactFormSection'
 
 const ContactUsPage = () => {
     return (
-        <div>
-            <h1>Contact Us</h1>
-            <FAQ/>
-        </div>
+        <>
+            <ContactHeroSection />
+            <NeedAssistanceSection />
+            <YourVoiceMattersSection />
+            <ContactFormSection />
+            <FAQ />
+        </>
     )
 }
 

@@ -37,7 +37,7 @@ const WhatwedoSection = () => {
   return (
     <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-8 lg:px-24">
       <div className="max-w-[1440px] mx-auto">
-        <div className="flex items-start justify-between gap-20 w-full">
+        <div className="flex flex-col lg:flex-row items-start justify-between gap-20 w-full">
           {/* Left contents */}
           <motion.div
             className="flex flex-col gap-8 items-start flex-1"
