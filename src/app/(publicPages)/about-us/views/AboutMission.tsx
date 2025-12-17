@@ -2,7 +2,7 @@ import { Target, Users } from 'lucide-react';
 
 const AboutMission = () => {
     return (
-        <section className="py-12 sm:py-16 md:py-20  px-4 sm:px-8 lg:px-24 bg-[#F7F4F2]">
+        <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-8 lg:px-24 bg-[#F7F4F2]">
             <div className="max-w-[1440px] mx-auto">
                 <div className="py-16 md:py-20 px-6 bg-accent-10/40 rounded-2xl">
                     <div className="max-w-[1200px] mx-auto">

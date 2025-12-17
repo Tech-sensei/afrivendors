@@ -11,8 +11,8 @@ import { NotificationPanel } from "./NotificationPanel";
 
 const Header = () => {
   // Hardcoded user status - replace with actual auth state later
-  // const isLoggedIn = true; // Change to false to see logged-out state
-  const isLoggedIn = false; // Change to false to see logged-out state
+  const isLoggedIn = true; // Change to false to see logged-out state
+  // const isLoggedIn = false; // Change to false to see logged-out state
 
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -44,7 +44,7 @@ const Header = () => {
               <SheetTrigger asChild>
                 <button
                   type="button"
-                  className="lg:hidden p-2 text-secondary-000 hover:text-accent-80 transition-colors"
+                  className="lg:hidden text-secondary-000 hover:text-accent-80 transition-colors"
                   aria-label="Open menu"
                 >
                   <Menu className="size-6" />
