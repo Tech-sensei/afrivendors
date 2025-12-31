@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Calendar, Wallet, Heart, FileText, Settings, LogOut } from "lucide-react";
+import { User, Calendar, Wallet, Heart, FileText, Settings, LogOut, MessageCircle } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useRouter, usePathname } from "next/navigation";
 
 interface UserMenuProps {
     onNavigate?: (page: string) => void;
@@ -21,6 +22,17 @@ interface UserMenuProps {
     userEmail?: string;
 }
 
+// Map page identifiers to actual routes
+const pageToRoute: Record<string, string> = {
+    "dashboard-profile": "/profile",
+    "dashboard-appointments": "/appointments",
+    "dashboard-messages": "/messages",
+    "dashboard-wallet": "/wallet",
+    "dashboard-favourites": "/favourites",
+    "dashboard-forms": "/custom-service-forms",
+    "dashboard-settings": "/settings",
+};
+
 export function UserMenu({
     onNavigate,
     currentPage,
@@ -29,6 +41,9 @@ export function UserMenu({
     userName = "Amara Okonkwo",
     userEmail = "amara@example.com",
 }: UserMenuProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+
     const menuItems = [
         { id: "dashboard-profile", label: "Profile", icon: User, page: "dashboard-profile" },
         {
@@ -36,6 +51,12 @@ export function UserMenu({
             label: "Appointments",
             icon: Calendar,
             page: "dashboard-appointments",
+        },
+        {
+            id: "dashboard-messages",
+            label: "Messages",
+            icon: MessageCircle,
+            page: "dashboard-messages",
         },
         { id: "dashboard-wallet", label: "Wallet", icon: Wallet, page: "dashboard-wallet" },
         {
@@ -57,6 +78,19 @@ export function UserMenu({
             page: "dashboard-settings",
         },
     ];
+
+    const handleNavigation = (page: string) => {
+        const route = pageToRoute[page];
+        if (route) {
+            router.push(route);
+            onNavigate?.(page);
+        }
+    };
+
+    const isActive = (page: string) => {
+        const route = pageToRoute[page];
+        return route ? pathname === route : false;
+    };
 
     return (
         <DropdownMenu>
@@ -99,30 +133,30 @@ export function UserMenu({
                 <div className="space-y-1">
                     {menuItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = currentPage === item.page;
+                        const active = isActive(item.page);
 
                         return (
                             <DropdownMenuItem
                                 key={item.id}
                                 className={cn(
                                     "cursor-pointer px-3 h-11 rounded-xl transition-colors duration-150 outline-none border-none",
-                                    isActive
+                                    active
                                         ? "bg-primary-300 text-secondary-000 focus:bg-primary-300"
                                         : "bg-transparent text-secondary-000 hover:bg-primary-300/50 focus:bg-primary-300/50"
                                 )}
-                                onSelect={() => onNavigate?.(item.page)}
+                                onSelect={() => handleNavigation(item.page)}
                             >
                                 <Icon
                                     className={cn(
                                         "mr-3 shrink-0 size-5",
-                                        isActive ? "text-primary-100" : "text-accent-80"
+                                        active ? "text-primary-100" : "text-accent-80"
                                     )}
                                     strokeWidth={2}
                                 />
                                 <span
                                     className={cn(
                                         "text-base",
-                                        isActive ? "font-semibold text-secondary-000" : "font-normal text-secondary-000"
+                                        active ? "font-semibold text-secondary-000" : "font-normal text-secondary-000"
                                     )}
                                 >
                                     {item.label}

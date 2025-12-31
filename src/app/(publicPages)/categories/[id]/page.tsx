@@ -162,8 +162,9 @@ const VendorDetailPage = () => {
             toast.error('Please select at least one service');
             return;
         }
-        // TODO: Navigate to booking page
-        toast.success('Redirecting to booking...');
+        // Navigate to booking page with vendor ID and selected service IDs
+        const serviceIds = selectedServices.join(',');
+        router.push(`/booking?vendorId=${vendorId}&serviceIds=${serviceIds}`);
     };
 
     const totalPrice = selectedServices.reduce((sum, serviceId) => {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Search, ArrowRight, Bell, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
@@ -14,12 +15,29 @@ const Header = () => {
   const isLoggedIn = true; // Change to false to see logged-out state
   // const isLoggedIn = false; // Change to false to see logged-out state
 
+  const router = useRouter();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Map notification action URLs to actual routes
+  const mapNotificationUrl = (url: string): string => {
+    if (url.startsWith("dashboard-")) {
+      const routeMap: Record<string, string> = {
+        "dashboard-appointments": "/appointments",
+        "dashboard-messages": "/messages",
+        "dashboard-wallet": "/wallet",
+        "dashboard-favourites": "/favourites",
+        "dashboard-profile": "/profile",
+        "dashboard-settings": "/settings",
+      };
+      return routeMap[url] || url;
+    }
+    return url;
+  };
 
   const navLinks = [
     { label: "Browse", href: "/categories" },
@@ -194,8 +212,7 @@ const Header = () => {
                   userName={userName}
                   userEmail={userEmail}
                   onNavigate={(page) => {
-                    console.log("Navigate to:", page);
-                    // Add navigation logic here
+                    // Navigation is handled inside UserMenu component
                   }}
                   onLogout={() => {
                     console.log("Logout");
@@ -224,8 +241,8 @@ const Header = () => {
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
         onNavigate={(page) => {
-          console.log("Navigate to:", page);
-          // Add navigation logic here
+          const route = mapNotificationUrl(page);
+          router.push(route);
         }}
       />
     </header>

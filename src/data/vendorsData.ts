@@ -37,7 +37,7 @@ export const vendors: Vendor[] = [
     priceRange: "$40–$70",
     minPrice: 40,
     maxPrice: 70,
-    image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/aboutHeroImg.png",
     description: "Premier natural hair care and styling salon specializing in braids and spa treatments",
     services: [
       {
@@ -84,7 +84,7 @@ export const vendors: Vendor[] = [
     priceRange: "$50–$95",
     minPrice: 50,
     maxPrice: 95,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg1.png",
     description: "Premium studio offering personalized bridal and event makeup sessions with skin-prep consultation and touch-up kit",
     services: [
       {
@@ -131,7 +131,7 @@ export const vendors: Vendor[] = [
     priceRange: "$30–$60",
     minPrice: 30,
     maxPrice: 60,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/contactHeroImg.png",
     description: "Premium barbershop delivering precision cuts and expert beard grooming",
     services: [
       {
@@ -178,7 +178,7 @@ export const vendors: Vendor[] = [
     priceRange: "$80–$150",
     minPrice: 80,
     maxPrice: 150,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg2.png",
     description: "Authentic Northern Nigerian cuisine and private chef services for intimate gatherings",
     services: [
       {
@@ -225,7 +225,7 @@ export const vendors: Vendor[] = [
     priceRange: "$90–$200",
     minPrice: 90,
     maxPrice: 200,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg3.png",
     description: "Contemporary African cuisine for corporate events and special occasions",
     services: [
       {
@@ -272,7 +272,7 @@ export const vendors: Vendor[] = [
     priceRange: "$100–$300",
     minPrice: 100,
     maxPrice: 300,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg4.png",
     description: "Luxury wedding planning and coordination services with complete vendor management",
     services: [
       {
@@ -319,7 +319,7 @@ export const vendors: Vendor[] = [
     priceRange: "$300–$550",
     minPrice: 300,
     maxPrice: 550,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/vendorImg.png",
     description: "Creative event stylists providing elegant, custom floral and venue décor for weddings and parties",
     services: [
       {
@@ -366,7 +366,7 @@ export const vendors: Vendor[] = [
     priceRange: "$150–$400",
     minPrice: 150,
     maxPrice: 400,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/vendor.jpeg",
     description: "Professional workspace setup and corporate event staging solutions",
     services: [
       {
@@ -413,7 +413,7 @@ export const vendors: Vendor[] = [
     priceRange: "$30–$60",
     minPrice: 30,
     maxPrice: 60,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/HowitworkHeroImg.png",
     description:
       "Certified personal trainers helping clients achieve fitness goals through strength, cardio, and nutrition-focused sessions",
     services: [
@@ -461,7 +461,7 @@ export const vendors: Vendor[] = [
     priceRange: "$150–$350",
     minPrice: 150,
     maxPrice: 350,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/vendorImg.png",
     description: "Handcrafted wooden furniture with traditional African designs and modern aesthetics",
     services: [
       {
@@ -508,7 +508,7 @@ export const vendors: Vendor[] = [
     priceRange: "$100–$200",
     minPrice: 100,
     maxPrice: 200,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg1.png",
     description: "Sustainable interior design with eco-friendly materials and African-inspired aesthetics",
     services: [
       {
@@ -555,7 +555,7 @@ export const vendors: Vendor[] = [
     priceRange: "$80–$120",
     minPrice: 80,
     maxPrice: 120,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg2.png",
     description: "Creative portrait and event photography capturing authentic African moments",
     services: [
       {
@@ -602,7 +602,7 @@ export const vendors: Vendor[] = [
     priceRange: "$100–$200",
     minPrice: 100,
     maxPrice: 200,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg3.png",
     description: "Professional studio offering indoor/outdoor photography with quick retouching turnaround and cloud delivery",
     services: [
       {
@@ -649,7 +649,7 @@ export const vendors: Vendor[] = [
     priceRange: "$20–$45",
     minPrice: 20,
     maxPrice: 45,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/journeyImg.png",
     description: "Trendy grooming lounge specializing in classic and modern cuts, fades, and beard care",
     services: [
       {
@@ -696,7 +696,7 @@ export const vendors: Vendor[] = [
     priceRange: "$40–$120",
     minPrice: 40,
     maxPrice: 120,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg4.png",
     description: "Artisan bakery crafting custom cakes, pastries, and dessert platters with same-day delivery options",
     services: [
       {
@@ -743,7 +743,7 @@ export const vendors: Vendor[] = [
     priceRange: "$280–$380",
     minPrice: 280,
     maxPrice: 380,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/vendorImg.png",
     description:
       "Specialists in elegant and culturally inspired décor for baby naming ceremonies — combining floral elements, pastel tones, and family-centered setups",
     services: [
@@ -792,7 +792,7 @@ export const vendors: Vendor[] = [
     priceRange: "$350–$450",
     minPrice: 350,
     maxPrice: 450,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg1.png",
     description:
       "Premium catering brand offering freshly prepared African delicacies and light refreshments tailored for naming and family ceremonies",
     services: [
@@ -841,7 +841,7 @@ export const vendors: Vendor[] = [
     priceRange: "$320–$420",
     minPrice: 320,
     maxPrice: 420,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg2.png",
     description:
       "Modern décor specialists transforming birthday venues into themed experiences, from kid parties to milestone celebrations, with photo zones and balloon artistry",
     services: [
@@ -889,7 +889,7 @@ export const vendors: Vendor[] = [
     priceRange: "$85–$180",
     minPrice: 85,
     maxPrice: 180,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg3.png",
     description:
       "Expert bakers creating visually stunning and delicious birthday cakes, cupcakes, and dessert platters available for pickup or delivery",
     services: [
@@ -937,7 +937,7 @@ export const vendors: Vendor[] = [
     priceRange: "$240–$320",
     minPrice: 240,
     maxPrice: 320,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/homeHeroImg4.png",
     description:
       "Event photography brand offering creative birthday photo coverage, instant prints, and short highlight videos with professional editing",
     services: [
@@ -985,7 +985,7 @@ export const vendors: Vendor[] = [
     priceRange: "$750–$950",
     minPrice: 750,
     maxPrice: 950,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/vendor.jpeg",
     description:
       "Full-service event management agency specializing in professional setups for conferences, workshops, and company milestone celebrations",
     services: [
@@ -1033,7 +1033,7 @@ export const vendors: Vendor[] = [
     priceRange: "$560–$680",
     minPrice: 560,
     maxPrice: 680,
-   image: "/assets/images/vendor.jpeg",
+    image: "/assets/images/Frame.png",
     description:
       "Premium corporate catering brand serving international buffets, finger foods, and beverage services for company events and team gatherings",
     services: [
