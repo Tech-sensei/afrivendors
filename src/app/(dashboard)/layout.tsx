@@ -41,7 +41,7 @@ export default function DashboardLayout({
             {/* Desktop Layout */}
             <div className="hidden lg:flex gap-6 mx-auto container px-4 md:px-6 lg:px-24 py-6 bg">
                 {/* Left Sidebar */}
-                <aside className="flex-shrink-0 w-[280px]">
+                <aside className="shrink-0 w-[280px]">
                     <div className="sticky top-6 bg-white rounded-2xl shadow-lg p-4" style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.06)' }}>
                         {/* User Card */}
                         <div className="pb-4 mb-4 border-b border-secondary-600">

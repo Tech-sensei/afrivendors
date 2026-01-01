@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import { FundWalletDrawer } from '@/components/booking/FundWalletDrawer';
 // Mock wallet balance
 const WALLET_BALANCE = 430.00;
 
-export default function BookingPage() {
+function BookingPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -263,5 +263,23 @@ export default function BookingPage() {
                 onClose={() => setFundWalletOpen(false)}
             />
         </motion.div>
+    );
+}
+
+export default function BookingPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+                    <div className="text-center">
+                        <h2 className="mb-2 font-unbounded text-2xl font-semibold text-secondary-000">
+                            Loading...
+                        </h2>
+                    </div>
+                </div>
+            }
+        >
+            <BookingPageContent />
+        </Suspense>
     );
 }

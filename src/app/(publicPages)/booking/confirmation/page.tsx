@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { CheckCircle, Calendar, Clock, CreditCard } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,6 @@ import { cn } from '@/lib/utils';
 
 export default function BookingConfirmationPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
     const [showAnimation, setShowAnimation] = useState(false);
     const [bookingData, setBookingData] = useState<any>(null);
 
