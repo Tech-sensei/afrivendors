@@ -202,7 +202,7 @@ function BookingPageContent() {
 
                     {/* Page Title */}
                     <div className="mb-8">
-                        <h1 className="mb-2 font-unbounded text-4xl leading-[44px] font-semibold text-secondary-000">
+                        <h1 className="mb-2 font-unbounded text-4xl leading-11 font-semibold text-secondary-000">
                             Book Your Appointment
                         </h1>
                         <p className="text-base text-accent-80">
