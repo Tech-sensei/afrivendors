@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, CreditCard, Trash2, DollarSign } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
@@ -40,6 +40,7 @@ export function FundWalletDrawer({
     onDeleteCard,
     onFundWallet,
 }: FundWalletDrawerProps) {
+    const [isMobile, setIsMobile] = useState(false);
     const [fundAmount, setFundAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState(savedCards[0]?.id || 'new');
     const [saveAsDefault, setSaveAsDefault] = useState(false);
@@ -49,6 +50,16 @@ export function FundWalletDrawer({
     const [cardName, setCardName] = useState('');
     const [cardExpiry, setCardExpiry] = useState('');
     const [cardCvv, setCardCvv] = useState('');
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 640);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     const handleSubmit = () => {
         if (!fundAmount || parseFloat(fundAmount) <= 0) {
@@ -93,7 +104,13 @@ export function FundWalletDrawer({
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
-            <SheetContent className="w-full sm:max-w-md flex flex-col rounded-t-3xl sm:rounded-l-3xl sm:rounded-tr-none border-0 p-0 h-full">
+            <SheetContent
+                side={isMobile ? "bottom" : "right"}
+                className={`w-full sm:max-w-md flex flex-col border-0 p-0 ${isMobile
+                        ? 'rounded-t-3xl max-h-[85vh]'
+                        : 'rounded-l-3xl rounded-tr-none h-full'
+                    }`}
+            >
                 <div className="flex-1 overflow-y-auto p-6">
                     <SheetHeader className="p-0">
                         <SheetTitle className="font-unbounded text-xl font-semibold text-secondary-000">

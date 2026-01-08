@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
@@ -24,13 +25,32 @@ interface TransactionDetailProps {
 }
 
 export function TransactionDetail({ transaction, isOpen, onClose }: TransactionDetailProps) {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 640);
+        };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     if (!transaction) return null;
 
     const isCredit = transaction.amount > 0;
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
-            <SheetContent className="w-full sm:max-w-md overflow-y-auto rounded-t-3xl sm:rounded-l-3xl sm:rounded-tr-none border-0 p-6">
+            <SheetContent 
+                side={isMobile ? "bottom" : "right"} 
+                className={`w-full sm:max-w-md overflow-y-auto border-0 p-6 ${
+                    isMobile 
+                        ? 'rounded-t-3xl max-h-[85vh]' 
+                        : 'rounded-l-3xl rounded-tr-none'
+                }`}
+            >
                 <SheetHeader className="p-0">
                     <SheetTitle className="font-unbounded text-xl font-semibold text-secondary-000">
                         Transaction Details
