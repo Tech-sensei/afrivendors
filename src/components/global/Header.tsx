@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { UserMenu } from "./UserMenu";
 import { NotificationPanel } from "./NotificationPanel";
+import { LogoutConfirmModal } from "@/components/dashboard/LogoutConfirmModal";
 
 const Header = () => {
   // Hardcoded user status - replace with actual auth state later
@@ -17,6 +18,7 @@ const Header = () => {
 
   const router = useRouter();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -215,8 +217,7 @@ const Header = () => {
                     // Navigation is handled inside UserMenu component
                   }}
                   onLogout={() => {
-                    console.log("Logout");
-                    // Add logout logic here
+                    setIsLogoutModalOpen(true);
                   }}
                 />
               </>
@@ -243,6 +244,16 @@ const Header = () => {
         onNavigate={(page) => {
           const route = mapNotificationUrl(page);
           router.push(route);
+        }}
+      />
+
+      {/* Logout Confirm Modal */}
+      <LogoutConfirmModal
+        open={isLogoutModalOpen}
+        onOpenChange={setIsLogoutModalOpen}
+        onConfirm={() => {
+          setIsLogoutModalOpen(false);
+          router.push('/');
         }}
       />
     </header>
