@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'sonner';
 import { vendors } from '@/data/vendorsData';
 import VendorCard from '@/components/views/VendorCard';
@@ -20,6 +21,8 @@ const favouriteVendorIds = [
 export default function FavouritesPage() {
     const router = useRouter();
     const [favouriteIds, setFavouriteIds] = useState<string[]>(favouriteVendorIds);
+    const [unlikeConfirmOpen, setUnlikeConfirmOpen] = useState(false);
+    const [vendorToUnlike, setVendorToUnlike] = useState<string | null>(null);
 
     // Load favourites from localStorage on mount
     useEffect(() => {
@@ -51,12 +54,26 @@ export default function FavouritesPage() {
                 description: `${vendor?.name || 'Vendor'} has been added to your favourites.`
             });
         } else {
-            setFavouriteIds(prev => prev.filter(id => id !== vendorId));
-            const vendor = vendors.find(v => v.id === vendorId);
+            // Show confirmation modal before removing
+            setVendorToUnlike(vendorId);
+            setUnlikeConfirmOpen(true);
+        }
+    };
+
+    const handleConfirmUnlike = () => {
+        if (vendorToUnlike) {
+            setFavouriteIds(prev => prev.filter(id => id !== vendorToUnlike));
+            const vendor = vendors.find(v => v.id === vendorToUnlike);
             toast.success('Removed from Favourites', {
                 description: `${vendor?.name || 'Vendor'} has been removed from your favourites.`
             });
+            setVendorToUnlike(null);
         }
+    };
+
+    const getVendorToUnlikeInfo = () => {
+        if (!vendorToUnlike) return null;
+        return vendors.find(v => v.id === vendorToUnlike);
     };
 
     return (
@@ -102,6 +119,21 @@ export default function FavouritesPage() {
                     </Button>
                 </div>
             )}
+
+            {/* Unlike Confirmation Modal */}
+            <ConfirmModal
+                open={unlikeConfirmOpen}
+                onOpenChange={setUnlikeConfirmOpen}
+                onConfirm={handleConfirmUnlike}
+                title="Remove from Favourites?"
+                description={`Are you sure you want to remove ${getVendorToUnlikeInfo()?.name || 'this vendor'} from your favourites?`}
+                confirmText="Yes, Remove"
+                cancelText="Cancel"
+                icon={Heart}
+                iconColor="text-red-600"
+                iconBg="bg-red-50"
+                confirmButtonVariant="destructive"
+            />
         </div>
     );
 }

@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'sonner';
 
 interface SavedCard {
@@ -44,6 +45,8 @@ export function FundWalletDrawer({
     const [fundAmount, setFundAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState(savedCards[0]?.id || 'new');
     const [saveAsDefault, setSaveAsDefault] = useState(false);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [cardToDelete, setCardToDelete] = useState<string | null>(null);
 
     // Card form state
     const [cardNumber, setCardNumber] = useState('');
@@ -100,6 +103,30 @@ export function FundWalletDrawer({
             return !!(cardNumber && cardName && cardExpiry && cardCvv);
         }
         return true;
+    };
+
+    const handleDeleteClick = (cardId: string, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCardToDelete(cardId);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (cardToDelete) {
+            onDeleteCard(cardToDelete);
+            // If the deleted card was selected, switch to another card or 'new'
+            if (paymentMethod === cardToDelete) {
+                const remainingCards = savedCards.filter(card => card.id !== cardToDelete);
+                setPaymentMethod(remainingCards[0]?.id || 'new');
+            }
+            setCardToDelete(null);
+        }
+    };
+
+    const getCardToDeleteInfo = () => {
+        if (!cardToDelete) return null;
+        return savedCards.find(card => card.id === cardToDelete);
     };
 
     return (
@@ -178,10 +205,7 @@ export function FundWalletDrawer({
                                                 </div>
                                             </Label>
                                             <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    onDeleteCard(card.id);
-                                                }}
+                                                onClick={(e) => handleDeleteClick(card.id, e)}
                                                 className="p-1.5 rounded-lg hover:bg-red-50 text-accent-60 hover:text-red-600 transition-colors"
                                             >
                                                 <Trash2 className="h-4 w-4" />
@@ -317,6 +341,21 @@ export function FundWalletDrawer({
                     </Button>
                 </SheetFooter>
             </SheetContent>
+
+            {/* Delete Card Confirmation Modal */}
+            <ConfirmModal
+                open={deleteConfirmOpen}
+                onOpenChange={setDeleteConfirmOpen}
+                onConfirm={handleConfirmDelete}
+                title="Delete Card?"
+                description={`Are you sure you want to delete ${getCardToDeleteInfo()?.brand} •••• ${getCardToDeleteInfo()?.lastFour}? This action cannot be undone.`}
+                confirmText="Yes, Delete"
+                cancelText="Cancel"
+                icon={Trash2}
+                iconColor="text-red-600"
+                iconBg="bg-red-50"
+                confirmButtonVariant="destructive"
+            />
         </Sheet>
     );
 }

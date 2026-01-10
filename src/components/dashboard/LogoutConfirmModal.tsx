@@ -26,7 +26,7 @@ export function LogoutConfirmModal({ open, onOpenChange, onConfirm }: LogoutConf
                     <DialogTitle className="text-center text-2xl font-semibold text-secondary-000 leading-[1.3] mb-2">
                         Log Out?
                     </DialogTitle>
-                    <DialogDescription className="text-center text-base text-accent-80 leading-[1.5]">
+                    <DialogDescription className="text-center text-base text-accent-80 leading-6">
                         Are you sure you want to log out of your account?
                     </DialogDescription>
                 </DialogHeader>

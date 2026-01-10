@@ -34,7 +34,7 @@ export default function DashboardLayout({
     };
 
     return (
-        <div className="min-h-screen bg-accent-10">
+        <div className="min-h-screen bg-[#f8f4f1]">
             {/* Header */}
             <Header />
 
