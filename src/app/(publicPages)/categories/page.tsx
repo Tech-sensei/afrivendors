@@ -10,6 +10,7 @@ import { motion } from 'motion/react';
 import { vendors, categories as allCategories, locations } from '@/data/vendorsData';
 import { FilterSection } from '@/components/views/FilterSection';
 import VendorCard from '@/components/views/VendorCard';
+import svgPaths from "@/lib/svgPath7";
 
 interface CategoryPageProps {
   onNavigate: (page: string, data?: any) => void;
@@ -113,14 +114,37 @@ const CategoryPage = ({ onNavigate, initialCategory }: CategoryPageProps) => {
       className="flex flex-col min-h-screen"
     >
       {/* Header */}
-      <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-6 sm:px-8 lg:px-24 bg-accent-10">
-        <div className="mx-auto max-w-[1440px]">
-          <h2 className="mb-3 font-unbounded text-3xl font-semibold text-secondary-000">
-            Browse Vendors
-          </h2>
-          <p className="font-unageo text-base text-secondary-200 opacity-70">
-            Discover trusted service providers across Africa
-          </p>
+      <section className="py-12 sm:py-16 md:py-18 px-6 sm:px-8 lg:px-24 bg-[#f9f5f2]">
+
+        {/* Centered Hero Content */}
+        <div className="flex flex-col items-center text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
+            className="flex flex-col items-center w-full"
+          >
+            {/* Hero Header Image */}
+            <div className="mb-8 w-full max-w-4xl px-4 sm:px-6 md:px-8 lg:px-0">
+              <div className="w-full max-w-full overflow-hidden">
+                <div className="content-stretch flex flex-col gap-2 items-center relative w-full" data-name="Home-Hero-Header">
+                  <p className="font-unbounded font-medium leading-[normal] w-full relative shrink-0 text-center text-[#562A03] text-[clamp(28px,6vw,76px)] tracking-[-0.06em]">
+                    {`   Discover Vendors `}
+                  </p>
+                  <div className="relative shrink-0 w-full h-auto max-w-[782px] aspect-[782 / 118]">
+                    <svg className="block w-full h-full" fill="none" preserveAspectRatio="xMidYMid meet" viewBox="0 0 782 118">
+                      <path d={svgPaths.p16a30100} fill="var(--fill-0, #C56C31)" id="Subtract" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sub-heading */}
+            <p className="mb-10 max-w-4xl  text-secondary-100 text-[clamp(16px,2vw,20px)] leading-[1.6]">
+              Discover trusted service providers across Africa
+            </p>
+          </motion.div>
         </div>
       </section>
 

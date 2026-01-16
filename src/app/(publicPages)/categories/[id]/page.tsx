@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Star, MapPin, Clock, Phone, Mail, Heart, Share2, ChevronLeft, Check, Plus } from 'lucide-react';
+import { Star, MapPin, Clock, Phone, Mail, Heart, Share2, ChevronLeft, Check, Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { ReviewForm } from '@/components/views/ReviewForm';
 import { ReviewsList } from '@/components/views/ReviewsList';
 import { getVendorReviews, getUserReview, saveReview, updateReview, deleteReview } from '@/lib/reviewStorage';
+import { Drawer } from '@/app/(dashboard)/Drawer';
 
 const VendorDetailPage = () => {
     const params = useParams();
@@ -24,6 +25,7 @@ const VendorDetailPage = () => {
     const [userReview, setUserReview] = useState<any>(null);
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [editingReview, setEditingReview] = useState<any>(null);
+    const [isCustomRequestDrawerOpen, setIsCustomRequestDrawerOpen] = useState(false);
 
     // Find the vendor by ID
     const vendor = vendors.find((v) => v.id === vendorId);
@@ -516,12 +518,41 @@ const VendorDetailPage = () => {
                                     <div className="mt-4 text-center  text-xs text-accent-80">
                                         Free cancellation up to 24 hours before
                                     </div>
+
+                                    {/* Custom Request Section */}
+                                    <div className="mt-6 pt-6 border-t border-accent-20">
+                                        <Button
+                                            onClick={() => setIsCustomRequestDrawerOpen(true)}
+                                            className="w-full bg-accent-10 text-secondary-000 hover:bg-accent-20 rounded-xl h-12  text-base font-semibold gap-2"
+                                        >
+                                            <FileText className="h-5 w-5" />
+                                            Custom Request
+                                        </Button>
+                                        <div className="mt-3 text-center  text-xs text-accent-80">
+                                            Need something specific? Request a custom service
+                                        </div>
+                                    </div>
                                 </CardContent>
                             </Card>
                         </aside>
                     </div>
                 </div>
             </section>
+
+            {/* Custom Request Drawer */}
+            <Drawer
+                open={isCustomRequestDrawerOpen}
+                onOpenChange={setIsCustomRequestDrawerOpen}
+                title="Custom Request"
+                description="Tell us about your specific needs"
+                size="md"
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-accent-80">
+                        This is where the custom request form will be displayed.
+                    </p>
+                </div>
+            </Drawer>
         </div>
     );
 };

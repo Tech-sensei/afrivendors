@@ -30,7 +30,7 @@ const AboutMission = () => {
                                 <div className="w-16 h-16 rounded-2xl bg-accent-10 flex items-center justify-center mb-6">
                                     <Users className="w-8 h-8 text-primary-100" />
                                 </div>
-                                <h3 className="font-unbounded text-[28px] leading-8 font-semibold text-secondary-000 mb-4">
+                                <h3 className="font-unbounded text-[clamp(32px,3.5vw,40px)] leading-8 font-semibold text-secondary-000 mb-4">
                                     Our Story
                                 </h3>
                                 <p className="font-unageo text-base leading-7 text-accent-80">

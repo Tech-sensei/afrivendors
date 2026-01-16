@@ -137,11 +137,11 @@ const Footer = () => {
         <div className="mx-auto max-w-7xl px-6 sm:px-0 py-3 sm:py-4 flex flex-row items-center justify-between gap-2 sm:gap-4">
           <Link
             href="mailto:info@afrivendor.co.uk"
-            className="text-accent-80 hover:text-primary-100 transition-colors text-xs sm:text-sm md:text-base font-normal order-2 sm:order-1"
+            className="text-accent-80 hover:text-primary-100 transition-colors text-sm md:text-base font-normal order-2 sm:order-1"
           >
             info@afrivendor.co.uk
           </Link>
-          <p className="text-accent-80 text-xs sm:text-sm md:text-base font-normal order-1 sm:order-2">
+          <p className="text-accent-80 text-sm md:text-base font-normal order-1 sm:order-2">
             © {currentYear} Afrivendors.co.uk ltd
           </p>
         </div>

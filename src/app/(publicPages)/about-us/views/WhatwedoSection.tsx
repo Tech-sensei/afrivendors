@@ -36,7 +36,7 @@ const FeatureList = ({ features, delay = 0 }: { features: string[]; delay?: numb
 const WhatwedoSection = () => {
   return (
     <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-8 lg:px-24">
-      <div className="max-w-[1440px] mx-auto">
+      <div className="max-w-[1240px] mx-auto">
         <div className="flex flex-col lg:flex-row items-start justify-between gap-20 w-full">
           {/* Left contents */}
           <motion.div
@@ -49,7 +49,7 @@ const WhatwedoSection = () => {
             {/* Title */}
             <div className="flex flex-col items-start gap-2">
               <motion.h3
-                className="text-lg md:text-xl lg:text-2xl font-semibold font-unbounded text-secondary-000 leading-[125%]"
+                className="text-[clamp(32px,3.5vw,40px)] font-semibold font-unbounded text-secondary-000 leading-[125%]"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}

@@ -22,7 +22,7 @@ const features = [
 const WhyUsSection = () => {
   return (
     <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-8 lg:px-24 bg-[#F7F4F2]">
-      <div className="max-w-[1440px] mx-auto">
+      <div className="max-w-[1240px] mx-auto">
         <div className="flex flex-col lg:flex-row gap-20 justify-between items-center w-full">
           {/* left contents */}
           <motion.div
@@ -33,7 +33,7 @@ const WhyUsSection = () => {
             viewport={{ once: true }}
           >
             <motion.h3
-              className="text-lg md:text-xl lg:text-2xl font-semibold font-unbounded text-secondary-000 leading-[125%]"
+              className="text-[clamp(32px,3.5vw,40px)] font-semibold font-unbounded text-secondary-000 leading-[125%]"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -84,6 +84,81 @@ const WhyUsSection = () => {
             </motion.div>
           </motion.div>
         </div>
+
+        {/* Statistics Cards */}
+        <motion.div
+          className="mt-16 sm:mt-20 md:mt-24"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+          viewport={{ once: true }}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {/* Active Vendors */}
+            <motion.div
+              className="bg-white rounded-xl p-6 sm:p-8 shadow-sm border border-primary-100"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              <div className="text-4xl sm:text-5xl font-semibold font-unbounded text-primary-100 mb-2">
+                10,000+
+              </div>
+              <div className="text-base sm:text-lg font-normal text-secondary-000">
+                Active Vendors
+              </div>
+            </motion.div>
+
+            {/* Happy Customers */}
+            <motion.div
+              className="bg-white rounded-xl p-6 sm:p-8 shadow-sm"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <div className="text-4xl sm:text-5xl font-semibold font-unbounded text-primary-100 mb-2">
+                50,000+
+              </div>
+              <div className="text-base sm:text-lg font-normal text-secondary-000">
+                Happy Customers
+              </div>
+            </motion.div>
+
+            {/* Bookings Made */}
+            <motion.div
+              className="bg-white rounded-xl p-6 sm:p-8 shadow-sm"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <div className="text-4xl sm:text-5xl font-semibold font-unbounded text-primary-100 mb-2">
+                100,000+
+              </div>
+              <div className="text-base sm:text-lg font-normal text-secondary-000">
+                Bookings Made
+              </div>
+            </motion.div>
+
+            {/* Average Rating */}
+            <motion.div
+              className="bg-white rounded-xl p-6 sm:p-8 shadow-sm"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+              viewport={{ once: true }}
+            >
+              <div className="text-4xl sm:text-5xl font-semibold font-unbounded text-primary-100 mb-2">
+                4.8/5
+              </div>
+              <div className="text-base sm:text-lg font-normal text-secondary-000">
+                Average Rating
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
