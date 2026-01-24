@@ -84,7 +84,7 @@ const SignUpChoice = () => {
                             <OptionCard
                                 title="For Vendors"
                                 description="View and manage bookings, earnings and chats"
-                                onClick={() => router.push('/sign-up')}
+                                onClick={() => window.open('https://afrivendors-vendor-dashboard.vercel.app/', '_blank')}
                             />
                         </div>
                     </div>
