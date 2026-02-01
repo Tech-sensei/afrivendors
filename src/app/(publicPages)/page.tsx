@@ -6,6 +6,7 @@ import FeaturedVendorsSection from "@/components/views/FeaturedVendorsSection";
 import TrendingVendorsSection from "@/components/views/TrendingVendorsSection";
 import NewVendorsSection from "@/components/views/NewVendorsSection";
 import HomeHeroSection from "@/components/views/HomeHeroSection";
+import WhyUsSection from "@/app/(publicPages)/how-it-works/views/WhyUsSection";
 import DownloadAppSection from "@/components/views/DownloadAppSection";
 
 export default function Home() {
@@ -16,6 +17,7 @@ export default function Home() {
             <FeaturedVendorsSection />
             <TrendingVendorsSection />
             <NewVendorsSection />
+            <WhyUsSection />
             <DownloadAppSection />
             <Reviews />
             <CTASection />

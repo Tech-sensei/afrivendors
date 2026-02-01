@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, ArrowRight, Bell, Menu } from "lucide-react";
+import { Search, ArrowRight, Bell,TextAlignJustify } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { UserMenu } from "./UserMenu";
@@ -13,8 +13,8 @@ import { LogoutConfirmModal } from "@/components/dashboard/LogoutConfirmModal";
 
 const Header = () => {
   // Hardcoded user status - replace with actual auth state later
-  const isLoggedIn = true; // Change to false to see logged-out state
-  // const isLoggedIn = false; // Change to false to see logged-out state
+  // const isLoggedIn = true; // Change to false to see logged-out state
+  const isLoggedIn = false; // Change to false to see logged-out state
 
   const router = useRouter();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -67,7 +67,7 @@ const Header = () => {
                   className="lg:hidden text-secondary-000 hover:text-accent-80 transition-colors"
                   aria-label="Open menu"
                 >
-                  <Menu className="size-6" />
+                  <TextAlignJustify className="size-6" />
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[85%] sm:w-[400px] rounded-r-3xl border-l-0 p-0">
@@ -137,7 +137,7 @@ const Header = () => {
               className="lg:hidden p-2 text-secondary-000 hover:text-accent-80 transition-colors"
               aria-label="Open menu"
             >
-              <Menu className="size-6" />
+              <TextAlignJustify className="size-6" />
             </button>
           )}
 
