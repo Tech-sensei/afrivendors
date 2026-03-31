@@ -10,9 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import {
     ProfileAddressDrawer,
     MAX_PROFILE_ADDRESSES,
-    type AddressLabel,
-    type ProfileAddress,
-    type ProfileAddressFormValues,
 } from "@/components/profile/ProfileAddressDrawer";
 import {
     Select,
@@ -37,6 +34,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import type {
+    AddressLabel,
+    ProfileAddress,
+    ProfileAddressFormValues,
+} from "@/types/profile";
 
 const initialPersonal = {
     firstName: "Amara",

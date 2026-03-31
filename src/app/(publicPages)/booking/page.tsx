@@ -98,6 +98,11 @@ function BookingPageContent() {
             return;
         }
 
+        if (!vendor) {
+            toast.error('Vendor details are unavailable. Please try again.');
+            return;
+        }
+
         setIsSubmitting(true);
 
         // Simulate API call
@@ -222,7 +227,12 @@ function BookingPageContent() {
                     <div className="grid lg:grid-cols-[1fr_384px] gap-6">
                         <div className="space-y-6">
                             <SelectedServicesCard
-                                vendor={vendor}
+                                vendor={{
+                                    id: vendor.id,
+                                    name: vendor.name,
+                                    location: vendor.location,
+                                    image: vendor.bannerImage,
+                                }}
                                 selectedServices={selectedServices}
                                 onRemoveService={handleRemoveService}
                                 onAddService={() => router.push(`/categories/${vendorId}`)}

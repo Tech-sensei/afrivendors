@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import VendorCard from "@/components/views/VendorCard";
 import { getFavoriteVendors } from "@/services/favorites";
 import { useFavoritesAPI } from "@/services/useFavoritesAPI";
+import type { FavoriteVendorCard } from "@/types/favorites";
 
 export default function FavouritesPage() {
     const router = useRouter();
     const { removeFromFavorites, isRemovingFavorite } = useFavoritesAPI();
-    const { data: favourites = [], isLoading, isError } = useQuery({
+    const { data: favourites = [], isLoading, isError } = useQuery<FavoriteVendorCard[]>({
         queryKey: ["favorite-vendors"],
         queryFn: getFavoriteVendors,
     });

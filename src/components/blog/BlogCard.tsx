@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Calendar, Clock } from "lucide-react";
-import type { BlogPost } from "@/data/blogData";
+import type { BlogPost } from "@/types/blog";
 
 export function BlogCard({ post }: { post: BlogPost }) {
     const imageSrc = post.image ?? "/assets/images/homeHeroImg1.png";

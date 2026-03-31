@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send } from 'lucide-react';
-import { chatConversations, ChatConversation, ChatMessage } from '@/data/chatData';
+import { chatConversations } from '@/data/chatData';
 import { Drawer, DrawerSection } from '../Drawer';
 import { MessageConversation } from '@/components/messages/MessageConversation';
 import { ConversationItem } from '@/components/messages/ConversationItem';
@@ -10,6 +10,7 @@ import { SearchBar } from '@/components/messages/SearchBar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import type { ChatConversation, ChatMessage } from '@/types/messages';
 
 export default function MessagesPage() {
     const [selectedChat, setSelectedChat] = useState<ChatConversation | null>(null);

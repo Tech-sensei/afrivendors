@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { appointments, Appointment } from "@/data/appointments";
+import { appointments } from "@/data/appointments";
 import { AppointmentCard } from "@/components/appointments/AppointmentCard";
 import { AppointmentDetailsDrawer } from "@/components/appointments/AppointmentDetailsDrawer";
 import { RescheduleModal } from "@/components/appointments/RescheduleModal";
 import { MessageVendorDrawer } from "@/components/appointments/MessageVendorDrawer";
+import type { Appointment } from "@/types/appointments";
 
 export default function AppointmentPage() {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
