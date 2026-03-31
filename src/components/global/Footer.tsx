@@ -42,8 +42,8 @@ const Footer = () => {
                 src="/assets/images/footerLogo.svg"
                 alt="Afrivendors Logo"
                 width={102}
-                height={50}
-                className="w-20 sm:w-[90px] md:w-[102px] h-auto"
+                height={102}
+                className="w-auto h-auto"
               />
             </Link>
 

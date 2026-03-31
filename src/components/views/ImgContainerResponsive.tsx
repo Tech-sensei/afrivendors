@@ -14,6 +14,8 @@ export default function ImgContainerResponsive() {
             width={500}
             height={500}
             className="w-full h-full object-cover brightness-[0.95] transition-all duration-500 ease-out group-hover:brightness-110 group-hover:scale-110"
+             preload={true}
+            loading="eager"
           />
         </div>
 
@@ -25,6 +27,8 @@ export default function ImgContainerResponsive() {
             width={500}
             height={500}
             className="w-full h-full object-cover brightness-[0.95] transition-all duration-500 ease-out group-hover:brightness-110 group-hover:scale-110"
+             preload={true}
+            loading="eager"
           />
         </div>
 
@@ -36,6 +40,8 @@ export default function ImgContainerResponsive() {
             width={500}
             height={500}
             className="w-full h-full object-cover brightness-[0.95] transition-all duration-500 ease-out group-hover:brightness-110 group-hover:scale-110"
+             preload={true}
+            loading="eager"
           />
         </div>
 
@@ -47,6 +53,8 @@ export default function ImgContainerResponsive() {
             width={500}
             height={500}
             className="w-full h-full object-cover brightness-[0.95] transition-all duration-500 ease-out group-hover:brightness-110 group-hover:scale-110"
+             preload={true}
+            loading="eager"
           />
         </div>
       </div>
@@ -62,6 +70,8 @@ export default function ImgContainerResponsive() {
               width={500}
               height={500}
               className="w-full h-full object-cover brightness-[0.95] transition-all duration-300 ease-out group-hover:brightness-110"
+               preload={true}
+              loading="eager"
             />
           </div>
 
@@ -72,6 +82,8 @@ export default function ImgContainerResponsive() {
               width={500}
               height={500}
               className="w-full h-full object-cover brightness-[0.95] transition-all duration-300 ease-out group-hover:brightness-110"
+               preload={true}
+              loading="eager"
             />
           </div>
         </div>
@@ -85,6 +97,8 @@ export default function ImgContainerResponsive() {
               width={500}
               height={500}
               className="w-full h-full object-cover brightness-[0.95] transition-all duration-300 ease-out group-hover:brightness-110"
+               preload={true}
+              loading="eager"
             />
           </div>
 
@@ -95,6 +109,8 @@ export default function ImgContainerResponsive() {
               width={500}
               height={500}
               className="w-full h-full object-cover brightness-[0.95] transition-all duration-300 ease-out group-hover:brightness-110"
+               preload={true}
+              loading="eager"
             />
           </div>
         </div>

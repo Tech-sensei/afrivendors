@@ -6,23 +6,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { toast } from 'sonner';
-
-interface Transaction {
-    id: number;
-    date: string;
-    type: 'debit' | 'credit' | 'refund';
-    vendor: string;
-    service: string;
-    amount: number;
-    status: 'completed' | 'pending' | 'refunded';
-    reference: string;
-}
-
-interface TransactionDetailProps {
-    transaction: Transaction | null;
-    isOpen: boolean;
-    onClose: () => void;
-}
+import type { TransactionDetailProps } from '@/types/wallet';
 
 export function TransactionDetail({ transaction, isOpen, onClose }: TransactionDetailProps) {
     const [isMobile, setIsMobile] = useState(false);

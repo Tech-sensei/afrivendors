@@ -1,11 +1,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-
-interface StatusBadgeProps {
-    status: 'completed' | 'pending' | 'refunded';
-    size?: 'sm' | 'md';
-}
+import type { StatusBadgeProps } from '@/types/misc';
 
 export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
     const statusConfig = {

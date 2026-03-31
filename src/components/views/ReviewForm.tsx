@@ -3,18 +3,7 @@ import { Star, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
-
-interface ReviewFormProps {
-  vendorId: number;
-  existingReview?: {
-    id: string;
-    rating: number;
-    comment: string;
-    author: string;
-  };
-  onSave: (review: { rating: number; comment: string; author: string }) => void;
-  onCancel?: () => void;
-}
+import type { ReviewFormProps } from '@/types/reviews';
 
 export function ReviewForm({ vendorId, existingReview, onSave, onCancel }: ReviewFormProps) {
   const [rating, setRating] = useState(existingReview?.rating || 0);

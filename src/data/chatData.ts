@@ -1,21 +1,4 @@
-export interface ChatMessage {
-  id: string;
-  senderId: string;
-  senderType: "customer" | "vendor";
-  message: string;
-  timestamp: Date;
-  read: boolean;
-}
-
-export interface ChatConversation {
-  id: string;
-  vendorName: string;
-  vendorCategory: string;
-  lastMessage: string;
-  lastMessageTime: Date;
-  unreadCount: number;
-  messages: ChatMessage[];
-}
+import type { ChatConversation } from "@/types/messages";
 
 export const chatConversations: ChatConversation[] = [
   {

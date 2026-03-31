@@ -2,23 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-
-interface Service {
-    id: string;
-    name: string;
-    price: number;
-}
-
-interface BookingSummaryProps {
-    selectedServices: Service[];
-    date: Date | undefined;
-    selectedTime: string;
-    paymentMethod: 'venue' | 'online' | 'wallet';
-    totalPrice: number;
-    isSubmitting: boolean;
-    isFormValid: boolean;
-    onSubmit: () => void;
-}
+import { formatVendorPrice } from '@/services/vendor';
+import type { BookingSummaryProps } from '@/types/booking';
 
 export function BookingSummary({
     selectedServices,
@@ -51,7 +36,7 @@ export function BookingSummary({
                                         {service.name}
                                     </p>
                                     <p className="text-sm font-semibold text-secondary-000">
-                                        ${service.price.toFixed(2)}
+                                        {formatVendorPrice(service.price)}
                                     </p>
                                 </div>
                             ))}
@@ -103,7 +88,7 @@ export function BookingSummary({
                                 Total
                             </span>
                             <span className="font-unbounded text-2xl leading-7 font-semibold text-secondary-000">
-                                ${totalPrice.toFixed(2)}
+                                {formatVendorPrice(totalPrice)}
                             </span>
                         </div>
 

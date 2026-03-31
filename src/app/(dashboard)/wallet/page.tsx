@@ -10,8 +10,9 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { TransactionDetail } from "@/components/wallet/TransactionDetail";
 import { FundWalletDrawer } from "@/components/wallet/FundWalletDrawer";
 import { toast } from "sonner";
+import type { SavedCard, Transaction, WalletCardInput } from "@/types/wallet";
 
-const transactions = [
+const transactions: Transaction[] = [
   {
     id: 1,
     date: "Nov 8, 2025",
@@ -64,19 +65,10 @@ const transactions = [
   },
 ];
 
-interface SavedCard {
-  id: string;
-  lastFour: string;
-  brand: string;
-  expiryMonth: string;
-  expiryYear: string;
-  isDefault: boolean;
-}
-
 export default function WalletPage() {
   const [fundWalletOpen, setFundWalletOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<(typeof transactions)[0] | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
 
   // Saved cards
@@ -91,13 +83,7 @@ export default function WalletPage() {
   const handleFundWallet = (
     amount: string,
     paymentMethod: string,
-    cardData?: {
-      cardNumber: string;
-      cardName: string;
-      cardExpiry: string;
-      cardCvv: string;
-      saveAsDefault: boolean;
-    }
+    cardData?: WalletCardInput
   ) => {
     toast.success(`£${amount} added to your wallet!`);
     setFundWalletOpen(false);
@@ -121,7 +107,7 @@ export default function WalletPage() {
     toast.success("Card removed successfully");
   };
 
-  const handleViewDetails = (transaction: (typeof transactions)[0]) => {
+  const handleViewDetails = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setDetailsOpen(true);
   };

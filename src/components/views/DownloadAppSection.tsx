@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import QRcode from "../../../public/assets/images/qr-code.svg";
+import type { MobilePhoneProps } from "@/types/misc";
 
 // Simple icon components - can be replaced with actual SVG paths later
 function AppleAppStoreIcon() {
@@ -35,11 +36,6 @@ function GooglePlayIcon() {
             </svg>
         </div>
     );
-}
-
-interface MobilePhoneProps {
-    rotation?: number;
-    zIndex?: number;
 }
 
 function MobilePhone({ rotation = 0, zIndex = 1 }: MobilePhoneProps) {

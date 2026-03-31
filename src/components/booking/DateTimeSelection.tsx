@@ -4,6 +4,7 @@ import { Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import type { DateTimeSelectionProps } from '@/types/booking';
 
 const timeSlots = [
     '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
@@ -11,13 +12,6 @@ const timeSlots = [
     '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM', '5:00 PM', '5:30 PM',
     '6:00 PM', '6:30 PM', '7:00 PM'
 ];
-
-interface DateTimeSelectionProps {
-    date: Date | undefined;
-    selectedTime: string;
-    onDateChange: (date: Date | undefined) => void;
-    onTimeChange: (time: string) => void;
-}
 
 export function DateTimeSelection({
     date,

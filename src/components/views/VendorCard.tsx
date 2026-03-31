@@ -6,16 +6,14 @@ import Image from "next/image";
 import { Badge } from "../ui/badge";
 import { Star, MapPin, Heart } from "lucide-react";
 import { Button } from "../ui/button";
-
-interface VendorCardProps {
-  vendor: any;
-  index: number;
-  onClick?: () => void;
-  isFavourite?: boolean;
-  onFavouriteToggle?: (vendorId: string, isFavourite: boolean) => void;
-}
+import { formatVendorPriceRange } from "@/services/vendor";
+import type { VendorCardProps } from "@/types/vendor";
 
 const VendorCard = ({ vendor, index, onClick, isFavourite = false, onFavouriteToggle }: VendorCardProps) => {
+  const vendorName = vendor.businessName || vendor.name;
+  const vendorDescription = vendor.description || "Trusted vendor ready to take your booking.";
+  const rating = Number(vendor.rating) || 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -30,7 +28,7 @@ const VendorCard = ({ vendor, index, onClick, isFavourite = false, onFavouriteTo
         <div className="relative h-56 overflow-hidden">
           <Image
             src={vendor.image}
-            alt={vendor.name}
+            alt={vendorName}
             width={500}
             height={500}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
@@ -61,15 +59,15 @@ const VendorCard = ({ vendor, index, onClick, isFavourite = false, onFavouriteTo
         {/* Content Section */}
         <CardContent className="p-5">
           <div className="mb-3">
-            <h4 className="mb-2 font-unbounded text-base font-semibold text-secondary-000 leading-[1.3]">{vendor.name}</h4>
-            <p className="line-clamp-2 text-sm font-normal text-accent-80 leading-[150%]">{vendor.description}</p>
+            <h4 className="mb-2 font-unbounded text-base font-semibold text-secondary-000 leading-[1.3]">{vendorName}</h4>
+            <p className="line-clamp-2 text-sm font-normal text-accent-80 leading-[150%]">{vendorDescription}</p>
           </div>
 
           {/* Rating & Reviews */}
           <div className="flex items-center gap-2 mb-3">
             <div className="flex items-center gap-1">
               <Star className="h-4 w-4 text-primary-100 fill-primary-100" />
-              <span className="text-sm font-semibold text-secondary-000">{vendor.rating.toFixed(1)}</span>
+              <span className="text-sm font-semibold text-secondary-000">{rating.toFixed(1)}</span>
             </div>
             <span className="text-xs text-secondary-100">({vendor.reviewCount} reviews)</span>
           </div>
@@ -82,12 +80,14 @@ const VendorCard = ({ vendor, index, onClick, isFavourite = false, onFavouriteTo
 
           {/* Price & Button */}
           <div className="flex items-center justify-between pt-3 border-t border-[#EFE6E1]">
-            <span className="text-base text-primary-100 font-semibold font-unbounded">£{vendor.minPrice} - £{vendor.maxPrice}</span>
+            <span className="text-base text-primary-100 font-semibold font-unbounded">
+              {formatVendorPriceRange(Number(vendor.minPrice) || 0, Number(vendor.maxPrice) || 0)}
+            </span>
             <Button
               size="sm"
               className="bg-secondary-000 text-white hover:bg-secondary-000/90 rounded-[18px] h-9 px-5 text-sm font-semibold transition-all duration-300"
             >
-              Book Now
+              View Services
             </Button>
           </div>
         </CardContent>

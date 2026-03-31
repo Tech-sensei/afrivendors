@@ -9,20 +9,12 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Appointment } from "@/data/appointments";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { Calendar, Clock, MapPin, Star, MessageCircle, PenLine, ExternalLink, X, RotateCcw } from "lucide-react";
 import { format, parseISO } from "date-fns";
-
-interface AppointmentDetailsDrawerProps {
-  appointment: Appointment | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onReschedule: (appointment: Appointment) => void;
-  onMessageVendor?: (appointment: Appointment) => void;
-}
+import type { AppointmentDetailsDrawerProps } from "@/types/appointments";
 
 export function AppointmentDetailsDrawer({
   appointment,

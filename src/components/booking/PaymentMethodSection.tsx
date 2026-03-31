@@ -8,25 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
+import type { PaymentMethodSectionProps } from '@/types/booking';
 
 const WALLET_BALANCE = 430.00;
-
-interface CardFormData {
-    cardNumber: string;
-    cardExpiry: string;
-    cardCvc: string;
-    cardName: string;
-}
-
-interface PaymentMethodSectionProps {
-    paymentMethod: 'venue' | 'online' | 'wallet';
-    totalPrice: number;
-    cardFormData: CardFormData;
-    hasInsufficientFunds: boolean;
-    onPaymentMethodChange: (method: 'venue' | 'online' | 'wallet') => void;
-    onCardFormDataChange: (data: Partial<CardFormData>) => void;
-    onFundWallet: () => void;
-}
 
 export function PaymentMethodSection({
     paymentMethod,

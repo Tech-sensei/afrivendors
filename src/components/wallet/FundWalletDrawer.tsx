@@ -10,29 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'sonner';
-
-interface SavedCard {
-    id: string;
-    lastFour: string;
-    brand: string;
-    expiryMonth: string;
-    expiryYear: string;
-    isDefault: boolean;
-}
-
-interface FundWalletDrawerProps {
-    isOpen: boolean;
-    onClose: () => void;
-    savedCards: SavedCard[];
-    onDeleteCard: (cardId: string) => void;
-    onFundWallet: (amount: string, paymentMethod: string, cardData?: {
-        cardNumber: string;
-        cardName: string;
-        cardExpiry: string;
-        cardCvv: string;
-        saveAsDefault: boolean;
-    }) => void;
-}
+import type { SavedCard, WalletFundDrawerProps as FundWalletDrawerProps } from '@/types/wallet';
 
 export function FundWalletDrawer({
     isOpen,

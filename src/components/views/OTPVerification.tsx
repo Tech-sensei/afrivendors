@@ -3,14 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { X, Smartphone, CheckCircle2, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
-
-interface OTPVerificationProps {
-  open: boolean;
-  onClose: () => void;
-  onVerify: () => void;
-  phoneNumber: string;
-  phoneCode: string;
-}
+import type { OTPVerificationProps } from "@/types/misc";
 
 export function OTPVerification({ open, onClose, onVerify, phoneNumber, phoneCode }: OTPVerificationProps) {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);

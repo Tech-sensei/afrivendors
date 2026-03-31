@@ -1,12 +1,4 @@
-interface Review {
-  id: string;
-  vendorId: number;
-  author: string;
-  rating: number;
-  comment: string;
-  date: string;
-  avatar: string;
-}
+import type { StoredReview as Review } from "@/types/reviews";
 
 const STORAGE_KEY = 'afrivendor_reviews';
 

@@ -1,14 +1,9 @@
 "use client";
 
-import { ChatConversation, formatTimeAgo } from "@/data/chatData";
+import { formatTimeAgo } from "@/data/chatData";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-
-interface ConversationItemProps {
-    conversation: ChatConversation;
-    isLast: boolean;
-    onClick: () => void;
-}
+import type { ConversationItemProps } from "@/types/messages";
 
 export function ConversationItem({
     conversation,

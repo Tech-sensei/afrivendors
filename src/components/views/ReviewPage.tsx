@@ -2,20 +2,7 @@ import { CheckCircle2, Calendar, Clock, MapPin, Mail, Phone, Download, CreditCar
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Separator } from '../ui/separator';
-
-interface ReviewPageProps {
-  onNavigate: (page: string, data?: any) => void;
-  vendor: any;
-  service?: any; // Keep for backwards compatibility
-  services?: any[]; // New prop for multiple services
-  date: Date;
-  time: string;
-  name: string;
-  email: string;
-  phone: string;
-  notes?: string;
-  paymentMethod?: 'venue' | 'online';
-}
+import type { ReviewPageProps } from '@/types/misc';
 
 export function ReviewPage({ onNavigate, vendor, service, services: servicesProp, date, time, name, email, phone, notes, paymentMethod = 'venue' }: ReviewPageProps) {
   const bookingServices = servicesProp || (service ? [service] : []);

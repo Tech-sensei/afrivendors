@@ -4,18 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-
-interface FormData {
-    name: string;
-    email: string;
-    phone: string;
-    notes: string;
-}
-
-interface ContactInformationFormProps {
-    formData: FormData;
-    onFormDataChange: (data: Partial<FormData>) => void;
-}
+import type { ContactInformationFormProps } from '@/types/booking';
 
 export function ContactInformationForm({
     formData,

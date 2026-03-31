@@ -3,11 +3,7 @@
 import { Calendar as CalendarIcon, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
-
-interface EmptyStateProps {
-    vendorId: string | null;
-    onBack: () => void;
-}
+import type { EmptyStateProps } from '@/types/booking';
 
 export function EmptyState({ vendorId, onBack }: EmptyStateProps) {
     return (

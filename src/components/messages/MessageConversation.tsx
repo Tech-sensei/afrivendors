@@ -2,11 +2,8 @@
 
 import { useRef, useEffect } from "react";
 import { CheckCheck } from "lucide-react";
-import { ChatMessage, formatMessageTime } from "@/data/chatData";
-
-interface MessageConversationProps {
-    messages: ChatMessage[];
-}
+import { formatMessageTime } from "@/data/chatData";
+import type { MessageConversationProps } from "@/types/messages";
 
 export function MessageConversation({ messages }: MessageConversationProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);

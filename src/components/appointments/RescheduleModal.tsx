@@ -7,7 +7,6 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Appointment } from "@/data/appointments";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
@@ -15,12 +14,7 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
-
-interface RescheduleModalProps {
-  appointment: Appointment | null;
-  isOpen: boolean;
-  onClose: () => void;
-}
+import type { RescheduleModalProps } from "@/types/appointments";
 
 const timeSlots = [
   '9:00 AM', '10:00 AM', '11:00 AM',

@@ -7,46 +7,43 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Lock, Shield, Mail, Phone, CheckCircle2, XCircle } from 'lucide-react';
+import { Lock, Shield, Mail, Phone, CheckCircle2, XCircle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuthAPI } from '@/services/useAuthAPI';
+import { changePasswordSchema } from '@/lib/validations/authValidationSchema';
 
 export function SecuritySettings() {
+    const { changePasswordAsync, isChangingPassword } = useAuthAPI();
+
     const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
     const [emailVerified, setEmailVerified] = useState(true);
     const [phoneVerified, setPhoneVerified] = useState(false);
     const [showChangePassword, setShowChangePassword] = useState(false);
 
-    // Password change state
-    const [passwordData, setPasswordData] = useState({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-    });
+    const emptyPasswordData = { oldPassword: '', newPassword: '', confirmNewPassword: '' };
+    const [passwordData, setPasswordData] = useState(emptyPasswordData);
+    const [passwordErrors, setPasswordErrors] = useState(emptyPasswordData);
+    const [showFields, setShowFields] = useState({ oldPassword: false, newPassword: false, confirmNewPassword: false });
 
-    const handlePasswordChange = () => {
-        if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-            toast.error('Please fill in all password fields');
+    const handlePasswordChange = async () => {
+        const result = changePasswordSchema.safeParse(passwordData);
+        if (!result.success) {
+            const fieldErrors = result.error.flatten().fieldErrors;
+            setPasswordErrors({
+                oldPassword: fieldErrors.oldPassword?.[0] ?? '',
+                newPassword: fieldErrors.newPassword?.[0] ?? '',
+                confirmNewPassword: fieldErrors.confirmNewPassword?.[0] ?? '',
+            });
             return;
         }
-
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            toast.error('New passwords do not match');
-            return;
+        setPasswordErrors(emptyPasswordData);
+        try {
+            await changePasswordAsync(passwordData);
+            setPasswordData(emptyPasswordData);
+            setShowChangePassword(false);
+        } catch {
+            // error toast handled inside useAuthAPI
         }
-
-        if (passwordData.newPassword.length < 8) {
-            toast.error('Password must be at least 8 characters');
-            return;
-        }
-
-        // TODO: Implement actual password change
-        toast.success('Password changed successfully');
-        setPasswordData({
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: '',
-        });
-        setShowChangePassword(false);
     };
 
     const handleVerifyEmail = () => {
@@ -96,11 +93,8 @@ export function SecuritySettings() {
                                 variant="outline"
                                 onClick={() => {
                                     setShowChangePassword(false);
-                                    setPasswordData({
-                                        currentPassword: '',
-                                        newPassword: '',
-                                        confirmPassword: '',
-                                    });
+                                    setPasswordData(emptyPasswordData);
+                                    setPasswordErrors(emptyPasswordData);
                                 }}
                                 className="h-9 rounded-xl border-accent-20 text-sm font-semibold"
                             >
@@ -112,49 +106,80 @@ export function SecuritySettings() {
                     {showChangePassword && (
                         <div className="pl-13 space-y-4 pt-2 border-t border-accent-20">
                             <div>
-                                <Label htmlFor="currentPassword" className="block mb-2 text-sm font-semibold text-secondary-000">
+                                <Label htmlFor="oldPassword" className="block mb-2 text-sm font-semibold text-secondary-000">
                                     Current Password
                                 </Label>
-                                <Input
-                                    id="currentPassword"
-                                    type="password"
-                                    value={passwordData.currentPassword}
-                                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                    className="h-12 rounded-xl border-accent-20 text-sm"
-                                    placeholder="Enter current password"
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id="oldPassword"
+                                        type={showFields.oldPassword ? 'text' : 'password'}
+                                        value={passwordData.oldPassword}
+                                        onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
+                                        className="h-12 rounded-xl border-accent-20 text-sm pr-10"
+                                        placeholder="Enter current password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowFields({ ...showFields, oldPassword: !showFields.oldPassword })}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-accent-60 hover:text-secondary-000 transition-colors"
+                                    >
+                                        {showFields.oldPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+                                {passwordErrors.oldPassword && <p className="mt-1 text-xs text-red-600">{passwordErrors.oldPassword}</p>}
                             </div>
                             <div>
                                 <Label htmlFor="newPassword" className="block mb-2 text-sm font-semibold text-secondary-000">
                                     New Password
                                 </Label>
-                                <Input
-                                    id="newPassword"
-                                    type="password"
-                                    value={passwordData.newPassword}
-                                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                    className="h-12 rounded-xl border-accent-20 text-sm"
-                                    placeholder="Enter new password"
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id="newPassword"
+                                        type={showFields.newPassword ? 'text' : 'password'}
+                                        value={passwordData.newPassword}
+                                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                        className="h-12 rounded-xl border-accent-20 text-sm pr-10"
+                                        placeholder="Enter new password (min. 8 characters)"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowFields({ ...showFields, newPassword: !showFields.newPassword })}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-accent-60 hover:text-secondary-000 transition-colors"
+                                    >
+                                        {showFields.newPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+                                {passwordErrors.newPassword && <p className="mt-1 text-xs text-red-600">{passwordErrors.newPassword}</p>}
                             </div>
                             <div>
-                                <Label htmlFor="confirmPassword" className="block mb-2 text-sm font-semibold text-secondary-000">
+                                <Label htmlFor="confirmNewPassword" className="block mb-2 text-sm font-semibold text-secondary-000">
                                     Confirm New Password
                                 </Label>
-                                <Input
-                                    id="confirmPassword"
-                                    type="password"
-                                    value={passwordData.confirmPassword}
-                                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                    className="h-12 rounded-xl border-accent-20 text-sm"
-                                    placeholder="Confirm new password"
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id="confirmNewPassword"
+                                        type={showFields.confirmNewPassword ? 'text' : 'password'}
+                                        value={passwordData.confirmNewPassword}
+                                        onChange={(e) => setPasswordData({ ...passwordData, confirmNewPassword: e.target.value })}
+                                        className="h-12 rounded-xl border-accent-20 text-sm pr-10"
+                                        placeholder="Confirm new password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowFields({ ...showFields, confirmNewPassword: !showFields.confirmNewPassword })}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-accent-60 hover:text-secondary-000 transition-colors"
+                                    >
+                                        {showFields.confirmNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+                                {passwordErrors.confirmNewPassword && <p className="mt-1 text-xs text-red-600">{passwordErrors.confirmNewPassword}</p>}
                             </div>
                             <Button
                                 onClick={handlePasswordChange}
-                                className="h-12 bg-primary-100 text-white hover:bg-primary-100/90 rounded-xl text-sm font-semibold"
+                                disabled={isChangingPassword}
+                                className="h-12 bg-primary-100 text-white hover:bg-primary-100/90 rounded-xl text-sm font-semibold disabled:opacity-70"
                             >
-                                Update Password
+                                {isChangingPassword ? 'Updating...' : 'Update Password'}
                             </Button>
                         </div>
                     )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { User, Calendar, Wallet, Heart, FileText, Settings, LogOut, HelpCircle, Download, MessageCircle } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ReactNode, useState } from 'react';
 import { LogoutConfirmModal } from '@/components/dashboard/LogoutConfirmModal';
@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/global/Header';
+import { useAuthAPI } from '@/services/useAuthAPI';
+import { useAppSelector } from '@/store/hooks';
 
 export default function DashboardLayout({
     children,
@@ -17,7 +19,14 @@ export default function DashboardLayout({
 }) {
     const pathname = usePathname();
     const router = useRouter();
+    const { logoutAsync } = useAuthAPI();
+    const { user: currentUser } = useAppSelector((state) => state.auth);
     const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+
+    const userName = currentUser ? `${currentUser.firstName ?? ''} ${currentUser.lastName ?? ''}`.trim() : '';
+    const userInitials = currentUser
+        ? `${currentUser.firstName?.[0] ?? ''}${currentUser.lastName?.[0] ?? ''}`.toUpperCase()
+        : '';
 
     const tabs = [
         { id: 'dashboard-profile', label: 'Profile', icon: User, page: '/profile' },
@@ -47,16 +56,17 @@ export default function DashboardLayout({
                         <div className="pb-4 mb-4 border-b border-secondary-600">
                             <div className="flex items-center gap-3 mb-3">
                                 <Avatar className="h-16 w-16">
+                                    <AvatarImage src={currentUser?.profilePhoto ?? undefined} alt={userName} />
                                     <AvatarFallback className="bg-primary-100 text-white text-xl font-semibold">
-                                        AO
+                                        {userInitials}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div>
                                     <h3 className="text-base font-semibold text-secondary-000 mb-1">
-                                        Amara Okonkwo
+                                        {userName}
                                     </h3>
-                                    <p className="text-xs text-secondary-100 opacity-70">
-                                        amara@example.com
+                                    <p className="text-sm text-secondary-200">
+                                        {currentUser?.email}
                                     </p>
                                 </div>
                             </div>
@@ -161,7 +171,8 @@ export default function DashboardLayout({
             <LogoutConfirmModal
                 open={logoutModalOpen}
                 onOpenChange={setLogoutModalOpen}
-                onConfirm={() => {
+                onConfirm={async () => {
+                    await logoutAsync();
                     setLogoutModalOpen(false);
                     router.push('/');
                 }}

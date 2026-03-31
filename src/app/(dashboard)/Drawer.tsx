@@ -11,17 +11,7 @@ import {
     SheetFooter,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-
-interface DrawerProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    title?: string;
-    description?: string;
-    size?: "sm" | "md" | "lg";
-    type?: "default" | "message";
-    footer?: React.ReactNode;
-    children: React.ReactNode;
-}
+import type { DrawerProps } from "@/types/ui";
 
 export function Drawer({
     open,

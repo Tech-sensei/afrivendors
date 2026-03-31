@@ -10,14 +10,17 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 import { UserMenu } from "./UserMenu";
 import { NotificationPanel } from "./NotificationPanel";
 import { LogoutConfirmModal } from "@/components/dashboard/LogoutConfirmModal";
+import { useAuthAPI } from "@/services/useAuthAPI";
+import { useAppSelector } from "@/store/hooks";
 
 const Header = () => {
-  // Hardcoded user status - replace with actual auth state later
-  // const isLoggedIn = true; // Change to false to see logged-out state
-  const isLoggedIn = false; // Change to false to see logged-out state
-
   const router = useRouter();
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const { logoutAsync } = useAuthAPI();
+  const { user: currentUser, isAuthenticated } = useAppSelector((state) => state.auth);
+  const [isNotificationOpen, setNotificationOpen] = useState(false);
+
+  const isLoggedIn = isAuthenticated;
+
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -48,10 +51,11 @@ const Header = () => {
     { label: "Contact Us", href: "/contact-us" },
   ];
 
-  // User data - replace with actual user data later
-  const userInitials = "AO";
-  const userName = "Amara Okonkwo";
-  const userEmail = "amara@example.com";
+  const userName = currentUser ? `${currentUser.firstName ?? ''} ${currentUser.lastName ?? ''}`.trim() : '';
+  const userEmail = currentUser?.email ?? '';
+  const userInitials = currentUser
+    ? `${currentUser.firstName?.[0] ?? ''}${currentUser.lastName?.[0] ?? ''}`.toUpperCase()
+    : '';
   const notificationCount = 2;
 
   return (
@@ -191,12 +195,18 @@ const Header = () => {
               </Link>
             </Button>
 
-            {isLoggedIn ? (
+            {!isMounted ? (
+              /* Skeleton — prevents SSR hydration flash */
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-full bg-accent-20 animate-pulse" />
+                <div className="h-9 w-9 rounded-full bg-accent-20 animate-pulse" />
+              </div>
+            ) : isLoggedIn ? (
               <>
                 {/* Notification Icon with Badge */}
                 <button
                   type="button"
-                  onClick={() => setIsNotificationOpen(true)}
+                  onClick={() => setNotificationOpen(true)}
                   className="relative p-2 text-secondary-000 hover:text-accent-80 transition-colors cursor-pointer"
                   aria-label="Notifications"
                 >
@@ -213,7 +223,8 @@ const Header = () => {
                   userInitials={userInitials}
                   userName={userName}
                   userEmail={userEmail}
-                  onNavigate={(page) => {
+                  profilePhoto={currentUser?.profilePhoto}
+                  onNavigate={() => {
                     // Navigation is handled inside UserMenu component
                   }}
                   onLogout={() => {
@@ -223,7 +234,7 @@ const Header = () => {
               </>
             ) : (
               /* Log In/Sign Up Button - Desktop */
-              <Button className="hidden md:flex bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full" asChild>
+              <Button size="lg" className="hidden md:flex bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full" asChild>
                 <Link
                   href="/sign-up-choice"
                   className="flex items-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]"
@@ -240,7 +251,7 @@ const Header = () => {
       {/* Notification Panel */}
       <NotificationPanel
         isOpen={isNotificationOpen}
-        onClose={() => setIsNotificationOpen(false)}
+        onClose={() => setNotificationOpen(false)}
         onNavigate={(page) => {
           const route = mapNotificationUrl(page);
           router.push(route);
@@ -251,7 +262,8 @@ const Header = () => {
       <LogoutConfirmModal
         open={isLogoutModalOpen}
         onOpenChange={setIsLogoutModalOpen}
-        onConfirm={() => {
+        onConfirm={async () => {
+          await logoutAsync();
           setIsLogoutModalOpen(false);
           router.push('/');
         }}

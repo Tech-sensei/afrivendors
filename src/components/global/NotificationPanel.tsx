@@ -6,22 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-
-export interface Notification {
-  id: string;
-  type: "booking" | "message" | "favorite" | "update";
-  title: string;
-  message: string;
-  timestamp: Date;
-  isRead: boolean;
-  actionUrl?: string;
-}
-
-interface NotificationPanelProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onNavigate?: (page: string) => void;
-}
+import type { Notification, NotificationPanelProps } from "@/types/notifications";
 
 const mockNotifications: Notification[] = [
   {

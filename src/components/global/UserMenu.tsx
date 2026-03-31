@@ -9,18 +9,10 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useRouter, usePathname } from "next/navigation";
-
-interface UserMenuProps {
-    onNavigate?: (page: string) => void;
-    currentPage?: string;
-    onLogout?: () => void;
-    userInitials?: string;
-    userName?: string;
-    userEmail?: string;
-}
+import type { UserMenuProps } from "@/types/ui";
 
 // Map page identifiers to actual routes
 const pageToRoute: Record<string, string> = {
@@ -40,6 +32,7 @@ export function UserMenu({
     userInitials = "AO",
     userName = "Amara Okonkwo",
     userEmail = "amara@example.com",
+    profilePhoto,
 }: UserMenuProps) {
     const router = useRouter();
     const pathname = usePathname();
@@ -100,6 +93,7 @@ export function UserMenu({
                     className="h-10 w-10 rounded-full p-0 hover:opacity-90 bg-transparent cursor-pointer"
                 >
                     <Avatar className="h-10 w-10">
+                        <AvatarImage src={profilePhoto ?? undefined} alt={userName} />
                         <AvatarFallback className="bg-primary-100 text-white font-semibold font-unbounded text-base transition-all duration-200">
                             {userInitials}
                         </AvatarFallback>
@@ -115,6 +109,7 @@ export function UserMenu({
                 {/* User Header */}
                 <div className="flex items-center gap-3 px-3 py-2 mb-1">
                     <Avatar className="h-12 w-12">
+                        <AvatarImage src={profilePhoto ?? undefined} alt={userName} />
                         <AvatarFallback className="bg-primary-100 text-white font-semibold font-unbounded text-base">
                             {userInitials}
                         </AvatarFallback>

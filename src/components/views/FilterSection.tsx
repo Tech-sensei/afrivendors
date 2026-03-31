@@ -1,134 +1,128 @@
 "use client";
 
-import { Star } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-
-interface FilterSectionProps {
-    isMobile?: boolean;
-    filters: {
-        categories: string[];
-        priceRanges: string[];
-        locations: string[];
-        minRating: number | null;
-    };
-    allCategories: string[];
-    locations: string[];
-    priceRangeMap: Record<string, { min: number; max: number; label: string }>;
-    toggleFilter: (type: 'categories' | 'priceRanges' | 'locations' | 'minRating', value: string | number) => void;
-}
+import { Input } from "@/components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import type { FilterSectionProps } from "@/types/vendor";
 
 export function FilterSection({
     isMobile = false,
     filters,
-    allCategories,
-    locations,
-    priceRangeMap,
-    toggleFilter
+    categoryOptions,
+    countryOptions,
+    onFilterChange,
+    onClearFilters,
 }: FilterSectionProps) {
     return (
         <div className={`space-y-6 ${isMobile ? 'space-y-4' : ''}`}>
-            {/* Category Filter */}
             <div>
-                <h4 className="mb-4 text-lg font-semibold text-secondary-000">
-                    Category
-                </h4>
-                <div className="space-y-3">
-                    {allCategories.map((cat) => (
-                        <div key={cat} className="flex items-center space-x-2">
-                            <Checkbox
-                                id={`${isMobile ? 'mobile-' : ''}cat-${cat}`}
-                                checked={filters.categories.includes(cat)}
-                                onCheckedChange={() => toggleFilter('categories', cat)}
-                                className="data-[state=checked]:bg-primary-100 data-[state=checked]:border-primary-100"
-                            />
-                            <Label
-                                htmlFor={`${isMobile ? 'mobile-' : ''}cat-${cat}`}
-                                className="cursor-pointer text-sm text-secondary-000"
-                            >
-                                {cat}
-                            </Label>
-                        </div>
-                    ))}
+                <h4 className="mb-4 text-lg font-semibold text-secondary-000">Category</h4>
+                <Select
+                    value={filters.categoryId || "all"}
+                    onValueChange={(value) => onFilterChange("categoryId", value === "all" ? "" : value)}
+                >
+                    <SelectTrigger className="w-full">
+                        <SelectValue placeholder="All categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All categories</SelectItem>
+                        {categoryOptions.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div>
+                <h4 className="mb-4 text-lg font-semibold text-secondary-000">Country</h4>
+                <Select
+                    value={filters.country || "all"}
+                    onValueChange={(value) => onFilterChange("country", value === "all" ? "" : value)}
+                >
+                    <SelectTrigger className="w-full">
+                        <SelectValue placeholder="All countries" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All countries</SelectItem>
+                        {countryOptions.map((country) => (
+                            <SelectItem key={country} value={country}>
+                                {country}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div>
+                <h4 className="mb-4 text-lg font-semibold text-secondary-000">Published service price</h4>
+                <div className="grid grid-cols-2 gap-3">
+                    <Input
+                        inputMode="numeric"
+                        placeholder="Min price"
+                        value={filters.minServicePrice}
+                        onChange={(event) => onFilterChange("minServicePrice", event.target.value)}
+                    />
+                    <Input
+                        inputMode="numeric"
+                        placeholder="Max price"
+                        value={filters.maxServicePrice}
+                        onChange={(event) => onFilterChange("maxServicePrice", event.target.value)}
+                    />
                 </div>
             </div>
 
-            {/* Price Range Filter */}
             <div>
-                <h4 className="mb-4 text-lg font-semibold text-secondary-000">
-                    Price Range
-                </h4>
-                <div className="space-y-3">
-                    {Object.entries(priceRangeMap).map(([key, { label }]) => (
-                        <div key={key} className="flex items-center space-x-2">
-                            <Checkbox
-                                id={`${isMobile ? 'mobile-' : ''}price-${key}`}
-                                checked={filters.priceRanges.includes(key)}
-                                onCheckedChange={() => toggleFilter('priceRanges', key)}
-                                className="data-[state=checked]:bg-primary-100 data-[state=checked]:border-primary-100"
-                            />
-                            <Label
-                                htmlFor={`${isMobile ? 'mobile-' : ''}price-${key}`}
-                                className="cursor-pointer text-sm text-secondary-000"
-                            >
-                                {label}
-                            </Label>
-                        </div>
-                    ))}
+                <h4 className="mb-4 text-lg font-semibold text-secondary-000">Average rating</h4>
+                <div className="grid grid-cols-2 gap-3">
+                    <Input
+                        inputMode="decimal"
+                        placeholder="Min rating"
+                        value={filters.minAverageRating}
+                        onChange={(event) => onFilterChange("minAverageRating", event.target.value)}
+                    />
+                    <Input
+                        inputMode="decimal"
+                        placeholder="Max rating"
+                        value={filters.maxAverageRating}
+                        onChange={(event) => onFilterChange("maxAverageRating", event.target.value)}
+                    />
                 </div>
             </div>
 
-            {/* Location Filter */}
             <div>
-                <h4 className="mb-4 text-lg font-semibold text-secondary-000">
-                    Location
-                </h4>
-                <div className="space-y-3">
-                    {locations.map((loc) => (
-                        <div key={loc} className="flex items-center space-x-2">
-                            <Checkbox
-                                id={`${isMobile ? 'mobile-' : ''}loc-${loc}`}
-                                checked={filters.locations.includes(loc)}
-                                onCheckedChange={() => toggleFilter('locations', loc)}
-                                className="data-[state=checked]:bg-primary-100 data-[state=checked]:border-primary-100"
-                            />
-                            <Label
-                                htmlFor={`${isMobile ? 'mobile-' : ''}loc-${loc}`}
-                                className="cursor-pointer text-sm text-secondary-000"
-                            >
-                                {loc.split(',')[0]}
-                            </Label>
-                        </div>
-                    ))}
-                </div>
+                <h4 className="mb-4 text-lg font-semibold text-secondary-000">Rating floor</h4>
+                <Select
+                    value={filters.ratingStar || "all"}
+                    onValueChange={(value) => onFilterChange("ratingStar", value === "all" ? "" : value)}
+                >
+                    <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Any rating" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Any rating</SelectItem>
+                        <SelectItem value="5">5 stars</SelectItem>
+                        <SelectItem value="4">4 stars+</SelectItem>
+                        <SelectItem value="3">3 stars+</SelectItem>
+                        <SelectItem value="2">2 stars+</SelectItem>
+                        <SelectItem value="1">1 star+</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
-            {/* Rating Filter */}
-            <div>
-                <h4 className="mb-4 text-lg font-semibold text-secondary-000">
-                    Rating
-                </h4>
-                <div className="space-y-3">
-                    {[5.0, 4.5, 4.0].map((rating) => (
-                        <div key={rating} className="flex items-center space-x-2">
-                            <Checkbox
-                                id={`${isMobile ? 'mobile-' : ''}rating-${rating}`}
-                                checked={filters.minRating === rating}
-                                onCheckedChange={() => toggleFilter('minRating', rating)}
-                                className="data-[state=checked]:bg-primary-100 data-[state=checked]:border-primary-100"
-                            />
-                            <Label
-                                htmlFor={`${isMobile ? 'mobile-' : ''}rating-${rating}`}
-                                className="cursor-pointer flex items-center gap-1 text-sm text-secondary-000"
-                            >
-                                <Star className="h-4 w-4 text-primary-100 fill-primary-100" />
-                                {rating}+
-                            </Label>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <button
+                type="button"
+                onClick={onClearFilters}
+                className="w-full rounded-xl border border-accent-30 px-4 py-3 text-sm font-semibold text-secondary-000 transition-colors hover:bg-accent-10"
+            >
+                Clear filters
+            </button>
         </div>
     );
 }
-

@@ -25,6 +25,8 @@ export function AboutImgContainer() {
           height={500}
           alt="African artisan at work"
           className="w-full h-full object-cover brightness-[0.95] transition-all duration-500 ease-out hover:brightness-110 hover:scale-110"
+          preload={true}
+          loading="eager"
         />
       </motion.div>
     </motion.div>

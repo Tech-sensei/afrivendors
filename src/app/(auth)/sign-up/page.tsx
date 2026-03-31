@@ -1,17 +1,17 @@
 "use client"
 import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
-import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { OTPVerification } from '@/components/views/OTPVerification';
-// Note: Update this path when you have the actual image
 import imgHeroImage from "../../../../public/assets/images/signInHeroImg.png";
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { useAuthAPI } from '@/services/useAuthAPI';
+import { signUpSchema } from '@/lib/validations/authValidationSchema';
 
-const countries = [
+const phoneCodes = [
     { code: '+1', name: 'United States', flag: '🇺🇸' },
     { code: '+44', name: 'United Kingdom', flag: '🇬🇧' },
     { code: '+234', name: 'Nigeria', flag: '🇳🇬' },
@@ -22,13 +22,13 @@ const countries = [
 
 const SignUpPageContent = () => {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const email = searchParams.get('email') || '';
-    const type = searchParams.get('type') || 'customer';
+    const { signUpAsync, isSigningUp } = useAuthAPI();
 
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
+        email: '',
+        country: '',
         password: '',
         phoneCode: '+234',
         phoneNumber: ''
@@ -37,6 +37,8 @@ const SignUpPageContent = () => {
     const [focused, setFocused] = useState({
         firstName: false,
         lastName: false,
+        email: false,
+        country: false,
         password: false,
         phoneNumber: false
     });
@@ -44,6 +46,8 @@ const SignUpPageContent = () => {
     const [errors, setErrors] = useState({
         firstName: '',
         lastName: '',
+        email: '',
+        country: '',
         password: '',
         phoneNumber: ''
     });
@@ -51,74 +55,72 @@ const SignUpPageContent = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [agreedToMarketing, setAgreedToMarketing] = useState(false);
-    const [backHovered, setBackHovered] = useState(false);
-    const [buttonHovered, setButtonHovered] = useState(false);
-    const [buttonPressed, setButtonPressed] = useState(false);
-    const [showOTPModal, setShowOTPModal] = useState(false);
 
     const handleInputChange = (field: string, value: string) => {
         setFormData({ ...formData, [field]: value });
-        // Clear error when user starts typing
         if (errors[field as keyof typeof errors]) {
             setErrors({ ...errors, [field]: '' });
         }
     };
 
-    const handleFocus = (field: keyof typeof focused) => {
-        setFocused({ ...focused, [field]: true });
-    };
-
-    const handleBlur = (field: keyof typeof focused) => {
-        setFocused({ ...focused, [field]: false });
-    };
-
     const validateForm = () => {
-        const newErrors = {
-            firstName: '',
-            lastName: '',
-            password: '',
-            phoneNumber: ''
-        };
-
-        if (!formData.firstName.trim()) {
-            newErrors.firstName = 'First name is required';
+        const result = signUpSchema.safeParse(formData);
+        if (!result.success) {
+            const fieldErrors = result.error.flatten().fieldErrors;
+            setErrors({
+                firstName: fieldErrors.firstName?.[0] ?? '',
+                lastName: fieldErrors.lastName?.[0] ?? '',
+                email: fieldErrors.email?.[0] ?? '',
+                country: fieldErrors.country?.[0] ?? '',
+                password: fieldErrors.password?.[0] ?? '',
+                phoneNumber: fieldErrors.phoneNumber?.[0] ?? '',
+            });
+            return false;
         }
-
-        if (!formData.lastName.trim()) {
-            newErrors.lastName = 'Last name is required';
-        }
-
-        if (!formData.password) {
-            newErrors.password = 'Password is required';
-        } else if (formData.password.length < 8) {
-            newErrors.password = 'Password must be at least 8 characters';
-        }
-
-        if (!formData.phoneNumber.trim()) {
-            newErrors.phoneNumber = 'Phone number is required';
-        }
-
-        setErrors(newErrors);
-        return !Object.values(newErrors).some(error => error !== '');
+        setErrors({ firstName: '', lastName: '', email: '', country: '', password: '', phoneNumber: '' });
+        return true;
     };
 
-    const handleContinue = () => {
-        if (validateForm() && agreedToTerms) {
-            // Show OTP modal for phone verification
-            toast.success('Sending verification code...');
-            setTimeout(() => {
-                setShowOTPModal(true);
-            }, 500);
+    const handleContinue = async () => {
+        if (!validateForm() || !agreedToTerms) return;
+
+        try {
+            await signUpAsync({
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                country: formData.country,
+                password: formData.password,
+                phoneNumber: {
+                    code: formData.phoneCode,
+                    number: formData.phoneNumber,
+                },
+                accountType: "user",
+            });
+            router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+        } catch {
+            // error toast is handled inside useAuthAPI
         }
     };
 
-    const handleOTPVerified = () => {
-        // After OTP is verified, navigate to dashboard
-        // router.push('/dashboard-profile');
-        toast.success('Phone number verified successfully!');
-    };
+    const isDisabled =
+        !formData.firstName ||
+        !formData.lastName ||
+        !formData.email ||
+        !formData.country ||
+        !formData.password ||
+        !formData.phoneNumber ||
+        !agreedToTerms ||
+        isSigningUp;
 
-    const isDisabled = !formData.firstName || !formData.lastName || !formData.password || !formData.phoneNumber || !agreedToTerms;
+    const inputClass = (field: keyof typeof focused, errorField: keyof typeof errors) =>
+        `w-full h-14 px-4 text-base leading-6 text-secondary-000 rounded-xl outline-none transition-all duration-200 ease-out ${formData[field as keyof typeof formData] ? 'bg-secondary-600' : 'bg-white'
+        } ${errors[errorField]
+            ? 'border border-red-600'
+            : focused[field]
+                ? 'border border-primary-100'
+                : 'border border-secondary-200'
+        }`;
 
     return (
         <div className="min-h-screen bg-white">
@@ -130,34 +132,26 @@ const SignUpPageContent = () => {
                         <button
                             onClick={() => router.push('/sign-in')}
                             aria-label="Go back"
-                            className={`inline-flex items-center gap-2 mb-8 bg-none border-none cursor-pointer p-2 rounded-lg transition-colors duration-200 ease-out hover:bg-secondary-600 bg-transparent'
-                                    `}
+                            className="inline-flex items-center gap-2 mb-8 bg-transparent border-none cursor-pointer p-2 rounded-xl transition-colors duration-200 ease-out hover:bg-secondary-600"
                         >
                             <ArrowLeft className="w-6 h-6 text-secondary-000" />
                         </button>
 
                         {/* Header */}
-                        <div className="mb-12">
+                        <div className="mb-10">
                             <h2 className="font-unbounded text-[clamp(20px,3vw,24px)] leading-tight font-semibold text-secondary-000 mb-2">
                                 Create account
                             </h2>
                             <p className="text-base leading-6 text-accent-80">
-                                You're almost there! Create your new account for{' '}
-                                <span className="font-semibold text-secondary-000">
-                                    {email || 'your email'}
-                                </span>{' '}
-                                by completing these details
+                                Fill in the details below to set up your Afrivendor account.
                             </p>
                         </div>
 
                         {/* Form */}
-                        <div className="flex flex-col gap-4 mb-12">
+                        <div className="flex flex-col gap-4 mb-10">
                             {/* First Name */}
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="firstName"
-                                    className="text-base leading-6 font-normal text-secondary-000"
-                                >
+                                <label htmlFor="firstName" className="text-base leading-6 font-normal text-secondary-000">
                                     First Name *
                                 </label>
                                 <input
@@ -166,29 +160,16 @@ const SignUpPageContent = () => {
                                     placeholder="e.g John"
                                     value={formData.firstName}
                                     onChange={(e) => handleInputChange('firstName', e.target.value)}
-                                    onFocus={() => handleFocus('firstName')}
-                                    onBlur={() => handleBlur('firstName')}
-                                    className={`w-full h-14 px-4 text-base leading-6 text-secondary-000 rounded-lg outline-none transition-all duration-200 ease-out ${formData.firstName ? 'bg-secondary-600' : 'bg-white'
-                                        } ${errors.firstName
-                                            ? 'border border-red-600'
-                                            : focused.firstName
-                                                ? 'border border-primary-100'
-                                                : 'border border-secondary-200'
-                                        }`}
+                                    onFocus={() => setFocused({ ...focused, firstName: true })}
+                                    onBlur={() => setFocused({ ...focused, firstName: false })}
+                                    className={inputClass('firstName', 'firstName')}
                                 />
-                                {errors.firstName && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.firstName}
-                                    </p>
-                                )}
+                                {errors.firstName && <p className="text-sm text-red-600">{errors.firstName}</p>}
                             </div>
 
                             {/* Last Name */}
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="lastName"
-                                    className="text-base leading-6 font-normal text-secondary-000"
-                                >
+                                <label htmlFor="lastName" className="text-base leading-6 font-normal text-secondary-000">
                                     Last Name *
                                 </label>
                                 <input
@@ -197,41 +178,64 @@ const SignUpPageContent = () => {
                                     placeholder="e.g Doe"
                                     value={formData.lastName}
                                     onChange={(e) => handleInputChange('lastName', e.target.value)}
-                                    onFocus={() => handleFocus('lastName')}
-                                    onBlur={() => handleBlur('lastName')}
-                                    className={`w-full h-14 px-4 text-base leading-6 text-secondary-000 rounded-lg outline-none transition-all duration-200 ease-out ${formData.lastName ? 'bg-secondary-600' : 'bg-white '
-                                        } ${errors.lastName
-                                            ? 'border border-red-600'
-                                            : focused.lastName
-                                                ? 'border border-primary-100'
-                                                : 'border border-secondary-200'
-                                        }`}
+                                    onFocus={() => setFocused({ ...focused, lastName: true })}
+                                    onBlur={() => setFocused({ ...focused, lastName: false })}
+                                    className={inputClass('lastName', 'lastName')}
                                 />
-                                {errors.lastName && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.lastName}
-                                    </p>
-                                )}
+                                {errors.lastName && <p className="text-sm text-red-600">{errors.lastName}</p>}
+                            </div>
+
+                            {/* Email */}
+                            <div className="flex flex-col gap-2">
+                                <label htmlFor="email" className="text-base leading-6 font-normal text-secondary-000">
+                                    Email Address *
+                                </label>
+                                <input
+                                    id="email"
+                                    type="email"
+                                    placeholder="e.g example@email.com"
+                                    value={formData.email}
+                                    onChange={(e) => handleInputChange('email', e.target.value)}
+                                    onFocus={() => setFocused({ ...focused, email: true })}
+                                    onBlur={() => setFocused({ ...focused, email: false })}
+                                    className={inputClass('email', 'email')}
+                                />
+                                {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
+                            </div>
+
+                            {/* Country */}
+                            <div className="flex flex-col gap-2">
+                                <label htmlFor="country" className="text-base leading-6 font-normal text-secondary-000">
+                                    Country *
+                                </label>
+                                <input
+                                    id="country"
+                                    type="text"
+                                    placeholder="e.g Nigeria"
+                                    value={formData.country}
+                                    onChange={(e) => handleInputChange('country', e.target.value)}
+                                    onFocus={() => setFocused({ ...focused, country: true })}
+                                    onBlur={() => setFocused({ ...focused, country: false })}
+                                    className={inputClass('country', 'country')}
+                                />
+                                {errors.country && <p className="text-sm text-red-600">{errors.country}</p>}
                             </div>
 
                             {/* Password */}
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="password"
-                                    className="text-base leading-6 font-normal text-secondary-000"
-                                >
+                                <label htmlFor="password" className="text-base leading-6 font-normal text-secondary-000">
                                     Password *
                                 </label>
                                 <div className="relative">
                                     <input
                                         id="password"
                                         type={showPassword ? 'text' : 'password'}
-                                        placeholder="**************"
+                                        placeholder="Min. 8 characters"
                                         value={formData.password}
                                         onChange={(e) => handleInputChange('password', e.target.value)}
-                                        onFocus={() => handleFocus('password')}
-                                        onBlur={() => handleBlur('password')}
-                                        className={`w-full h-14 pl-4 pr-12 text-base leading-6 text-secondary-000 rounded-lg outline-none transition-all duration-200 ease-out ${formData.password ? 'bg-secondary-600' : 'bg-white'
+                                        onFocus={() => setFocused({ ...focused, password: true })}
+                                        onBlur={() => setFocused({ ...focused, password: false })}
+                                        className={`w-full h-14 pl-4 pr-12 text-base leading-6 text-secondary-000 rounded-xl outline-none transition-all duration-200 ease-out ${formData.password ? 'bg-secondary-600' : 'bg-white'
                                             } ${errors.password
                                                 ? 'border border-red-600'
                                                 : focused.password
@@ -243,65 +247,59 @@ const SignUpPageContent = () => {
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
                                         aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer p-1 flex items-center justify-center text-secondary-000"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer p-1 flex items-center justify-center text-accent-80 hover:text-secondary-000 transition-colors duration-200"
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
-                                {errors.password && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.password}
-                                    </p>
-                                )}
+                                {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
                             </div>
 
                             {/* Phone Number */}
                             <div className="flex flex-col gap-2">
                                 <label className="text-base leading-6 font-normal text-secondary-000">
-                                    Phone number
+                                    Phone Number *
                                 </label>
-                                <div className="flex gap-2.5">
+                                <div className={cn(
+                                    "flex items-center h-14 rounded-xl border transition-all duration-200 ease-out overflow-hidden",
+                                    errors.phoneNumber
+                                        ? "border-red-600"
+                                        : focused.phoneNumber
+                                            ? "border-primary-100"
+                                            : "border-secondary-200",
+                                    formData.phoneNumber ? "bg-secondary-600" : "bg-white"
+                                )}>
                                     <Select
                                         value={formData.phoneCode}
                                         onValueChange={(value) => handleInputChange('phoneCode', value)}
                                     >
                                         <SelectTrigger
-                                            className={`w-[120px] py-7 h-14 px-3 text-base leading-6 text-secondary-000 rounded-lg outline-none transition-all duration-200 ease-out bg-white border ${focused.phoneNumber
-                                                ? 'border border-primary-100'
-                                                : 'border border-secondary-200'
-                                                }`}
+                                            className="w-[100px] h-full border-none shadow-none focus:ring-0 px-3 text-base font-normal text-secondary-000 bg-transparent shrink-0"
                                         >
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {countries.map((country) => (
+                                            {phoneCodes.map((country) => (
                                                 <SelectItem key={country.code} value={country.code}>
                                                     {country.flag} {country.code}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
+
+                                    <div className="w-px h-8 bg-secondary-200 shrink-0" />
+
                                     <input
                                         type="tel"
                                         placeholder="Phone number"
                                         value={formData.phoneNumber}
                                         onChange={(e) => handleInputChange('phoneNumber', e.target.value.replace(/\D/g, ''))}
-                                        onFocus={() => handleFocus('phoneNumber')}
-                                        onBlur={() => handleBlur('phoneNumber')}
-                                        className={`flex-1 h-14 px-4 text-base leading-6 text-secondary-000 rounded-lg outline-none transition-all duration-200 ease-out ${formData.phoneNumber ? 'bg-secondary-600' : 'bg-white'
-                                            } ${errors.phoneNumber
-                                                ? 'border border-red-600'
-                                                : focused.phoneNumber
-                                                    ? 'border border-primary-100'
-                                                    : 'border border-secondary-200'
-                                            }`}
+                                        onFocus={() => setFocused({ ...focused, phoneNumber: true })}
+                                        onBlur={() => setFocused({ ...focused, phoneNumber: false })}
+                                        className="flex-1 h-full px-4 text-base leading-6 text-secondary-000 bg-transparent outline-none border-none placeholder:text-accent-80"
                                     />
                                 </div>
-                                {errors.phoneNumber && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.phoneNumber}
-                                    </p>
-                                )}
+                                {errors.phoneNumber && <p className="text-sm text-red-600">{errors.phoneNumber}</p>}
                             </div>
 
                             {/* Terms Checkbox */}
@@ -312,23 +310,14 @@ const SignUpPageContent = () => {
                                     onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
                                     className="mt-1"
                                 />
-                                <label
-                                    htmlFor="terms"
-                                    className="text-base leading-5 text-accent-100 flex-1 cursor-pointer"
-                                >
+                                <label htmlFor="terms" className="text-base leading-5 text-accent-80 flex-1 cursor-pointer">
                                     I agree to the{' '}
-                                    <a
-                                        href="/terms-of-use"
-                                        className="text-secondary-000 font-bold underline transition-opacity duration-200 ease-out hover:opacity-70"
-                                    >
+                                    <Link href="/terms-of-use" className="text-secondary-000 font-bold underline hover:opacity-70 transition-opacity duration-200">
                                         Terms & Conditions
-                                    </a>{' '}
+                                    </Link>{' '}
                                     and{' '}
-                                    <Link
-                                        href="/privacy-policy"
-                                        className="text-secondary-000 font-bold underline transition-opacity duration-200 ease-out hover:opacity-70"
-                                    >
-                                        Policies
+                                    <Link href="/privacy-policy" className="text-secondary-000 font-bold underline hover:opacity-70 transition-opacity duration-200">
+                                        Privacy Policy
                                     </Link>{' '}
                                     of <strong>Afrivendor.</strong>
                                 </label>
@@ -342,71 +331,59 @@ const SignUpPageContent = () => {
                                     onCheckedChange={(checked) => setAgreedToMarketing(checked as boolean)}
                                     className="mt-1"
                                 />
-                                <label
-                                    htmlFor="marketing"
-                                    className="text-base leading-5 text-accent-100 flex-1 cursor-pointer"
-                                >
+                                <label htmlFor="marketing" className="text-base leading-5 text-accent-80 flex-1 cursor-pointer">
                                     I agree to receive marketing notifications with offers and news
                                 </label>
                             </div>
 
-                            {/* Continue Button */}
-                            {/* <button
-                                onClick={handleContinue}
-                                onMouseEnter={() => setButtonHovered(true)}
-                                onMouseLeave={() => setButtonHovered(false)}
-                                onMouseDown={() => setButtonPressed(true)}
-                                onMouseUp={() => setButtonPressed(false)}
-                                disabled={isDisabled}
-                                className={`w-full h-14 flex items-center justify-center gap-2 border-none rounded-full cursor-pointer transition-all duration-200 ease-out ${isDisabled
-                                    ? 'bg-secondary-200/30 opacity-50 cursor-not-allowed'
-                                    : 'bg-secondary-000'
-                                    } ${!isDisabled && buttonHovered && !buttonPressed ? 'opacity-90' : ''
-                                    } ${!isDisabled && buttonPressed ? 'scale-[0.98]' : 'scale-100'
-                                    }`}
-                            >
-                                <span className="text-base leading-5 font-semibold text-white">
-                                    Continue
-                                </span>
-                                <ArrowRight className="w-[18px] h-[18px] text-white" />
-                            </button> */}
+                            {/* Create Account Button */}
                             <button
                                 onClick={handleContinue}
-                                onMouseEnter={() => setButtonHovered(true)}
-                                onMouseLeave={() => setButtonHovered(false)}
-                                onMouseDown={() => setButtonPressed(true)}
-                                onMouseUp={() => setButtonPressed(false)}
                                 disabled={isDisabled}
-                                className={`w-full h-14 flex items-center justify-center gap-2 bg-primary-100 border-none rounded-xl cursor-pointer transition-all duration-200 ease-out ${isDisabled ? 'bg-accent-80 opacity-50 cursor-not-allowed' : ''
-                                    } ${!isDisabled && buttonHovered && !buttonPressed ? 'opacity-90' : ''
-                                    } ${!isDisabled && buttonPressed ? 'scale-[0.98]' : 'scale-100'
+                                className={`w-full h-14 flex items-center justify-center gap-2 bg-primary-100 border-none rounded-xl cursor-pointer transition-all duration-200 ease-out ${isDisabled
+                                    ? 'opacity-50 cursor-not-allowed'
+                                    : 'hover:opacity-90 active:scale-[0.98]'
                                     }`}
                             >
-                                <span className="text-base leading-5 font-semibold text-white">
-                                    Continue
-                                </span>
-                                <ArrowRight className="w-[18px] h-[18px] text-white" />
+                                {isSigningUp ? (
+                                    <span className="text-base leading-5 font-semibold text-white">Creating account...</span>
+                                ) : (
+                                    <>
+                                        <span className="text-base leading-5 font-semibold text-white">Create Account</span>
+                                        <ArrowRight className="w-[18px] h-[18px] text-white" />
+                                    </>
+                                )}
                             </button>
+
+                            {/* Sign In Link */}
+                            <div className="text-center pt-1">
+                                <p className="text-base leading-6 text-accent-80">
+                                    Already have an account?{' '}
+                                    <Link
+                                        href="/sign-in"
+                                        className="font-semibold text-primary-100 underline transition-opacity duration-200 ease-out hover:opacity-70"
+                                    >
+                                        Sign in
+                                    </Link>
+                                </p>
+                            </div>
                         </div>
 
                         {/* Footer */}
-                        <div className="max-w-[528px] w-full mt-12 mx-auto flex items-center justify-between flex-wrap gap-4">
-                            <p className="text-base leading-6 text-accent-80">
-                                © 2025 Afrivendors.co.uk ltd
-                            </p>
-                            <button
-                                onClick={() => router.push('/support')}
-                                className="text-base leading-5 font-semibold text-secondary-000 bg-none border-none cursor-pointer underline p-0 transition-opacity duration-200 ease-out hover:opacity-70"
+                        <div className="max-w-[528px] w-full mx-auto flex items-center justify-between flex-wrap gap-4">
+                            <p className="text-base leading-6 text-accent-80">© {new Date().getFullYear()} Afrivendors.co.uk ltd</p>
+                            <Link
+                                href="/help-and-support"
+                                className="text-base leading-5 font-semibold text-secondary-000 underline transition-opacity duration-200 ease-out hover:opacity-70"
                             >
                                 Help & Support
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Column - Hero Image (50%, Desktop only) */}
+                {/* Right Column - Hero Image (Desktop only) */}
                 <div className="hidden lg:block relative bg-secondary-000 overflow-hidden h-screen">
-                    {/* Uncomment and update path when image is provided */}
                     <Image
                         src={imgHeroImage}
                         alt="Customer Portal"
@@ -419,14 +396,6 @@ const SignUpPageContent = () => {
                 </div>
             </div>
 
-            {/* OTP Verification Modal */}
-            <OTPVerification
-                open={showOTPModal}
-                onClose={() => setShowOTPModal(false)}
-                onVerify={handleOTPVerified}
-                phoneNumber={formData.phoneNumber}
-                phoneCode={formData.phoneCode}
-            />
         </div>
     );
 }
@@ -435,9 +404,7 @@ const SignUpPage = () => {
     return (
         <Suspense fallback={
             <div className="min-h-screen bg-accent-10 flex items-center justify-center">
-                <div className="text-center">
-                    <p className="font-unageo text-base text-accent-80">Loading...</p>
-                </div>
+                <p className="font-unageo text-base text-accent-80">Loading...</p>
             </div>
         }>
             <SignUpPageContent />

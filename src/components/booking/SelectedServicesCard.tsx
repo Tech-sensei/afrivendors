@@ -4,27 +4,8 @@ import { Clock, MapPin, Plus, X } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-
-interface Service {
-    id: string;
-    name: string;
-    price: number;
-    duration: string;
-}
-
-interface Vendor {
-    id: string;
-    name: string;
-    location: string;
-    image: string;
-}
-
-interface SelectedServicesCardProps {
-    vendor: Vendor;
-    selectedServices: Service[];
-    onRemoveService: (serviceId: string) => void;
-    onAddService: () => void;
-}
+import { formatVendorPrice } from '@/services/vendor';
+import type { SelectedServicesCardProps } from '@/types/booking';
 
 export function SelectedServicesCard({
     vendor,
@@ -84,7 +65,7 @@ export function SelectedServicesCard({
                             </div>
                             <div className="flex items-center gap-3">
                                 <p className="text-base font-semibold text-primary-100">
-                                    ${service.price.toFixed(2)}
+                                    {formatVendorPrice(service.price)}
                                 </p>
                                 {selectedServices.length > 1 && (
                                     <button

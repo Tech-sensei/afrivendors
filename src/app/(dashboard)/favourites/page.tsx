@@ -1,80 +1,20 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ConfirmModal } from '@/components/ui/ConfirmModal';
-import { toast } from 'sonner';
-import { vendors } from '@/data/vendorsData';
-import VendorCard from '@/components/views/VendorCard';
-
-// Sample favourites - using vendors from vendorsData
-const favouriteVendorIds = [
-    'zuriglow-beauty-hub',
-    'chef-aisha-kitchen',
-    'fade-district',
-    'zuri-events',
-    'primeedge-solutions'
-];
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import VendorCard from "@/components/views/VendorCard";
+import { getFavoriteVendors } from "@/services/favorites";
+import { useFavoritesAPI } from "@/services/useFavoritesAPI";
 
 export default function FavouritesPage() {
     const router = useRouter();
-    const [favouriteIds, setFavouriteIds] = useState<string[]>(favouriteVendorIds);
-    const [unlikeConfirmOpen, setUnlikeConfirmOpen] = useState(false);
-    const [vendorToUnlike, setVendorToUnlike] = useState<string | null>(null);
-
-    // Load favourites from localStorage on mount
-    useEffect(() => {
-        const storedFavourites = localStorage.getItem('favouriteVendors');
-        if (storedFavourites) {
-            try {
-                const parsed = JSON.parse(storedFavourites);
-                if (Array.isArray(parsed)) {
-                    setFavouriteIds(parsed);
-                }
-            } catch (error) {
-                console.error('Error parsing favourites from localStorage:', error);
-            }
-        }
-    }, []);
-
-    // Save favourites to localStorage whenever they change
-    useEffect(() => {
-        localStorage.setItem('favouriteVendors', JSON.stringify(favouriteIds));
-    }, [favouriteIds]);
-
-    const favourites = vendors.filter(v => favouriteIds.includes(v.id));
-
-    const handleFavouriteToggle = (vendorId: string, isFavourite: boolean) => {
-        if (isFavourite) {
-            setFavouriteIds(prev => [...prev, vendorId]);
-            const vendor = vendors.find(v => v.id === vendorId);
-            toast.success('Added to Favourites', {
-                description: `${vendor?.name || 'Vendor'} has been added to your favourites.`
-            });
-        } else {
-            // Show confirmation modal before removing
-            setVendorToUnlike(vendorId);
-            setUnlikeConfirmOpen(true);
-        }
-    };
-
-    const handleConfirmUnlike = () => {
-        if (vendorToUnlike) {
-            setFavouriteIds(prev => prev.filter(id => id !== vendorToUnlike));
-            const vendor = vendors.find(v => v.id === vendorToUnlike);
-            toast.success('Removed from Favourites', {
-                description: `${vendor?.name || 'Vendor'} has been removed from your favourites.`
-            });
-            setVendorToUnlike(null);
-        }
-    };
-
-    const getVendorToUnlikeInfo = () => {
-        if (!vendorToUnlike) return null;
-        return vendors.find(v => v.id === vendorToUnlike);
-    };
+    const { removeFromFavorites, isRemovingFavorite } = useFavoritesAPI();
+    const { data: favourites = [], isLoading, isError } = useQuery({
+        queryKey: ["favorite-vendors"],
+        queryFn: getFavoriteVendors,
+    });
 
     return (
         <div>
@@ -88,17 +28,49 @@ export default function FavouritesPage() {
                 </p>
             </div>
 
-            {/* Vendor Grid */}
-            {favourites.length > 0 ? (
+            {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                        <div
+                            key={index}
+                            className="overflow-hidden rounded-2xl border border-[#EFE6E1] shadow-[0_4px_12px_rgba(35,19,5,0.08)]"
+                        >
+                            <div className="h-56 animate-pulse bg-accent-10" />
+                            <div className="space-y-4 p-5">
+                                <div className="h-5 w-3/4 animate-pulse rounded bg-accent-10" />
+                                <div className="h-4 w-1/2 animate-pulse rounded bg-accent-10" />
+                                <div className="h-4 w-2/3 animate-pulse rounded bg-accent-10" />
+                                <div className="flex items-center justify-between border-t border-[#EFE6E1] pt-3">
+                                    <div className="h-5 w-28 animate-pulse rounded bg-accent-10" />
+                                    <div className="h-9 w-28 animate-pulse rounded-[18px] bg-accent-10" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : isError ? (
+                <div className="flex flex-col items-center justify-center py-16 rounded-3xl bg-red-50">
+                    <h3 className="mb-2 font-unbounded text-xl font-semibold text-secondary-000">
+                        Couldn&apos;t load favourites
+                    </h3>
+                    <p className="text-sm text-secondary-100 opacity-70 text-center max-w-[320px]">
+                        Please try again in a moment.
+                    </p>
+                </div>
+            ) : favourites.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {favourites.map((vendor, index) => (
                         <VendorCard
                             key={vendor.id}
                             vendor={vendor}
                             index={index}
-                            isFavourite={favouriteIds.includes(vendor.id)}
-                            onFavouriteToggle={handleFavouriteToggle}
                             onClick={() => router.push(`/categories/${vendor.id}`)}
+                            isFavourite
+                            onFavouriteToggle={() => {
+                                if (!isRemovingFavorite) {
+                                    void removeFromFavorites(vendor.id, vendor.name);
+                                }
+                            }}
                         />
                     ))}
                 </div>
@@ -119,21 +91,6 @@ export default function FavouritesPage() {
                     </Button>
                 </div>
             )}
-
-            {/* Unlike Confirmation Modal */}
-            <ConfirmModal
-                open={unlikeConfirmOpen}
-                onOpenChange={setUnlikeConfirmOpen}
-                onConfirm={handleConfirmUnlike}
-                title="Remove from Favourites?"
-                description={`Are you sure you want to remove ${getVendorToUnlikeInfo()?.name || 'this vendor'} from your favourites?`}
-                confirmText="Yes, Remove"
-                cancelText="Cancel"
-                icon={Heart}
-                iconColor="text-red-600"
-                iconBg="bg-red-50"
-                confirmButtonVariant="destructive"
-            />
         </div>
     );
 }

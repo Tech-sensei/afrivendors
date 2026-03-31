@@ -5,11 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-
-interface FundWalletDrawerProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
+import type { BookingFundWalletDrawerProps as FundWalletDrawerProps } from '@/types/wallet';
 
 export function FundWalletDrawer({ isOpen, onClose }: FundWalletDrawerProps) {
     if (!isOpen) return null;

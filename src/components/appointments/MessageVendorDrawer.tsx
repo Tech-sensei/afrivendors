@@ -7,19 +7,13 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Appointment } from "@/data/appointments";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { X, Send, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface MessageVendorDrawerProps {
-  appointment: Appointment | null;
-  isOpen: boolean;
-  onClose: () => void;
-}
+import type { MessageVendorDrawerProps } from "@/types/appointments";
 
 export function MessageVendorDrawer({
   appointment,

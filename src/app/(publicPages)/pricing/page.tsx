@@ -5,17 +5,7 @@ import { Check, ArrowRight, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import svgPaths from "@/lib/svgPath4";
-
-interface PricingCardProps {
-  title: string;
-  price: string;
-  period: string;
-  description: string;
-  features: string[];
-  isPopular?: boolean;
-  buttonText: string;
-  onButtonClick: () => void;
-}
+import type { PricingCardProps } from "@/types/misc";
 
 function PricingCard({ title, price, period, description, features, isPopular, buttonText, onButtonClick }: PricingCardProps) {
   return (

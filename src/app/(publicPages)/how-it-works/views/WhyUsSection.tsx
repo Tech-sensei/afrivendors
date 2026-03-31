@@ -1,8 +1,7 @@
 "use client";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import Frame from "../../../../../public/assets/images/journeyImg.png"
+import Frame from "../../../../../public/assets/images/journeyImg.png";
 
 // Reuse app store icon components from DownloadAppStore style (or similar)
 function AppleAppStoreIcon({ color = "#1D0D04" }: { color?: string }) {
@@ -41,24 +40,20 @@ const WhyUsSection = () => {
   return (
     <section className="bg-white py-1 px-6 md:px-24">
       <div className="max-w-[1440px] mx-auto">
-        <div className="bg-[#f7f4f2] rounded-[32px] pt-8 px-8 md:px-16 relative overflow-hidden min-h-[400px] flex items-center">
+        <div className="bg-[#f7f4f2] rounded-4xl pt-8 px-8 md:px-16 relative overflow-hidden min-h-[400px] flex items-center">
           {/* Content Container */}
           <div className="flex flex-col gap-8 max-w-2xl relative z-10">
             <div className="flex flex-col gap-4">
-              <h2 className="font-unbounded text-3xl md:text-4xl font-semibold text-[#231305]">
-                Ready to Get Started?
-              </h2>
-              <p className="font-unageo text-lg md:text-xl text-[#1d0d04] opacity-80">
+              <h2 className="font-unbounded text-3xl md:text-4xl font-semibold text-secondary-000">Ready to Get Started?</h2>
+              <p className="font-unageo text-lg md:text-xl text-accent-100 opacity-80">
                 Join thousands of users already connecting through Afrivendor.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-6">
               {/* App Store Badges */}
-              <div className="flex items-center justify-center gap-4 px-6 py-4 rounded-full border border-[#1d0d04] w-full md:w-auto">
-                <span className="font-unageo font-semibold text-[#1d0d04]">
-                  Available soon on
-                </span>
+              <div className="flex items-center justify-center gap-4 px-6 py-4 rounded-full border border-accent-100 w-full md:w-auto">
+                <span className="font-unageo font-semibold text-accent-100">Available soon on</span>
                 <div className="flex gap-2">
                   <AppleAppStoreIcon />
                   <GooglePlayIcon />
@@ -66,8 +61,8 @@ const WhyUsSection = () => {
               </div>
 
               {/* Download Button */}
-              <button 
-                className="bg-[#c56c31] hover:bg-[#b05f2a] text-[#f4f3f2] font-unageo font-bold text-lg px-4 py-4 rounded-full flex items-center gap-3 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg w-full md:w-auto justify-center"
+              <button
+                className="bg-primary-100 hover:bg-[#b05f2a] text-secondary-800 font-unageo font-bold text-lg px-4 py-4 rounded-full flex items-center gap-3 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg w-full md:w-auto justify-center"
                 onClick={() => console.log("Download Clicked")}
               >
                 <span>Download the Afrivendor App</span>
@@ -78,12 +73,9 @@ const WhyUsSection = () => {
 
           {/* Decorative Rotated App Images (Right Side) */}
           <div className="absolute right-0 bottom-0 hidden lg:flex items-center justify-center pointer-events-none opacity-40 xl:opacity-100 pr-12">
-             <div className="relative group">
-              
-                    <Image src={Frame} alt="Frame" className="w-[480px] h-ful" />
-
-                
-             </div>
+            <div className="relative group">
+              <Image src={Frame} alt="Frame" className="w-[480px] h-ful" />
+            </div>
           </div>
         </div>
       </div>

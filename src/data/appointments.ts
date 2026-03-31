@@ -1,22 +1,4 @@
-export type AppointmentStatus = 'upcoming' | 'pending' | 'past' | 'cancelled';
-
-export interface Appointment {
-  id: string;
-  serviceName: string;
-  serviceImage: string;
-  providerName: string;
-  providerSlug: string; // New field for vendor profile URL
-  providerAvatar: string;
-  rating: number;
-  reviewCount: number;
-  date: string; // ISO date string
-  time: string;
-  duration: string;
-  status: AppointmentStatus;
-  location: string;
-  price: number;
-  description?: string;
-}
+import type { Appointment } from "@/types/appointments";
 
 export const appointments: Appointment[] = [
   {

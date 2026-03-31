@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { motion } from 'motion/react';
-import { toast } from 'sonner';
-import { vendors } from '@/data/vendorsData';
-import { EmptyState } from '@/components/booking/EmptyState';
-import { SelectedServicesCard } from '@/components/booking/SelectedServicesCard';
-import { DateTimeSelection } from '@/components/booking/DateTimeSelection';
-import { ContactInformationForm } from '@/components/booking/ContactInformationForm';
-import { PaymentMethodSection } from '@/components/booking/PaymentMethodSection';
-import { BookingSummary } from '@/components/booking/BookingSummary';
-import { FundWalletDrawer } from '@/components/booking/FundWalletDrawer';
+import { Suspense, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { motion } from "motion/react";
+import { toast } from "sonner";
+import { EmptyState } from "@/components/booking/EmptyState";
+import { SelectedServicesCard } from "@/components/booking/SelectedServicesCard";
+import { DateTimeSelection } from "@/components/booking/DateTimeSelection";
+import { ContactInformationForm } from "@/components/booking/ContactInformationForm";
+import { PaymentMethodSection } from "@/components/booking/PaymentMethodSection";
+import { BookingSummary } from "@/components/booking/BookingSummary";
+import { FundWalletDrawer } from "@/components/booking/FundWalletDrawer";
+import { getPublicVendorById } from "@/services/vendor";
 
-// Mock wallet balance
 const WALLET_BALANCE = 430.00;
 
 function BookingPageContent() {
@@ -25,61 +25,53 @@ function BookingPageContent() {
     const vendorId = searchParams.get('vendorId');
     const serviceIdsParam = searchParams.get('serviceIds');
 
-    const [vendor, setVendor] = useState<any>(null);
-    const [selectedServices, setSelectedServices] = useState<any[]>([]);
     const [date, setDate] = useState<Date | undefined>(undefined);
-    const [selectedTime, setSelectedTime] = useState<string>('');
-    const [paymentMethod, setPaymentMethod] = useState<'venue' | 'online' | 'wallet'>('venue');
+    const [selectedTime, setSelectedTime] = useState<string>("");
+    const [paymentMethod, setPaymentMethod] = useState<"venue" | "online" | "wallet">("venue");
     const [fundWalletOpen, setFundWalletOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [contactFormData, setContactFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        notes: '',
+        name: "",
+        email: "",
+        phone: "",
+        notes: "",
     });
 
     const [cardFormData, setCardFormData] = useState({
-        cardNumber: '',
-        cardExpiry: '',
-        cardCvc: '',
-        cardName: '',
+        cardNumber: "",
+        cardExpiry: "",
+        cardCvc: "",
+        cardName: "",
     });
 
-    // Load vendor and services from URL params
-    useEffect(() => {
-        if (!vendorId) {
-            toast.error('Vendor ID is required');
-            router.push('/categories');
-            return;
-        }
+    const { data: vendor, isLoading, isError } = useQuery({
+        queryKey: ["booking-vendor", vendorId],
+        queryFn: () => getPublicVendorById(vendorId as string),
+        enabled: !!vendorId,
+    });
 
-        const foundVendor = vendors.find((v) => v.id === vendorId);
-        if (!foundVendor) {
-            toast.error('Vendor not found');
-            router.push('/categories');
-            return;
-        }
+    const selectedServices = useMemo(() => {
+        if (!vendor || !serviceIdsParam) return [];
 
-        setVendor(foundVendor);
+        const serviceIds = serviceIdsParam.split(",");
+        return vendor.services.filter((service) => serviceIds.includes(service.id));
+    }, [vendor, serviceIdsParam]);
 
-        // Parse selected service IDs from URL
-        if (serviceIdsParam) {
-            const serviceIds = serviceIdsParam.split(',');
-            const services = foundVendor.services?.filter((service) =>
-                serviceIds.includes(service.id)
-            ) || [];
-            setSelectedServices(services);
-        }
-    }, [vendorId, serviceIdsParam, router]);
-
-    // Calculate total
     const totalPrice = selectedServices.reduce((sum, service) => sum + (service.price || 0), 0);
-    const hasInsufficientFunds = paymentMethod === 'wallet' && totalPrice > WALLET_BALANCE;
+    const hasInsufficientFunds = paymentMethod === "wallet" && totalPrice > WALLET_BALANCE;
 
     const handleRemoveService = (serviceId: string) => {
-        setSelectedServices(selectedServices.filter(s => s.id !== serviceId));
+        const serviceIds = selectedServices
+            .filter((service) => service.id !== serviceId)
+            .map((service) => service.id);
+
+        if (serviceIds.length === 0) {
+            router.push(`/booking?vendorId=${vendorId}`);
+            return;
+        }
+
+        router.push(`/booking?vendorId=${vendorId}&serviceIds=${serviceIds.join(",")}`);
     };
 
     const isFormValid = () => {
@@ -87,13 +79,13 @@ function BookingPageContent() {
         if (!date || !selectedTime) return false;
         if (!contactFormData.name || !contactFormData.email || !contactFormData.phone) return false;
 
-        if (paymentMethod === 'online') {
+        if (paymentMethod === "online") {
             if (!cardFormData.cardNumber || !cardFormData.cardExpiry || !cardFormData.cardCvc || !cardFormData.cardName) {
                 return false;
             }
         }
 
-        if (paymentMethod === 'wallet' && hasInsufficientFunds) {
+        if (paymentMethod === "wallet" && hasInsufficientFunds) {
             return false;
         }
 
@@ -116,17 +108,17 @@ function BookingPageContent() {
                 id: vendor.id,
                 name: vendor.name,
                 location: vendor.location,
-                image: vendor.image,
+                image: vendor.bannerImage,
             },
             services: selectedServices.map(service => ({
                 id: service.id,
                 name: service.name,
-                price: Number(service.price) || 0, // Ensure price is a number
+                price: Number(service.price) || 0,
                 duration: service.duration,
             })),
-            date: date ? date.toISOString() : null, // Convert Date to ISO string for serialization
+            date: date ? date.toISOString() : null,
             time: selectedTime,
-            total: Number(totalPrice) || 0, // Ensure total is a number
+            total: Number(totalPrice) || 0,
             paymentMethod,
             customerInfo: {
                 name: contactFormData.name,
@@ -136,15 +128,10 @@ function BookingPageContent() {
             }
         };
 
-        // Console log booking data for debugging
-        console.log('📋 Booking Data (Formatted):', JSON.stringify(bookingData, null, 2));
-
         toast.success(`Appointment confirmed with ${vendor.name} for ${date?.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} at ${selectedTime}!`);
 
-        // Store booking data in sessionStorage for confirmation page
         try {
             sessionStorage.setItem('bookingConfirmationData', JSON.stringify(bookingData));
-            // Small delay to ensure sessionStorage is written before navigation
             setTimeout(() => {
                 router.push('/booking/confirmation');
             }, 100);
@@ -155,8 +142,20 @@ function BookingPageContent() {
         }
     };
 
-    // Loading state
-    if (!vendor) {
+    if (!vendorId) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+                <div className="text-center">
+                    <h2 className="mb-2 font-unbounded text-2xl font-semibold text-secondary-000">
+                        Vendor ID is required
+                    </h2>
+                    <Button onClick={() => router.push("/categories")}>Back to browse</Button>
+                </div>
+            </div>
+        );
+    }
+
+    if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-white">
                 <div className="text-center">
@@ -168,7 +167,19 @@ function BookingPageContent() {
         );
     }
 
-    // Empty state
+    if (!vendor || isError) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+                <div className="text-center">
+                    <h2 className="mb-2 font-unbounded text-2xl font-semibold text-secondary-000">
+                        Vendor not found
+                    </h2>
+                    <Button onClick={() => router.push("/categories")}>Back to browse</Button>
+                </div>
+            </div>
+        );
+    }
+
     if (selectedServices.length === 0) {
         return (
             <EmptyState
@@ -190,7 +201,6 @@ function BookingPageContent() {
             {/* Main Content */}
             <section className="py-12 sm:py-16 px-6 sm:px-8 lg:px-24">
                 <div className="max-w-[1440px] mx-auto">
-                    {/* Header */}
                     <Button
                         variant="ghost"
                         onClick={() => router.push(`/categories/${vendorId}`)}
@@ -200,7 +210,6 @@ function BookingPageContent() {
                         Back to Vendor
                     </Button>
 
-                    {/* Page Title */}
                     <div className="mb-8">
                         <h1 className="mb-2 font-unbounded text-4xl leading-11 font-semibold text-secondary-000">
                             Book Your Appointment
@@ -211,7 +220,6 @@ function BookingPageContent() {
                     </div>
 
                     <div className="grid lg:grid-cols-[1fr_384px] gap-6">
-                        {/* Left Column - Main Form */}
                         <div className="space-y-6">
                             <SelectedServicesCard
                                 vendor={vendor}
@@ -243,7 +251,6 @@ function BookingPageContent() {
                             />
                         </div>
 
-                        {/* Right Column - Sticky Summary */}
                         <BookingSummary
                             selectedServices={selectedServices}
                             date={date}

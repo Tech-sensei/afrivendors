@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { formatVendorPrice } from '@/services/vendor';
 
 export default function BookingConfirmationPage() {
     const router = useRouter();
@@ -221,7 +222,7 @@ export default function BookingConfirmationPage() {
                                                 </div>
                                             </div>
                                             <p className="text-lg font-semibold text-primary-100">
-                                                ${service.price.toFixed(2)}
+                                                {formatVendorPrice(service.price)}
                                             </p>
                                         </div>
                                     ))}
@@ -281,7 +282,7 @@ export default function BookingConfirmationPage() {
                                         Total Amount
                                     </span>
                                     <span className="font-unbounded text-2xl leading-8 font-semibold text-primary-100">
-                                        ${total.toFixed(2)}
+                                        {formatVendorPrice(total)}
                                     </span>
                                 </div>
 

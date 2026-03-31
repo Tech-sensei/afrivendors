@@ -4,17 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MessageCircle, Eye, PenLine, RotateCcw } from "lucide-react";
-import { Appointment } from "@/data/appointments";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-
-interface AppointmentCardProps {
-  appointment: Appointment;
-  onViewDetails: (appointment: Appointment) => void;
-  onReschedule: (appointment: Appointment) => void;
-  onMessageVendor?: (appointment: Appointment) => void;
-}
+import type { AppointmentCardProps } from "@/types/appointments";
 
 export function AppointmentCard({
   appointment,

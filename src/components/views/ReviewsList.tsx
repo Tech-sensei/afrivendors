@@ -4,22 +4,7 @@ import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
-
-interface Review {
-  id: string;
-  author: string;
-  rating: number;
-  date: string;
-  comment: string;
-  avatar: string;
-  isUserReview?: boolean;
-}
-
-interface ReviewsListProps {
-  reviews: Review[];
-  onEdit: (review: Review) => void;
-  onDelete: (reviewId: string) => void;
-}
+import type { ReviewListItem as Review, ReviewsListProps } from '@/types/reviews';
 
 export function ReviewsList({ reviews, onEdit, onDelete }: ReviewsListProps) {
   const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);

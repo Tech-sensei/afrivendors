@@ -5,16 +5,12 @@ import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Clock, Share2, Tag } from "lucide-react";
-import { blogPosts, type BlogPost } from "@/data/blogData";
+import { blogPosts } from "@/data/blogData";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-
-// Extended blog post with full content
-interface BlogPostWithContent extends BlogPost {
-  content?: string;
-}
+import type { BlogPost, BlogPostWithContent } from "@/types/blog";
 
 // Generate full content from excerpt (in a real app, this would come from a CMS)
 const generateContent = (post: BlogPost): string => {

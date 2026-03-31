@@ -1,30 +1,6 @@
 // import vendorImg from "/assets/images/vendor.jpeg";
 // import { StaticImageData } from "next/image";
-
-export interface Service {
-  id: string;
-  name: string;
-  price: number;
-  duration: string;
-  description: string;
-}
-
-export interface Vendor {
-  id: string;
-  name: string;
-  category: string;
-  location: string;
-  rating: number;
-  reviewCount: number;
-  priceRange: string;
-  minPrice: number;
-  maxPrice: number;
-  image: string;
-  description: string;
-  services: Service[];
-  about: string;
-  openingHours: string;
-}
+import type { MockVendor as Vendor } from "@/types/misc";
 
 export const vendors: Vendor[] = [
   {

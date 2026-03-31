@@ -3,12 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { MinusCircle, ArrowRight, PlusCircle } from "lucide-react";
-
-interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
-}
+import type { FAQItem } from "@/types/misc";
 
 const faqItems: FAQItem[] = [
   {
