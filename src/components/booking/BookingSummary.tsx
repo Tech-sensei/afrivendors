@@ -75,7 +75,7 @@ export function BookingSummary({
                             Payment
                         </p>
                         <p className="text-sm text-secondary-000">
-                            {paymentMethod === 'venue' ? 'Pay at Venue' : paymentMethod === 'online' ? 'Pay Online' : 'Wallet'}
+                            {paymentMethod === 'online' ? 'Pay Online' : 'Wallet'}
                         </p>
                     </div>
 

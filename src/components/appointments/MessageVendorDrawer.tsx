@@ -29,7 +29,7 @@ export function MessageVendorDrawer({
     {
       id: '1',
       sender: 'vendor',
-      text: `Hello! Thanks for booking ${appointment?.serviceName} with us.`,
+      text: `Hello! Thanks for booking ${appointment?.services[0]?.serviceName ?? 'your service'} with us.`,
       time: 'Just now'
     }
   ]);
