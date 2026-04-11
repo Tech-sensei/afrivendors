@@ -12,6 +12,17 @@ import Header from '@/components/global/Header';
 import { useAuthAPI } from '@/services/useAuthAPI';
 import { useAppSelector } from '@/store/hooks';
 
+// Module-level constant — never recreated on re-render
+const DASHBOARD_TABS = [
+    { id: 'dashboard-profile', label: 'Profile', icon: User, page: '/profile' },
+    { id: 'dashboard-appointments', label: 'Appointments', icon: Calendar, page: '/appointments' },
+    { id: 'dashboard-messages', label: 'Messages', icon: MessageCircle, page: '/messages' },
+    { id: 'dashboard-wallet', label: 'Wallet', icon: Wallet, page: '/wallet' },
+    { id: 'dashboard-favourites', label: 'Favourites', icon: Heart, page: '/favourites' },
+    { id: 'dashboard-custom-service-forms', label: 'Custom Service Forms', icon: FileText, page: '/custom-service-forms' },
+    { id: 'dashboard-settings', label: 'Settings', icon: Settings, page: '/settings' },
+];
+
 export default function DashboardLayout({
     children,
 }: {
@@ -28,19 +39,7 @@ export default function DashboardLayout({
         ? `${currentUser.firstName?.[0] ?? ''}${currentUser.lastName?.[0] ?? ''}`.toUpperCase()
         : '';
 
-    const tabs = [
-        { id: 'dashboard-profile', label: 'Profile', icon: User, page: '/profile' },
-        { id: 'dashboard-appointments', label: 'Appointments', icon: Calendar, page: '/appointments' },
-        { id: 'dashboard-messages', label: 'Messages', icon: MessageCircle, page: '/messages' },
-        { id: 'dashboard-wallet', label: 'Wallet', icon: Wallet, page: '/wallet' },
-        { id: 'dashboard-favourites', label: 'Favourites', icon: Heart, page: '/favourites' },
-        { id: 'dashboard-custom-service-forms', label: 'Custom Service Forms', icon: FileText, page: '/custom-service-forms' },
-        { id: 'dashboard-settings', label: 'Settings', icon: Settings, page: '/settings' },
-    ];
-
-    const isActive = (path: string) => {
-        return pathname === path;
-    };
+    const isActive = (path: string) => pathname === path;
 
     return (
         <div className="min-h-screen bg-[#f8f4f1]">
@@ -74,7 +73,7 @@ export default function DashboardLayout({
 
                         {/* Navigation */}
                         <nav className="space-y-1 mb-4">
-                            {tabs.map((item) => {
+                            {DASHBOARD_TABS.map((item) => {
                                 const Icon = item.icon;
                                 const active = isActive(item.page);
 

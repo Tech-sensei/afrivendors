@@ -13,43 +13,43 @@ import { LogoutConfirmModal } from "@/components/dashboard/LogoutConfirmModal";
 import { useAuthAPI } from "@/services/useAuthAPI";
 import { useAppSelector } from "@/store/hooks";
 
+// Module-level constants — never recreated on re-render
+const NAV_LINKS = [
+  { label: "Browse", href: "/categories" },
+  { label: "About", href: "/about-us" },
+  { label: "How it Works", href: "/how-it-works" },
+  { label: "Contact Us", href: "/contact-us" },
+];
+
+const NOTIFICATION_ROUTE_MAP: Record<string, string> = {
+  "dashboard-appointments": "/appointments",
+  "dashboard-messages": "/messages",
+  "dashboard-wallet": "/wallet",
+  "dashboard-favourites": "/favourites",
+  "dashboard-profile": "/profile",
+  "dashboard-settings": "/settings",
+};
+
+function mapNotificationUrl(url: string): string {
+  if (url.startsWith("dashboard-")) {
+    return NOTIFICATION_ROUTE_MAP[url] ?? url;
+  }
+  return url;
+}
+
 const Header = () => {
   const router = useRouter();
   const { logoutAsync } = useAuthAPI();
   const { user: currentUser, isAuthenticated } = useAppSelector((state) => state.auth);
   const [isNotificationOpen, setNotificationOpen] = useState(false);
-
-  const isLoggedIn = isAuthenticated;
-
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+
+  const isLoggedIn = isAuthenticated;
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  // Map notification action URLs to actual routes
-  const mapNotificationUrl = (url: string): string => {
-    if (url.startsWith("dashboard-")) {
-      const routeMap: Record<string, string> = {
-        "dashboard-appointments": "/appointments",
-        "dashboard-messages": "/messages",
-        "dashboard-wallet": "/wallet",
-        "dashboard-favourites": "/favourites",
-        "dashboard-profile": "/profile",
-        "dashboard-settings": "/settings",
-      };
-      return routeMap[url] || url;
-    }
-    return url;
-  };
-
-  const navLinks = [
-    { label: "Browse", href: "/categories" },
-    { label: "About", href: "/about-us" },
-    { label: "How it Works", href: "/how-it-works" },
-    { label: "Contact Us", href: "/contact-us" },
-  ];
 
   const userName = currentUser ? `${currentUser.firstName ?? ''} ${currentUser.lastName ?? ''}`.trim() : '';
   const userEmail = currentUser?.email ?? '';
@@ -84,7 +84,7 @@ const Header = () => {
                 <div className="flex flex-col px-6 pb-6">
                   {/* Mobile Navigation Links */}
                   <nav className="flex flex-col gap-1">
-                    {navLinks.map((link) => (
+                    {NAV_LINKS.map((link) => (
                       <SheetClose key={link.href} asChild>
                         <Link
                           href={link.href}
@@ -171,7 +171,7 @@ const Header = () => {
 
           {/* Navigation Links - Desktop */}
           <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
+            {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

@@ -86,6 +86,7 @@ export interface PublicVendorDetailApiResponse {
     review?: string;
     createdAt?: string;
     user?: {
+      id?: number;
       firstName?: string;
       lastName?: string;
     };
@@ -140,6 +141,17 @@ export interface VendorDetailReview {
   rating: number;
   comment: string;
   date: string;
+  /** When present, used to detect the current user's review for UI. */
+  reviewerUserId?: number | null;
+}
+
+/** One row for the opening hours schedule (from API `openingHours` array). */
+export interface VendorOpeningHoursDay {
+  dayKey: string;
+  dayLabel: string;
+  isOpen: boolean;
+  /** e.g. "9:00 AM – 7:00 PM" or "Closed" */
+  hoursLine: string;
 }
 
 export interface VendorDetail {
@@ -159,7 +171,9 @@ export interface VendorDetail {
   bannerImage: string;
   gallery: string[];
   about: string;
+  /** Legacy single-line summary (comma-separated). Prefer `openingHoursSchedule` in UI. */
   openingHours: string;
+  openingHoursSchedule: VendorOpeningHoursDay[];
   services: VendorDetailService[];
   reviews: VendorDetailReview[];
 }
@@ -193,5 +207,6 @@ export interface VendorCardProps {
   index: number;
   onClick?: () => void;
   isFavourite?: boolean;
+  favouritePending?: boolean;
   onFavouriteToggle?: (vendorId: string, isFavourite: boolean) => void;
 }

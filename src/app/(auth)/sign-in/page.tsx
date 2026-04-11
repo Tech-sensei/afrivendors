@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { signInSchema } from '@/lib/validations/authValidationSchema';
 import { useAuthAPI } from '@/services/useAuthAPI';
 
-const SignInPage = () => {
+const SignInPageContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { signInAsync, isSigningIn } = useAuthAPI();
@@ -249,5 +249,15 @@ const SignInPage = () => {
         </div>
     );
 }
+
+const SignInPage = () => (
+    <Suspense fallback={
+        <div className="min-h-screen bg-accent-10 flex items-center justify-center">
+            <p className="font-unageo text-base text-accent-80">Loading...</p>
+        </div>
+    }>
+        <SignInPageContent />
+    </Suspense>
+);
 
 export default SignInPage;

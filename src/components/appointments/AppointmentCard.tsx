@@ -9,6 +9,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { AppointmentCardProps } from "@/types/appointments";
 
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop";
+
 export function AppointmentCard({
   appointment,
   onViewDetails,
@@ -16,60 +18,84 @@ export function AppointmentCard({
   onMessageVendor,
 }: AppointmentCardProps) {
   const router = useRouter();
-  const isUpcoming = appointment.status === "upcoming";
-  const isPending = appointment.status === "pending";
-  const isBookAgain = appointment.status === 'past' || appointment.status === 'cancelled';
 
-  const getStatusColor = (status: string) => {
+  const isActive = appointment.status === "pending" || appointment.status === "confirmed";
+  const isBookAgain = appointment.status === "completed" || appointment.status === "cancelled";
+
+  const vendorName = `${appointment.vendor.firstName} ${appointment.vendor.lastName}`;
+  const primaryService = appointment.services[0];
+  const serviceImage = primaryService?.imageUrl || FALLBACK_IMAGE;
+
+  const displayServiceName =
+    appointment.services.length === 1
+      ? primaryService.serviceName
+      : `${primaryService.serviceName} +${appointment.services.length - 1} more`;
+
+  // "15:00:00" → "15:00"
+  const displayTime = appointment.time.slice(0, 5);
+
+  const totalDuration = appointment.services.map((s) => s.duration).join(" + ");
+
+  const getStatusStyle = (status: string) => {
     switch (status) {
-      case "upcoming":
-      case "confirmed":
-        return "text-green-600 bg-green-100 border-green-200";
-      case "pending":
-        return "text-amber-600 bg-amber-100 border-amber-200";
-      case "cancelled":
-        return "text-red-600 bg-red-100 border-red-200";
-      case "past":
-      default:
-        return "text-slate-600 bg-slate-100 border-slate-200";
+      case "confirmed": return "text-green-700 bg-green-100";
+      case "pending":   return "text-amber-700 bg-amber-100";
+      case "cancelled": return "text-red-700 bg-red-100";
+      case "completed":
+      default:          return "text-slate-700 bg-slate-100";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "pending":   return "Pending";
+      case "confirmed": return "Confirmed";
+      case "completed": return "Completed";
+      case "cancelled": return "Cancelled";
+      default:          return status;
     }
   };
 
   return (
     <Card className="w-full overflow-hidden border-0 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-2px_rgba(0,0,0,0.1)] transition-all duration-300 group rounded-[2rem] bg-white py-0">
-      {/* Image Section - Matching radius */}
+      {/* Image */}
       <div className="relative h-64 w-full bg-primary-300 rounded-t-[2rem] overflow-hidden">
         <Image
-          src={appointment.serviceImage}
-          alt={appointment.serviceName}
+          src={serviceImage}
+          alt={displayServiceName}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
         <div className="absolute bottom-4 left-5 right-5 flex justify-between items-end">
-           <Badge 
-            variant="secondary" 
-            className={`backdrop-blur-md bg-white/90 hover:bg-white/100 text-secondary-000 border-0 px-3 py-1 text-xs font-semibold uppercase tracking-wider`}
+          <Badge
+            variant="secondary"
+            className={`backdrop-blur-md bg-white/90 border-0 px-3 py-1 text-xs font-semibold uppercase tracking-wider ${getStatusStyle(appointment.status)}`}
           >
-             {appointment.status === 'upcoming' ? 'Confirmed' : appointment.status}
+            {getStatusLabel(appointment.status)}
           </Badge>
+          {appointment.paymentStatus === "paid" && (
+            <Badge className="bg-green-600/90 text-white border-0 px-3 py-1 text-xs font-semibold backdrop-blur-md">
+              Paid
+            </Badge>
+          )}
         </div>
       </div>
 
       <CardContent className="px-4 py-2 space-y-6">
-        {/* Header: Service & Price */}
+        {/* Header */}
         <div className="space-y-3">
           <div className="flex justify-between items-start gap-4">
-            <h3 className="font-bold text-xl leading-tight text-secondary-000 line-clamp-2 font-unbounded">{appointment.serviceName}</h3>
+            <h3 className="font-bold text-xl leading-tight text-secondary-000 line-clamp-2 font-unbounded">
+              {displayServiceName}
+            </h3>
             <span className="text-xl font-bold text-primary-100 shrink-0">
-              £{appointment.price.toLocaleString()}
+              ₦{appointment.totalAmount.toLocaleString()}
             </span>
           </div>
-          
-          <div className="flex items-center gap-2 text-sm font-medium text-secondary-300">
-             <span className="text-secondary-000/80">{appointment.providerName}</span>
-          </div>
-          
+
+          <div className="text-sm text-secondary-000/80">{vendorName}</div>
+
           <div className="flex flex-col gap-2 text-sm text-accent-100 pt-1">
             <div className="flex items-center gap-2.5">
               <Calendar className="h-4 w-4 stroke-[1.5]" />
@@ -77,38 +103,42 @@ export function AppointmentCard({
             </div>
             <div className="flex items-center gap-2.5">
               <Clock className="h-4 w-4 stroke-[1.5]" />
-              <span>{appointment.time} • {appointment.duration}</span>
+              <span>{displayTime} • {totalDuration}</span>
             </div>
           </div>
         </div>
 
-        {/* Actions Section */}
+        {/* Actions */}
         <div className="space-y-3 pt-2">
-          <Button 
-            className="w-full gap-2 bg-primary-100 hover:bg-[#a65620] text-white font-semibold h-11 rounded-xl shadow-lg shadow-primary-100/20 font-medium tracking-wide transition-all active:scale-[0.98] cursor-pointer"
-            onClick={() => isBookAgain ? router.push('/categories') : onMessageVendor?.(appointment)}
+          <Button
+            className="w-full gap-2 bg-primary-100 hover:bg-[#a65620] text-white font-semibold h-11 rounded-xl shadow-lg shadow-primary-100/20 tracking-wide transition-all active:scale-[0.98] cursor-pointer"
+            onClick={() =>
+              isBookAgain
+                ? router.push(`/categories/${appointment.vendor.id}`)
+                : onMessageVendor?.(appointment)
+            }
           >
-            {isBookAgain ? <RotateCcw className="h-4.5 w-4.5" /> : <MessageCircle className="h-4.5 w-4.5" />}
+            {isBookAgain ? <RotateCcw className="h-4 w-4" /> : <MessageCircle className="h-4 w-4" />}
             {isBookAgain ? "Book Again" : "Message Vendor"}
           </Button>
 
-          {(isUpcoming || isPending) && (
-            <Button 
-              variant="outline" 
+          {isActive && (
+            <Button
+              variant="outline"
               className="w-full gap-2 h-11 rounded-xl border-border/60 hover:bg-primary-300/50 hover:text-secondary-000 hover:border-border font-medium text-accent-100 font-semibold transition-all active:scale-[0.98] cursor-pointer"
               onClick={() => onReschedule(appointment)}
             >
-              <PenLine className="h-4.5 w-4.5" />
+              <PenLine className="h-4 w-4" />
               Reschedule
             </Button>
           )}
 
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full gap-2 h-11 rounded-xl hover:bg-primary-300/50 text-accent-100 font-semibold transition-all cursor-pointer"
             onClick={() => onViewDetails(appointment)}
           >
-            <Eye className="h-4.5 w-4.5" />
+            <Eye className="h-4 w-4" />
             View Details
           </Button>
         </div>

@@ -27,7 +27,7 @@ export interface DrawerProps {
   title?: string;
   description?: string;
   size?: "sm" | "md" | "lg";
-  type?: "default" | "message";
+  type?: "default" | "message" | "create" | "edit" | "view";
   footer?: ReactNode;
   children: ReactNode;
 }

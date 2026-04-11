@@ -41,12 +41,12 @@ import type {
 } from "@/types/profile";
 
 const initialPersonal = {
-    firstName: "Amara",
-    lastName: "Okafor",
-    email: "amara.okafor@example.com",
-    phone: "+234 123 456 7890",
-    dateOfBirth: "03/15/1995",
-    gender: "Female",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    dateOfBirth: "",
+    gender: "",
 };
 
 function formatAddressLine(a: ProfileAddress) {
@@ -120,7 +120,7 @@ export default function ProfilePage() {
         : "A";
     const userName = authUser
         ? `${authUser.firstName ?? ""} ${authUser.lastName ?? ""}`.trim() || "Member"
-        : "Amara Okafor";
+        : "Member";
     const memberSince = authUser?.createdAt
         ? new Date(String(authUser.createdAt)).toLocaleString("default", {
               month: "long",

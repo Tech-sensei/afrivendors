@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import ImgContainerResponsive from "./ImgContainerResponsive";
 import svgPaths from "../../lib/svgPath1";
+import { useRouter } from "next/navigation";
 
 const HomeHeroSection = () => {
+  const router = useRouter();
   return (
     <motion.section
       initial={{ opacity: 0 }}
@@ -49,7 +51,7 @@ const HomeHeroSection = () => {
               <Button
                 size="lg"
                 className="transition-all duration-300 bg-primary-100 text-white rounded-full px-8 h-14 text-base font-semibold hover:bg-primary-600 hover:scale-105 cursor-pointer w-full md:w-fit"
-                onClick={() => { }}
+                onClick={() => router.push("/categories")}
               >
                 Browse All Vendors
                 <ArrowRight style={{ width: "20px", height: "20px", marginLeft: "8px" }} />

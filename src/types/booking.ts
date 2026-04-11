@@ -1,4 +1,4 @@
-export type PaymentMethod = "venue" | "online" | "wallet";
+export type PaymentMethod = "online" | "wallet";
 
 export interface BookingService {
   id: string;
@@ -35,20 +35,13 @@ export interface SelectedServicesCardProps {
   onAddService: () => void;
 }
 
-export interface CardFormData {
-  cardNumber: string;
-  cardExpiry: string;
-  cardCvc: string;
-  cardName: string;
-}
-
 export interface PaymentMethodSectionProps {
   paymentMethod: PaymentMethod;
   totalPrice: number;
-  cardFormData: CardFormData;
+  walletBalance: number;
+  walletLoading?: boolean;
   hasInsufficientFunds: boolean;
   onPaymentMethodChange: (method: PaymentMethod) => void;
-  onCardFormDataChange: (data: Partial<CardFormData>) => void;
   onFundWallet: () => void;
 }
 

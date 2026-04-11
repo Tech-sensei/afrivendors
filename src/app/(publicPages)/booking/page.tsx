@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAppSelector } from "@/store/hooks";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
@@ -15,19 +16,21 @@ import { PaymentMethodSection } from "@/components/booking/PaymentMethodSection"
 import { BookingSummary } from "@/components/booking/BookingSummary";
 import { FundWalletDrawer } from "@/components/booking/FundWalletDrawer";
 import { getPublicVendorById } from "@/services/vendor";
-
-const WALLET_BALANCE = 430.00;
+import { useWallet } from "@/services/useTransactions";
+import http from "@/lib/http";
 
 function BookingPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const user = useAppSelector((state) => state.auth.user);
+    const queryClient = useQueryClient();
 
     const vendorId = searchParams.get('vendorId');
     const serviceIdsParam = searchParams.get('serviceIds');
 
     const [date, setDate] = useState<Date | undefined>(undefined);
     const [selectedTime, setSelectedTime] = useState<string>("");
-    const [paymentMethod, setPaymentMethod] = useState<"venue" | "online" | "wallet">("venue");
+    const [paymentMethod, setPaymentMethod] = useState<"online" | "wallet">("online");
     const [fundWalletOpen, setFundWalletOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,12 +41,17 @@ function BookingPageContent() {
         notes: "",
     });
 
-    const [cardFormData, setCardFormData] = useState({
-        cardNumber: "",
-        cardExpiry: "",
-        cardCvc: "",
-        cardName: "",
-    });
+    // Pre-fill contact form from user profile
+    useEffect(() => {
+        if (!user) return;
+        const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+        setContactFormData((prev) => ({
+            ...prev,
+            name: fullName || prev.name,
+            email: user.email || prev.email,
+            phone: user.phoneNumber || prev.phone,
+        }));
+    }, [user]);
 
     const { data: vendor, isLoading, isError } = useQuery({
         queryKey: ["booking-vendor", vendorId],
@@ -58,8 +66,11 @@ function BookingPageContent() {
         return vendor.services.filter((service) => serviceIds.includes(service.id));
     }, [vendor, serviceIdsParam]);
 
+    const { data: wallet, isLoading: walletLoading } = useWallet();
+    const walletBalance = wallet?.balance ?? 0;
+
     const totalPrice = selectedServices.reduce((sum, service) => sum + (service.price || 0), 0);
-    const hasInsufficientFunds = paymentMethod === "wallet" && totalPrice > WALLET_BALANCE;
+    const hasInsufficientFunds = paymentMethod === "wallet" && totalPrice > walletBalance;
 
     const handleRemoveService = (serviceId: string) => {
         const serviceIds = selectedServices
@@ -78,17 +89,7 @@ function BookingPageContent() {
         if (selectedServices.length === 0) return false;
         if (!date || !selectedTime) return false;
         if (!contactFormData.name || !contactFormData.email || !contactFormData.phone) return false;
-
-        if (paymentMethod === "online") {
-            if (!cardFormData.cardNumber || !cardFormData.cardExpiry || !cardFormData.cardCvc || !cardFormData.cardName) {
-                return false;
-            }
-        }
-
-        if (paymentMethod === "wallet" && hasInsufficientFunds) {
-            return false;
-        }
-
+        if (paymentMethod === "wallet" && hasInsufficientFunds) return false;
         return true;
     };
 
@@ -105,44 +106,63 @@ function BookingPageContent() {
 
         setIsSubmitting(true);
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        const bookingData = {
-            vendor: {
-                id: vendor.id,
-                name: vendor.name,
-                location: vendor.location,
-                image: vendor.bannerImage,
-            },
-            services: selectedServices.map(service => ({
-                id: service.id,
-                name: service.name,
-                price: Number(service.price) || 0,
-                duration: service.duration,
-            })),
-            date: date ? date.toISOString() : null,
-            time: selectedTime,
-            total: Number(totalPrice) || 0,
-            paymentMethod,
-            customerInfo: {
-                name: contactFormData.name,
-                email: contactFormData.email,
-                phone: contactFormData.phone,
-                notes: contactFormData.notes
-            }
-        };
-
-        toast.success(`Appointment confirmed with ${vendor.name} for ${date?.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} at ${selectedTime}!`);
-
         try {
+            const payload = {
+                vendorId: Number(vendorId),
+                serviceIds: serviceIdsParam!.split(',').map(Number),
+                date: date!.toISOString().split('T')[0],   // "2026-04-20"
+                time: selectedTime,                          // "14:30"
+                paymentMethod,
+                specificRequest: contactFormData.notes,
+            };
+
+            const { data } = await http.post('/appointments', payload);
+            const { appointment, checkoutUrl } = data;
+
+            // Online → redirect to Stripe checkout
+            if (paymentMethod === 'online' && checkoutUrl) {
+                window.location.href = checkoutUrl;
+                return;
+            }
+
+            // Wallet → store data and go to confirmation page
+            const bookingData = {
+                vendor: {
+                    id: vendor.id,
+                    name: vendor.name,
+                    location: vendor.location,
+                    image: vendor.bannerImage,
+                },
+                services: (appointment.services as any[]).map((s) => ({
+                    id: s.id,
+                    name: s.serviceName,
+                    price: Number(s.price) || 0,
+                    duration: s.duration,
+                })),
+                date: date!.toISOString(),
+                time: selectedTime,
+                total: appointment.totalAmount,
+                paymentMethod,
+                customerInfo: {
+                    name: contactFormData.name,
+                    email: contactFormData.email,
+                    phone: contactFormData.phone,
+                    notes: contactFormData.notes,
+                },
+            };
+
+            // Wallet balance and transactions are now stale — invalidate before navigating
+            queryClient.invalidateQueries({ queryKey: ["wallet"] });
+            queryClient.invalidateQueries({ queryKey: ["transactions"] });
+            queryClient.invalidateQueries({ queryKey: ["user-appointments"] });
+
             sessionStorage.setItem('bookingConfirmationData', JSON.stringify(bookingData));
-            setTimeout(() => {
-                router.push('/booking/confirmation');
-            }, 100);
-        } catch (error) {
-            console.error('Error storing booking data:', error);
-            toast.error('Failed to save booking data. Please try again.');
+            router.push('/booking/confirmation');
+        } catch (error: any) {
+            toast.error(
+                error?.response?.data?.message ||
+                'Failed to create appointment. Please try again.'
+            );
             setIsSubmitting(false);
         }
     };
@@ -253,10 +273,10 @@ function BookingPageContent() {
                             <PaymentMethodSection
                                 paymentMethod={paymentMethod}
                                 totalPrice={totalPrice}
-                                cardFormData={cardFormData}
+                                walletBalance={walletBalance}
+                                walletLoading={walletLoading}
                                 hasInsufficientFunds={hasInsufficientFunds}
                                 onPaymentMethodChange={setPaymentMethod}
-                                onCardFormDataChange={(data) => setCardFormData({ ...cardFormData, ...data })}
                                 onFundWallet={() => setFundWalletOpen(true)}
                             />
                         </div>

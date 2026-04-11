@@ -94,6 +94,12 @@ export function useFavoritesAPI() {
     toast.success(`${vendorName || "Vendor"} removed from favourites.`);
   };
 
+  const isAddingFavoriteFor = (vendorId: string) =>
+    addFavoriteMutation.isPending && addFavoriteMutation.variables === vendorId;
+
+  const isRemovingFavoriteFor = (vendorId: string) =>
+    removeFavoriteMutation.isPending && removeFavoriteMutation.variables === vendorId;
+
   return {
     favoriteIds,
     isFavorite: (vendorId: string) => favoriteSet.has(vendorId),
@@ -102,5 +108,7 @@ export function useFavoritesAPI() {
     removeFromFavoritesLocally,
     isAddingFavorite: addFavoriteMutation.isPending,
     isRemovingFavorite: removeFavoriteMutation.isPending,
+    isAddingFavoriteFor,
+    isRemovingFavoriteFor,
   };
 }

@@ -1,21 +1,47 @@
-export type AppointmentStatus = "upcoming" | "pending" | "past" | "cancelled";
+export type AppointmentStatus = "pending" | "confirmed" | "completed" | "cancelled";
+export type PaymentStatus = "pending" | "paid" | "failed";
+export type AppointmentPaymentMethod = "online" | "wallet";
+
+export interface AppointmentService {
+  id: number;
+  serviceName: string;
+  category: { id: number; name: string; iconName: string | null };
+  price: string;
+  duration: string;
+  description: string;
+  imageUrl: string | null;
+  isPublished: boolean;
+}
+
+export interface AppointmentVendor {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  country: string;
+  profilePhoto: string | null;
+  phoneNumber: string;
+  accountType: string;
+}
 
 export interface Appointment {
-  id: string;
-  serviceName: string;
-  serviceImage: string;
-  providerName: string;
-  providerSlug: string;
-  providerAvatar: string;
-  rating: number;
-  reviewCount: number;
+  id: number;
+  vendor: AppointmentVendor;
+  services: AppointmentService[];
   date: string;
   time: string;
-  duration: string;
+  rescheduleDate: string | null;
+  rescheduleTime: string | null;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  specificRequest: string;
+  paymentMethod: AppointmentPaymentMethod;
   status: AppointmentStatus;
-  location: string;
-  price: number;
-  description?: string;
+  totalAmount: number;
+  paymentStatus: PaymentStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AppointmentCardProps {

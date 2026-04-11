@@ -1,33 +1,35 @@
 import Link from "next/link";
 import Image from "next/image";
 
-const Footer = () => {
-  const currentYear = new Date().getFullYear();
+// Module-level constants — never recreated on re-render
+const CURRENT_YEAR = new Date().getFullYear();
 
-  const footerSections = {
-    forCustomers: [
-      { label: "About Us", href: "/about-us" },
-      { label: "Help & Support", href: "/help-and-support" },
-      { label: "FAQs", href: "/help-and-support" },
-      { label: "Blog", href: "/blog" },
-    ],
-    forVendors: [
-      { label: "Become a vendor", href: "/vendor/register" },
-      { label: "Pricing", href: "/pricing" },
-      { label: "Support", href: "/vendor/support" },
-    ],
-    legal: [
-      { label: "Privacy Policy", href: "/privacy-policy" },
-      { label: "Terms Of Use", href: "/terms-of-use" },
-      { label: "Terms Of Service", href: "/terms-of-service" },
-    ],
-    social: [
-      { label: "Instagram", href: "https://instagram.com" },
-      { label: "Facebook", href: "https://facebook.com" },
-      { label: "Twitter (X)", href: "https://twitter.com" },
-      { label: "LinkedIn", href: "https://linkedin.com" },
-    ],
-  };
+const FOOTER_SECTIONS = {
+  forCustomers: [
+    { label: "About Us", href: "/about-us" },
+    { label: "Help & Support", href: "/help-and-support" },
+    { label: "FAQs", href: "/help-and-support" },
+    { label: "Blog", href: "/blog" },
+  ],
+  forVendors: [
+    { label: "Become a vendor", href: "/vendor/register" },
+    { label: "Pricing", href: "/pricing" },
+    { label: "Support", href: "/vendor/support" },
+  ],
+  legal: [
+    { label: "Privacy Policy", href: "/privacy-policy" },
+    { label: "Terms Of Use", href: "/terms-of-use" },
+    { label: "Terms Of Service", href: "/terms-of-service" },
+  ],
+  social: [
+    { label: "Instagram", href: "https://instagram.com" },
+    { label: "Facebook", href: "https://facebook.com" },
+    { label: "Twitter (X)", href: "https://twitter.com" },
+    { label: "LinkedIn", href: "https://linkedin.com" },
+  ],
+};
+
+const Footer = () => {
 
   return (
     <footer className="bg-[#562A03] rounded-t-[40px] lg:rounded-t-[56px] container overflow-hidden">
@@ -63,7 +65,7 @@ const Footer = () => {
             <div>
               <h3 className="text-[#EEEDEC] text-xl font-semibold leading-[160%] tracking-[-0.01em] mb-4 sm:mb-6">For Customers</h3>
               <ul className="space-y-3 sm:space-y-4">
-                {footerSections.forCustomers.map((link) => (
+                {FOOTER_SECTIONS.forCustomers.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
@@ -80,7 +82,7 @@ const Footer = () => {
             <div>
               <h3 className="text-[#EEEDEC] text-xl font-semibold leading-[160%] tracking-[-0.01em] mb-4 sm:mb-6">For Vendors</h3>
               <ul className="space-y-3 sm:space-y-4">
-                {footerSections.forVendors.map((link) => (
+                {FOOTER_SECTIONS.forVendors.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
@@ -97,7 +99,7 @@ const Footer = () => {
             <div>
               <h3 className="text-[#EEEDEC] text-xl font-semibold leading-[160%] tracking-[-0.01em] mb-4 sm:mb-6">Legal</h3>
               <ul className="space-y-3 sm:space-y-4">
-                {footerSections.legal.map((link) => (
+                {FOOTER_SECTIONS.legal.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
@@ -114,7 +116,7 @@ const Footer = () => {
             <div>
               <h3 className="text-[#EEEDEC] text-xl font-semibold leading-[160%] tracking-[-0.01em] mb-4 sm:mb-6">Find us on social</h3>
               <ul className="space-y-3 sm:space-y-4">
-                {footerSections.social.map((link) => (
+                {FOOTER_SECTIONS.social.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
@@ -142,7 +144,7 @@ const Footer = () => {
             info@afrivendor.co.uk
           </Link>
           <p className="text-accent-80 text-sm md:text-base font-normal order-1 sm:order-2">
-            © {currentYear} Afrivendors.co.uk ltd
+            © {CURRENT_YEAR} Afrivendors.co.uk ltd
           </p>
         </div>
       </div>

@@ -10,7 +10,7 @@ export function ReviewsList({ reviews, onEdit, onDelete }: ReviewsListProps) {
   const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);
 
   const handleDelete = () => {
-    if (deleteReviewId) {
+    if (deleteReviewId && onDelete) {
       onDelete(deleteReviewId);
       setDeleteReviewId(null);
     }
@@ -79,7 +79,7 @@ export function ReviewsList({ reviews, onEdit, onDelete }: ReviewsListProps) {
                           {review.date}
                         </span>
                       </div>
-                      {review.isUserReview && (
+                      {review.isUserReview && onEdit && onDelete && (
                         <div className="flex gap-2">
                           <Button
                             variant="ghost"

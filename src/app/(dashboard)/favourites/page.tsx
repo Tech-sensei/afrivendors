@@ -11,7 +11,7 @@ import type { FavoriteVendorCard } from "@/types/favorites";
 
 export default function FavouritesPage() {
     const router = useRouter();
-    const { removeFromFavorites, isRemovingFavorite } = useFavoritesAPI();
+    const { removeFromFavorites, isRemovingFavoriteFor } = useFavoritesAPI();
     const { data: favourites = [], isLoading, isError } = useQuery<FavoriteVendorCard[]>({
         queryKey: ["favorite-vendors"],
         queryFn: getFavoriteVendors,
@@ -67,10 +67,9 @@ export default function FavouritesPage() {
                             index={index}
                             onClick={() => router.push(`/categories/${vendor.id}`)}
                             isFavourite
+                            favouritePending={isRemovingFavoriteFor(vendor.id)}
                             onFavouriteToggle={() => {
-                                if (!isRemovingFavorite) {
-                                    void removeFromFavorites(vendor.id, vendor.name);
-                                }
+                                void removeFromFavorites(vendor.id, vendor.name);
                             }}
                         />
                     ))}

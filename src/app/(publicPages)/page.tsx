@@ -1,13 +1,15 @@
-import FAQ from "@/components/views/FAQSection";
-import Reviews from "@/components/views/ReviewSection";
-import BrowseCategoriesSection from "@/components/views/BrowseCategoriesSection";
-import CTASection from "@/components/views/CTASection";
-import FeaturedVendorsSection from "@/components/views/FeaturedVendorsSection";
-import TrendingVendorsSection from "@/components/views/TrendingVendorsSection";
-import NewVendorsSection from "@/components/views/NewVendorsSection";
+import dynamic from "next/dynamic";
 import HomeHeroSection from "@/components/views/HomeHeroSection";
-import WhyUsSection from "@/app/(publicPages)/how-it-works/views/WhyUsSection";
-import DownloadAppSection from "@/components/views/DownloadAppSection";
+import BrowseCategoriesSection from "@/components/views/BrowseCategoriesSection";
+
+// Lazy-load everything below the fold — only Hero + Categories are critical for LCP
+const FeaturedVendorsSection = dynamic(() => import("@/components/views/FeaturedVendorsSection"));
+const TrendingVendorsSection  = dynamic(() => import("@/components/views/TrendingVendorsSection"));
+const NewVendorsSection        = dynamic(() => import("@/components/views/NewVendorsSection"));
+const DownloadAppSection       = dynamic(() => import("@/components/views/DownloadAppSection"));
+const Reviews                  = dynamic(() => import("@/components/views/ReviewSection"));
+const CTASection               = dynamic(() => import("@/components/views/CTASection"));
+const FAQ                      = dynamic(() => import("@/components/views/FAQSection"));
 
 export default function Home() {
     return (
@@ -17,7 +19,6 @@ export default function Home() {
             <FeaturedVendorsSection />
             <TrendingVendorsSection />
             <NewVendorsSection />
-            <WhyUsSection />
             <DownloadAppSection />
             <Reviews />
             <CTASection />
@@ -25,4 +26,3 @@ export default function Home() {
         </>
     );
 }
-

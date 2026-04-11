@@ -20,10 +20,11 @@ export interface User {
   dob?: string | null;
   gender?: string | null;
   profilePhoto?: string | null;
-  phoneNumber?: AuthPhoneNumber;
+  phoneNumber?: string;
   emailVerifiedAt?: string | null;
   addresses?: Address[];
   accountType?: string;
+  adminRoles?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -81,9 +81,22 @@ export function Drawer({
     );
 }
 
-export function DrawerSection({ children, className }: { children: React.ReactNode; className?: string }) {
+export function DrawerSection({
+    children,
+    className,
+    title,
+}: {
+    children: React.ReactNode;
+    className?: string;
+    title?: string;
+}) {
     return (
-        <div className={cn("w-full", className)}>
+        <div className={cn("w-full mb-8 last:mb-0", className)}>
+            {title ? (
+                <h3 className="font-unbounded text-base font-semibold text-secondary-000 mb-4">
+                    {title}
+                </h3>
+            ) : null}
             {children}
         </div>
     );

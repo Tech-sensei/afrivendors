@@ -1,8 +1,8 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import {
     Star,
@@ -11,6 +11,7 @@ import {
     Phone,
     Mail,
     Heart,
+    Loader2,
     Share2,
     ChevronLeft,
     Check,
@@ -23,17 +24,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Drawer } from "@/app/(dashboard)/Drawer";
 import { formatVendorPrice, getPublicVendorById } from "@/services/vendor";
+import { createVendorReview } from "@/services/vendorReviews";
 import { useFavoritesAPI } from "@/services/useFavoritesAPI";
 import { useAppSelector } from "@/store/hooks";
+import type { User } from "@/types/auth";
+import type { VendorDetailReview } from "@/types/vendor";
 import { ReviewForm } from "@/components/views/ReviewForm";
 import { ReviewsList } from "@/components/views/ReviewsList";
-import {
-    deleteReview,
-    getUserReview,
-    getVendorReviews,
-    saveReview,
-    updateReview,
-} from "@/lib/reviewStorage";
+import { VendorOpeningHours } from "@/components/views/VendorOpeningHours";
+
+function profileDisplayName(user: User | null | undefined) {
+    if (!user) return "";
+    return `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+}
+
+function isReviewFromCurrentUser(
+    review: VendorDetailReview,
+    user: User | null | undefined
+): boolean {
+    if (!user) return false;
+    if (review.reviewerUserId != null && user.id != null) {
+        return review.reviewerUserId === user.id;
+    }
+    const name = profileDisplayName(user);
+    if (!name) return false;
+    return review.author.trim().toLowerCase() === name.toLowerCase();
+}
 
 const VendorDetailPage = () => {
     const params = useParams();
@@ -42,12 +58,10 @@ const VendorDetailPage = () => {
 
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [isCustomRequestDrawerOpen, setIsCustomRequestDrawerOpen] = useState(false);
-    const [localReviews, setLocalReviews] = useState<any[]>([]);
-    const [userReview, setUserReview] = useState<any>(null);
     const [showReviewForm, setShowReviewForm] = useState(false);
-    const [editingReview, setEditingReview] = useState<any>(null);
-    const { addToFavorites, isFavorite } = useFavoritesAPI();
+    const { addToFavorites, isFavorite, isAddingFavoriteFor } = useFavoritesAPI();
     const { isAuthenticated, isLoadingUser, user } = useAppSelector((state) => state.auth);
+    const queryClient = useQueryClient();
 
     const { data: vendor, isLoading, isError } = useQuery({
         queryKey: ["public-vendor", vendorId],
@@ -55,27 +69,30 @@ const VendorDetailPage = () => {
         enabled: !!vendorId,
     });
 
+    const submitReviewMutation = useMutation({
+        mutationFn: (payload: { rating: number; comment: string }) => {
+            if (!vendor?.numericId) throw new Error("Missing vendor");
+            return createVendorReview(vendor.numericId, payload);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["public-vendor", vendorId] });
+            toast.success("Review submitted successfully!");
+            setShowReviewForm(false);
+        },
+        onError: (error: unknown) => {
+            const err = error as { response?: { data?: { message?: string | string[]; responseMessage?: string } } };
+            const msg = err?.response?.data?.message;
+            const text = Array.isArray(msg) ? msg.join(", ") : msg || err?.response?.data?.responseMessage;
+            toast.error(text || "Could not submit review. Please try again.");
+        },
+    });
+
     const services = vendor?.services || [];
     const galleryImages = vendor?.gallery?.length ? vendor.gallery : vendor?.bannerImage ? [vendor.bannerImage] : [];
     const vendorIdNumber = vendor?.numericId;
 
-    useEffect(() => {
-        if (!vendorIdNumber) return;
-
-        const vendorLocalReviews = getVendorReviews(vendorIdNumber);
-        const localUserReview = getUserReview(vendorIdNumber);
-
-        setLocalReviews(
-            vendorLocalReviews.map((review) => ({
-                ...review,
-                isUserReview: localUserReview?.id === review.id,
-            }))
-        );
-        setUserReview(localUserReview);
-    }, [vendorIdNumber]);
-
     const mergedReviews = useMemo(() => {
-        const apiReviews = (vendor?.reviews || []).map((review) => ({
+        return (vendor?.reviews || []).map((review) => ({
             ...review,
             avatar: review.author
                 .split(" ")
@@ -83,70 +100,30 @@ const VendorDetailPage = () => {
                 .join("")
                 .toUpperCase()
                 .slice(0, 2),
+            isUserReview: isReviewFromCurrentUser(review, user),
         }));
+    }, [vendor?.reviews, user]);
 
-        return [...localReviews, ...apiReviews];
-    }, [localReviews, vendor?.reviews]);
+    const hasUserReview = useMemo(
+        () => mergedReviews.some((r) => r.isUserReview),
+        [mergedReviews]
+    );
 
-    const handleReviewRedirect = () => {
-        const redirectPath =
-            typeof window !== "undefined"
-                ? `${window.location.pathname}${window.location.search}`
-                : `/categories/${vendorId}`;
-        router.push(`/sign-in?redirect=${encodeURIComponent(redirectPath)}`);
+    const handleSaveReview = async (reviewData: { rating: number; comment: string }) => {
+        await submitReviewMutation.mutateAsync(reviewData);
     };
 
-    const handleSaveReview = (reviewData: { rating: number; comment: string; author: string }) => {
-        if (!vendorIdNumber) return;
-
-        if (editingReview) {
-            const updatedReview = updateReview(editingReview.id, reviewData.rating, reviewData.comment);
-            if (updatedReview) {
-                setLocalReviews((prev) =>
-                    prev.map((review) =>
-                        review.id === editingReview.id
-                            ? { ...updatedReview, isUserReview: true }
-                            : review
-                    )
-                );
-                setUserReview(updatedReview);
-                toast.success("Review updated successfully!");
-            }
-        } else {
-            const authorName =
-                reviewData.author.trim() ||
-                `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() ||
-                "Anonymous";
-
-            const newReview = saveReview(vendorIdNumber, authorName, reviewData.rating, reviewData.comment);
-            setLocalReviews((prev) => [{ ...newReview, isUserReview: true }, ...prev]);
-            setUserReview(newReview);
-            toast.success("Review submitted successfully!");
-        }
-
-        setEditingReview(null);
-        setShowReviewForm(false);
-    };
-
-    const handleEditReview = (review: any) => {
-        setEditingReview(review);
-        setShowReviewForm(true);
-    };
-
-    const handleDeleteReview = (reviewId: string) => {
-        const success = deleteReview(reviewId);
-        if (success) {
-            setLocalReviews((prev) => prev.filter((review) => review.id !== reviewId));
-            setUserReview(null);
-            setEditingReview(null);
-            setShowReviewForm(false);
-            toast.success("Review deleted successfully!");
-        }
-    };
+    const posterName = profileDisplayName(user);
 
     const handleBooking = () => {
         if (selectedServices.length === 0) {
             toast.error("Please select at least one service");
+            return;
+        }
+
+        if (!isAuthenticated) {
+            const destination = `/booking?vendorId=${vendorId}&serviceIds=${selectedServices.join(",")}`;
+            router.push(`/sign-in?redirect=${encodeURIComponent(destination)}`);
             return;
         }
 
@@ -259,16 +236,25 @@ const VendorDetailPage = () => {
                                             <Button
                                                 variant="outline"
                                                 size="icon"
+                                                disabled={isAddingFavoriteFor(vendor.id)}
+                                                aria-busy={isAddingFavoriteFor(vendor.id)}
                                                 onClick={() => addToFavorites(vendor)}
-                                                className="rounded-[18px] w-11 h-11 border-accent-30 hover:bg-accent-10"
+                                                className="rounded-[18px] w-11 h-11 border-accent-30 hover:bg-accent-10 disabled:opacity-80 disabled:cursor-wait"
                                             >
-                                                <Heart
-                                                    className={`h-5 w-5 ${
-                                                        isAuthenticated && isFavorite(vendor.id)
-                                                            ? "text-primary-100 fill-primary-100"
-                                                            : "text-secondary-000"
-                                                    }`}
-                                                />
+                                                {isAddingFavoriteFor(vendor.id) ? (
+                                                    <Loader2
+                                                        className="h-5 w-5 animate-spin text-secondary-000"
+                                                        aria-hidden
+                                                    />
+                                                ) : (
+                                                    <Heart
+                                                        className={`h-5 w-5 ${
+                                                            isAuthenticated && isFavorite(vendor.id)
+                                                                ? "text-primary-100 fill-primary-100"
+                                                                : "text-secondary-000"
+                                                        }`}
+                                                    />
+                                                )}
                                             </Button>
                                         )}
                                         <Button
@@ -392,15 +378,12 @@ const VendorDetailPage = () => {
                                             </div>
                                             <div className="pt-4 border-t border-accent-20">
                                                 <h4 className="mb-4 text-base font-semibold text-secondary-000">
-                                                    Opening Hours
+                                                    Opening hours
                                                 </h4>
-                                                <div className="space-y-2">
-                                                    <div className="flex justify-between">
-                                                        <span className="text-sm text-accent-80">
-                                                            {vendor.openingHours || "Hours unavailable"}
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                                <VendorOpeningHours
+                                                    schedule={vendor.openingHoursSchedule}
+                                                    fallbackText={vendor.openingHours}
+                                                />
                                             </div>
                                         </CardContent>
                                     </Card>
@@ -425,43 +408,31 @@ const VendorDetailPage = () => {
                                             </div>
                                         </div>
 
-                                        {isAuthenticated ? (
-                                            !userReview && !showReviewForm && (
+                                        {isAuthenticated &&
+                                            !hasUserReview &&
+                                            !showReviewForm && (
                                                 <Button
                                                     onClick={() => setShowReviewForm(true)}
                                                     className="gap-2 bg-primary-100 text-white hover:bg-primary-100/90 rounded-[18px] h-11 text-sm font-semibold"
                                                 >
                                                     Write Review
                                                 </Button>
-                                            )
-                                        ) : (
-                                            <Button
-                                                variant="outline"
-                                                onClick={handleReviewRedirect}
-                                                className="rounded-[18px] h-11 border-accent-20 text-secondary-000 hover:bg-accent-10 text-sm font-semibold"
-                                            >
-                                                Sign in to Review
-                                            </Button>
-                                        )}
+                                            )}
                                     </div>
 
                                     {showReviewForm && vendorIdNumber && (
                                         <ReviewForm
                                             vendorId={vendorIdNumber}
-                                            existingReview={editingReview || undefined}
+                                            posterDisplayName={posterName || undefined}
                                             onSave={handleSaveReview}
+                                            isSubmitting={submitReviewMutation.isPending}
                                             onCancel={() => {
                                                 setShowReviewForm(false);
-                                                setEditingReview(null);
                                             }}
                                         />
                                     )}
 
-                                    <ReviewsList
-                                        reviews={mergedReviews}
-                                        onEdit={handleEditReview}
-                                        onDelete={handleDeleteReview}
-                                    />
+                                    <ReviewsList reviews={mergedReviews} />
                                 </TabsContent>
 
                                 <TabsContent value="gallery">

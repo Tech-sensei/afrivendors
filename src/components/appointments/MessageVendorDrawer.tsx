@@ -50,7 +50,7 @@ export function MessageVendorDrawer({
             {
               id: '1',
               sender: 'vendor',
-              text: `Hello! Thanks for booking ${appointment.serviceName} with us.`,
+              text: `Hello! Thanks for booking ${appointment.services[0]?.serviceName ?? 'your service'} with us.`,
               time: 'Just now'
             }
         ]);
@@ -99,12 +99,12 @@ export function MessageVendorDrawer({
         {/* Header */}
         <SheetHeader className="px-6 py-4 border-b flex flex-row items-center gap-3 bg-white shrink-0 shadow-sm relative z-10">
           <Avatar className="h-10 w-10 border border-border/50">
-            <AvatarImage src={appointment.providerAvatar} className="object-cover" />
-            <AvatarFallback>VN</AvatarFallback>
+            <AvatarImage src={appointment.vendor.profilePhoto ?? ''} className="object-cover" />
+            <AvatarFallback>{appointment.vendor.firstName[0]}{appointment.vendor.lastName[0]}</AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-0.5 text-left overflow-hidden">
-            <SheetTitle className="text-base font-bold font-unbounded text-secondary-000 truncate">{appointment.providerName}</SheetTitle>
-            <p className="text-xs text-secondary-300 font-medium truncate">{appointment.serviceName}</p>
+            <SheetTitle className="text-base font-bold font-unbounded text-secondary-000 truncate">{appointment.vendor.firstName} {appointment.vendor.lastName}</SheetTitle>
+            <p className="text-xs text-secondary-300 font-medium truncate">{appointment.services[0]?.serviceName}</p>
           </div>
           <SheetClose className="rounded-full bg-secondary-300/10 p-2 hover:bg-secondary-300/20 transition-colors -mr-2">
              <X className="h-4 w-4 text-secondary-000" />
@@ -147,7 +147,7 @@ export function MessageVendorDrawer({
 
         {/* Input Area */}
         <SheetFooter className="p-4 bg-white border-t shrink-0 sm:flex-col">
-          <div className="flex w-full items-end gap-2 bg-[#F8F5F2] p-2 rounded-[1.5rem] border border-transparent focus-within:border-primary-100/30 focus-within:bg-white focus-within:shadow-md transition-all duration-200">
+          <div className="flex w-full items-end gap-2 bg-[#F8F5F2] p-2 rounded-3xl border border-transparent focus-within:border-primary-100/30 focus-within:bg-white focus-within:shadow-md transition-all duration-200">
              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-secondary-300 hover:text-secondary-000 hover:bg-white/50 mb-0.5 shrink-0">
                 <Paperclip className="h-4 w-4" />
              </Button>

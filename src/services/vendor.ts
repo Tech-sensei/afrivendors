@@ -8,6 +8,7 @@ import type {
   VendorDetailReview,
   VendorDetailService,
   VendorListItem,
+  VendorOpeningHoursDay,
 } from "@/types/vendor";
 
 const FALLBACK_VENDOR_IMAGE = "/assets/images/vendor.jpeg";
@@ -30,6 +31,44 @@ function formatTime(time?: string | null) {
   const period = hours >= 12 ? "PM" : "AM";
   const normalizedHours = hours % 12 || 12;
   return `${normalizedHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+}
+
+const WEEKDAY_ORDER = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const;
+
+function daySortIndex(day: string): number {
+  const k = day.toLowerCase();
+  const i = WEEKDAY_ORDER.indexOf(k as (typeof WEEKDAY_ORDER)[number]);
+  return i === -1 ? 99 : i;
+}
+
+function mapOpeningHoursSchedule(
+  openingHours: PublicVendorDetailApiResponse["openingHours"]
+): VendorOpeningHoursDay[] {
+  return [...openingHours]
+    .sort((a, b) => daySortIndex(a.day) - daySortIndex(b.day))
+    .map((entry) => {
+      const dayKey = entry.day.toLowerCase();
+      const dayLabel = entry.day.charAt(0).toUpperCase() + entry.day.slice(1);
+      if (!entry.isOpen || !entry.openTime || !entry.closeTime) {
+        return { dayKey, dayLabel, isOpen: false, hoursLine: "Closed" };
+      }
+      const open = formatTime(entry.openTime);
+      const close = formatTime(entry.closeTime);
+      return {
+        dayKey,
+        dayLabel,
+        isOpen: true,
+        hoursLine: `${open} – ${close}`,
+      };
+    });
 }
 
 function formatOpeningHours(
@@ -64,6 +103,7 @@ function mapReview(review: PublicVendorDetailApiResponse["reviews"][number]): Ve
           year: "numeric",
         })
       : "Recent",
+    reviewerUserId: review.user?.id ?? null,
   };
 }
 
@@ -143,9 +183,31 @@ export function mapPublicVendorDetail(
       payload.kyc?.aboutBusiness ||
       `Welcome to ${businessName}. We are committed to providing exceptional service.`,
     openingHours: formatOpeningHours(payload.openingHours),
+    openingHoursSchedule: mapOpeningHoursSchedule(payload.openingHours),
     services,
     reviews,
   };
+}
+
+export async function getMostPopularVendors(page = 1, limit = 4) {
+  const response = await http.get<PublicVendorListApiResponse>("/vendor/public/most-popular", {
+    params: { page, limit },
+  });
+  return response.data.data.map(mapPublicVendorListItem);
+}
+
+export async function getMostTrendingVendors(page = 1, limit = 4) {
+  const response = await http.get<PublicVendorListApiResponse>("/vendor/public/most-trending", {
+    params: { page, limit },
+  });
+  return response.data.data.map(mapPublicVendorListItem);
+}
+
+export async function getNewestVendors(page = 1, limit = 4) {
+  const response = await http.get<PublicVendorListApiResponse>("/vendor/public/newest", {
+    params: { page, limit },
+  });
+  return response.data.data.map(mapPublicVendorListItem);
 }
 
 export async function getPublicVendors(params: GetPublicVendorsParams) {

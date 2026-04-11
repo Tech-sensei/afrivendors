@@ -127,8 +127,6 @@ export default function BookingConfirmationPage() {
 
     const getPaymentMethodLabel = () => {
         switch (paymentMethod) {
-            case 'venue':
-                return 'Pay at Venue';
             case 'online':
                 return 'Paid Online';
             case 'wallet':

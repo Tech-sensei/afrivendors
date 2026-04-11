@@ -18,14 +18,16 @@ export interface ReviewFormExistingReview {
 export interface ReviewFormSavePayload {
   rating: number;
   comment: string;
-  author: string;
 }
 
 export interface ReviewFormProps {
   vendorId: number;
   existingReview?: ReviewFormExistingReview;
-  onSave: (review: ReviewFormSavePayload) => void;
+  /** Shown as "Posting as …" — from profile, not sent to API. */
+  posterDisplayName?: string;
+  onSave: (review: ReviewFormSavePayload) => void | Promise<void>;
   onCancel?: () => void;
+  isSubmitting?: boolean;
 }
 
 export interface ReviewListItem {
@@ -40,6 +42,7 @@ export interface ReviewListItem {
 
 export interface ReviewsListProps {
   reviews: ReviewListItem[];
-  onEdit: (review: ReviewListItem) => void;
-  onDelete: (reviewId: string) => void;
+  /** Omit when edit/delete are not supported by the API yet. */
+  onEdit?: (review: ReviewListItem) => void;
+  onDelete?: (reviewId: string) => void;
 }
