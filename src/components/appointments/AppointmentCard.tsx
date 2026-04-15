@@ -7,7 +7,11 @@ import { Calendar, Clock, MessageCircle, Eye, PenLine, RotateCcw } from "lucide-
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import type { AppointmentCardProps } from "@/types/appointments";
+import {
+  type AppointmentCardProps,
+  isActiveBookingStatus,
+  isBookAgainStatus,
+} from "@/types/appointments";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop";
 
@@ -19,8 +23,8 @@ export function AppointmentCard({
 }: AppointmentCardProps) {
   const router = useRouter();
 
-  const isActive = appointment.status === "pending" || appointment.status === "confirmed";
-  const isBookAgain = appointment.status === "completed" || appointment.status === "cancelled";
+  const isActive = isActiveBookingStatus(appointment.status);
+  const isBookAgain = isBookAgainStatus(appointment.status);
 
   const vendorName = `${appointment.vendor.firstName} ${appointment.vendor.lastName}`;
   const primaryService = appointment.services[0];
@@ -38,21 +42,36 @@ export function AppointmentCard({
 
   const getStatusStyle = (status: string) => {
     switch (status) {
-      case "confirmed": return "text-green-700 bg-green-100";
-      case "pending":   return "text-amber-700 bg-amber-100";
-      case "cancelled": return "text-red-700 bg-red-100";
+      case "confirmed":
+      case "accepted":
+        return "text-green-700 bg-green-100";
+      case "pending":
+        return "text-amber-700 bg-amber-100";
+      case "cancelled":
+      case "rejected":
+        return "text-red-700 bg-red-100";
       case "completed":
-      default:          return "text-slate-700 bg-slate-100";
+      default:
+        return "text-slate-700 bg-slate-100";
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case "pending":   return "Pending";
-      case "confirmed": return "Confirmed";
-      case "completed": return "Completed";
-      case "cancelled": return "Cancelled";
-      default:          return status;
+      case "pending":
+        return "Pending";
+      case "confirmed":
+        return "Confirmed";
+      case "accepted":
+        return "Accepted";
+      case "completed":
+        return "Completed";
+      case "cancelled":
+        return "Cancelled";
+      case "rejected":
+        return "Rejected";
+      default:
+        return status;
     }
   };
 

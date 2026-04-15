@@ -19,7 +19,12 @@ import {
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import http from "@/lib/http";
-import type { Appointment, AppointmentDetailsDrawerProps } from "@/types/appointments";
+import {
+  type Appointment,
+  type AppointmentDetailsDrawerProps,
+  isActiveBookingStatus,
+  isBookAgainStatus,
+} from "@/types/appointments";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -96,8 +101,10 @@ export function AppointmentDetailsDrawer({
 
   if (!isOpen && !appt) return null;
 
-  const isActive    = appt?.status === "pending" || appt?.status === "confirmed";
-  const isBookAgain = appt?.status === "completed" || appt?.status === "cancelled";
+  const isActive =
+    appt?.status !== undefined && isActiveBookingStatus(appt.status);
+  const isBookAgain =
+    appt?.status !== undefined && isBookAgainStatus(appt.status);
 
   const vendorName  = appt ? `${appt.vendor.firstName} ${appt.vendor.lastName}` : "";
   const displayTime = appt?.time?.slice(0, 5) ?? "";

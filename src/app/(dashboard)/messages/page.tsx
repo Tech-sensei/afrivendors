@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Send } from 'lucide-react';
-import { chatConversations } from '@/data/chatData';
+import { MessageCircle, Send, Loader2 } from 'lucide-react';
 import { Drawer, DrawerSection } from '../Drawer';
 import { MessageConversation } from '@/components/messages/MessageConversation';
 import { ConversationItem } from '@/components/messages/ConversationItem';
@@ -11,14 +10,132 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { ChatConversation, ChatMessage } from '@/types/messages';
+import { useAppSelector } from '@/store/hooks';
+import { useGenerateChatToken } from '@/services/useChat';
+import { StreamChat, type Channel as StreamChatChannel } from 'stream-chat';
+import { toast } from 'sonner';
 
 export default function MessagesPage() {
+    const user = useAppSelector((state) => state.auth.user);
+    const { mutateAsync: generateToken } = useGenerateChatToken();
     const [selectedChat, setSelectedChat] = useState<ChatConversation | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [conversations, setConversations] = useState(chatConversations);
+    const [conversations, setConversations] = useState<ChatConversation[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+    const [isSending, setIsSending] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const channelsRef = useRef(new Map<string, StreamChatChannel>());
+    const streamClientRef = useRef<StreamChat | null>(null);
+    const connectingPromiseRef = useRef<Promise<StreamChat> | null>(null);
+
+    const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
+
+    const toChatMessage = (message: any, currentUserId: string): ChatMessage | null => {
+        if (!message?.id || !message?.text) return null;
+        const createdAt = message.created_at ? new Date(message.created_at) : new Date();
+        return {
+            id: message.id as string,
+            senderId: String(message.user?.id ?? ""),
+            senderType: String(message.user?.id) === currentUserId ? "customer" : "vendor",
+            message: message.text as string,
+            timestamp: Number.isNaN(createdAt.getTime()) ? new Date() : createdAt,
+            read: true,
+        };
+    };
+
+    const mapChannelToConversation = (channel: StreamChatChannel, currentUserId: string): ChatConversation => {
+        const messages = channel.state.messages
+            .map((msg) => toChatMessage(msg, currentUserId))
+            .filter((msg): msg is ChatMessage => msg !== null);
+
+        const otherMember = Object.values(channel.state.members).find(
+            (member) => String(member.user?.id ?? member.user_id ?? "") !== currentUserId
+        );
+
+        const vendorName =
+            otherMember?.user?.name ||
+            String(otherMember?.user?.id ?? "") ||
+            String((channel.data as { name?: string } | undefined)?.name ?? "Vendor");
+
+        const lastMessage = messages[messages.length - 1];
+        const fallbackDate = channel.state.last_message_at
+            ? new Date(channel.state.last_message_at)
+            : new Date();
+
+        return {
+            id: channel.id ?? channel.cid,
+            vendorName,
+            vendorCategory: "Appointment chat",
+            lastMessage: lastMessage?.message ?? "No messages yet",
+            lastMessageTime: lastMessage?.timestamp ?? fallbackDate,
+            unreadCount: channel.countUnread(),
+            messages,
+        };
+    };
+
+    const upsertConversationFromChannel = (channel: StreamChatChannel, currentUserId: string) => {
+        if (channel.state.messages.length === 0) {
+            setConversations((prev) => prev.filter((item) => item.id !== (channel.id ?? channel.cid)));
+            setSelectedChat((prev) => {
+                if (prev?.id === (channel.id ?? channel.cid)) return null;
+                return prev;
+            });
+            return;
+        }
+
+        const mapped = mapChannelToConversation(channel, currentUserId);
+        setConversations((prev) => {
+            const next = [...prev];
+            const idx = next.findIndex((item) => item.id === mapped.id);
+            if (idx === -1) {
+                next.unshift(mapped);
+            } else {
+                next[idx] = mapped;
+                next.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+            }
+            return next;
+        });
+        setSelectedChat((prev) => (prev?.id === mapped.id ? mapped : prev));
+    };
+
+    const ensureConnectedClient = async () => {
+        if (!apiKey) throw new Error("Stream API key is missing.");
+        if (!user?.id) throw new Error("Please sign in again to view messages.");
+
+        if (connectingPromiseRef.current) return connectingPromiseRef.current;
+
+        const doConnect = async (): Promise<StreamChat> => {
+            const client = StreamChat.getInstance(apiKey);
+            const targetUserId = String(user.id);
+
+            if (client.userID && client.userID !== targetUserId) {
+                await client.disconnectUser();
+            }
+
+            if (client.userID !== targetUserId) {
+                const { userChatToken } = await generateToken();
+                await client.connectUser(
+                    {
+                        id: targetUserId,
+                        name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || targetUserId,
+                        image: user.profilePhoto ?? undefined,
+                    },
+                    userChatToken
+                );
+            }
+
+            streamClientRef.current = client;
+            return client;
+        };
+
+        connectingPromiseRef.current = doConnect().finally(() => {
+            connectingPromiseRef.current = null;
+        });
+
+        return connectingPromiseRef.current;
+    };
 
     // Focus input when drawer opens
     useEffect(() => {
@@ -29,37 +146,100 @@ export default function MessagesPage() {
         }
     }, [drawerOpen]);
 
-    const handleSendMessage = () => {
-        if (!newMessage.trim() || !selectedChat) return;
+    useEffect(() => {
+        if (!user?.id) return;
 
-        const message: ChatMessage = {
-            id: `msg-${Date.now()}`,
-            senderId: 'customer-1',
-            senderType: 'customer',
-            message: newMessage.trim(),
-            timestamp: new Date(),
-            read: true
-        };
+        let cancelled = false;
 
-        // Update the conversation with the new message
-        const updatedConversations = conversations.map(conv => {
-            if (conv.id === selectedChat.id) {
-                return {
-                    ...conv,
-                    messages: [...conv.messages, message],
-                    lastMessage: message.message,
-                    lastMessageTime: message.timestamp
-                };
+        (async () => {
+            try {
+                setIsLoadingConversations(true);
+                const client = await ensureConnectedClient();
+                const currentUserId = String(user.id);
+
+                const channels = await client.queryChannels(
+                    { type: "messaging", members: { $in: [currentUserId] } },
+                    { last_message_at: -1 },
+                    { watch: false, state: true, limit: 30 }
+                );
+
+                if (cancelled) return;
+
+                channelsRef.current = new Map(
+                    channels
+                        .filter((channel) => !!channel.id)
+                        .map((channel) => [channel.id as string, channel])
+                );
+
+                const mapped = channels
+                    .filter((channel) => channel.state.messages.length > 0)
+                    .map((channel) => mapChannelToConversation(channel, currentUserId));
+                setConversations(mapped);
+            } catch (error) {
+                const errorMessage =
+                    error instanceof Error ? error.message : "Unable to load messages.";
+                toast.error(errorMessage);
+            } finally {
+                if (!cancelled) setIsLoadingConversations(false);
             }
-            return conv;
-        });
+        })();
 
-        setConversations(updatedConversations);
-        const updatedChat = updatedConversations.find(c => c.id === selectedChat.id);
-        if (updatedChat) {
-            setSelectedChat(updatedChat);
+        return () => {
+            cancelled = true;
+        };
+    }, [user?.id]);
+
+    useEffect(() => {
+        if (!drawerOpen || !selectedChat || !user?.id) return;
+
+        const selectedChannel = channelsRef.current.get(selectedChat.id);
+        if (!selectedChannel) return;
+
+        let unsubNew: (() => void) | null = null;
+        let unsubUpdated: (() => void) | null = null;
+
+        (async () => {
+            await selectedChannel.watch();
+            upsertConversationFromChannel(selectedChannel, String(user.id));
+
+            const onNew = selectedChannel.on("message.new", () => {
+                upsertConversationFromChannel(selectedChannel, String(user.id));
+            });
+            const onUpdated = selectedChannel.on("message.updated", () => {
+                upsertConversationFromChannel(selectedChannel, String(user.id));
+            });
+
+            unsubNew = () => onNew.unsubscribe();
+            unsubUpdated = () => onUpdated.unsubscribe();
+        })();
+
+        return () => {
+            if (unsubNew) unsubNew();
+            if (unsubUpdated) unsubUpdated();
+        };
+    }, [drawerOpen, selectedChat?.id, user?.id]);
+
+    const handleSendMessage = async () => {
+        if (!newMessage.trim() || !selectedChat || !user?.id) return;
+
+        const selectedChannel = channelsRef.current.get(selectedChat.id);
+        if (!selectedChannel) {
+            toast.error("Unable to locate this conversation.");
+            return;
         }
-        setNewMessage('');
+
+        try {
+            setIsSending(true);
+            await selectedChannel.sendMessage({ text: newMessage.trim() });
+            upsertConversationFromChannel(selectedChannel, String(user.id));
+            setNewMessage('');
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error ? error.message : "Unable to send message.";
+            toast.error(errorMessage);
+        } finally {
+            setIsSending(false);
+        }
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -134,7 +314,14 @@ export default function MessagesPage() {
 
             {/* Conversations List */}
             <div className="bg-white rounded-2xl border border-accent-20 overflow-hidden">
-                {filteredConversations.length === 0 ? (
+                {isLoadingConversations ? (
+                    <div className="p-12 text-center">
+                        <Loader2 className="h-12 w-12 text-accent-80 mx-auto mb-4 animate-spin" />
+                        <p className="text-base font-medium text-secondary-000 mb-2">
+                            Loading conversations...
+                        </p>
+                    </div>
+                ) : filteredConversations.length === 0 ? (
                     <div className="p-12 text-center">
                         <MessageCircle className="h-12 w-12 text-accent-80 mx-auto mb-4" />
                         <p className="text-base font-medium text-secondary-000 mb-2">
@@ -183,16 +370,20 @@ export default function MessagesPage() {
                             />
                             <Button
                                 onClick={handleSendMessage}
-                                disabled={!newMessage.trim()}
+                                disabled={!newMessage.trim() || isSending}
                                 size="icon"
                                 className={cn(
-                                    "h-12 w-12 rounded-xl flex-shrink-0",
-                                    newMessage.trim()
+                                    "h-12 w-12 rounded-xl shrink-0",
+                                    newMessage.trim() && !isSending
                                         ? "bg-primary-100 text-white hover:bg-primary-100/90"
                                         : "bg-accent-20 text-accent-80 cursor-not-allowed"
                                 )}
                             >
-                                <Send className="h-5 w-5" />
+                                {isSending ? (
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                ) : (
+                                    <Send className="h-5 w-5" />
+                                )}
                             </Button>
                         </div>
                     }

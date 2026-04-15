@@ -1,4 +1,30 @@
-export type AppointmentStatus = "pending" | "confirmed" | "completed" | "cancelled";
+/** Mirrors API booking lifecycle; `confirmed` kept for backward compatibility. */
+export type AppointmentStatus =
+  | "pending"
+  | "confirmed"
+  | "accepted"
+  | "completed"
+  | "cancelled"
+  | "rejected";
+
+/** Upcoming tab: vendor accepted (or legacy confirmed). */
+export const isUpcomingStatus = (s: AppointmentStatus) =>
+  s === "accepted" || s === "confirmed";
+
+/** Pending tab: awaiting vendor action. */
+export const isPendingStatus = (s: AppointmentStatus) => s === "pending";
+
+export const isPastStatus = (s: AppointmentStatus) => s === "completed";
+
+export const isCancelledStatus = (s: AppointmentStatus) =>
+  s === "cancelled" || s === "rejected";
+
+/** Can reschedule or cancel before the service is done or rejected. */
+export const isActiveBookingStatus = (s: AppointmentStatus) =>
+  isUpcomingStatus(s) || isPendingStatus(s);
+
+export const isBookAgainStatus = (s: AppointmentStatus) =>
+  isPastStatus(s) || isCancelledStatus(s);
 export type PaymentStatus = "pending" | "paid" | "failed";
 export type AppointmentPaymentMethod = "online" | "wallet";
 
