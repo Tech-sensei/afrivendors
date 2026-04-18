@@ -1,7 +1,7 @@
 "use client";
 
 import { formatTimeAgo } from "@/data/chatData";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { ConversationItemProps } from "@/types/messages";
 
@@ -23,6 +23,9 @@ export function ConversationItem({
             <div className="flex gap-4">
                 {/* Avatar */}
                 <Avatar className="h-14 w-14 shrink-0">
+                    {conversation.vendorAvatar && (
+                        <AvatarImage src={conversation.vendorAvatar} alt={conversation.vendorName} />
+                    )}
                     <AvatarFallback className="bg-primary-100 text-white text-xl font-semibold">
                         {conversation.vendorName.charAt(0)}
                     </AvatarFallback>

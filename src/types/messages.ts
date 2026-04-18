@@ -11,6 +11,7 @@ export interface ChatConversation {
   id: string;
   vendorName: string;
   vendorCategory: string;
+  vendorAvatar?: string;
   lastMessage: string;
   lastMessageTime: Date;
   unreadCount: number;

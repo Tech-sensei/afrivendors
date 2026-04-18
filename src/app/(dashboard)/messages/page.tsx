@@ -35,10 +35,15 @@ export default function MessagesPage() {
     const toChatMessage = (message: any, currentUserId: string): ChatMessage | null => {
         if (!message?.id || !message?.text) return null;
         const createdAt = message.created_at ? new Date(message.created_at) : new Date();
+        // Use the Stream client's own userID as the source of truth — it's the exact ID
+        // Stream Chat stores on sent messages, guaranteed to match after connectUser.
+        const myStreamId = streamClientRef.current?.userID ?? currentUserId;
         return {
             id: message.id as string,
             senderId: String(message.user?.id ?? ""),
-            senderType: String(message.user?.id) === currentUserId ? "customer" : "vendor",
+            senderType: message.user?.id != null && String(message.user.id) === myStreamId
+                ? "customer"
+                : "vendor",
             message: message.text as string,
             timestamp: Number.isNaN(createdAt.getTime()) ? new Date() : createdAt,
             read: true,
@@ -59,6 +64,8 @@ export default function MessagesPage() {
             String(otherMember?.user?.id ?? "") ||
             String((channel.data as { name?: string } | undefined)?.name ?? "Vendor");
 
+        const vendorAvatar = (otherMember?.user as any)?.image as string | undefined;
+
         const lastMessage = messages[messages.length - 1];
         const fallbackDate = channel.state.last_message_at
             ? new Date(channel.state.last_message_at)
@@ -67,6 +74,7 @@ export default function MessagesPage() {
         return {
             id: channel.id ?? channel.cid,
             vendorName,
+            vendorAvatar,
             vendorCategory: "Appointment chat",
             lastMessage: lastMessage?.message ?? "No messages yet",
             lastMessageTime: lastMessage?.timestamp ?? fallbackDate,
@@ -200,6 +208,7 @@ export default function MessagesPage() {
 
         (async () => {
             await selectedChannel.watch();
+            await selectedChannel.markRead();
             upsertConversationFromChannel(selectedChannel, String(user.id));
 
             const onNew = selectedChannel.on("message.new", () => {
@@ -388,7 +397,7 @@ export default function MessagesPage() {
                         </div>
                     }
                 >
-                    <DrawerSection>
+                    <DrawerSection className="flex flex-col flex-1 min-h-0">
                         <MessageConversation messages={selectedChat.messages} />
                     </DrawerSection>
                 </Drawer>

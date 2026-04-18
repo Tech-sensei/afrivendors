@@ -15,7 +15,7 @@ export function MessageConversation({ messages }: MessageConversationProps) {
     }, [messages]);
 
     return (
-        <div className="bg-accent-10 rounded-xl p-4 min-h-[400px] max-h-[500px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="bg-white rounded-xl p-4 flex-1 min-h-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <div className="flex flex-col gap-4">
                 {messages.map((message, index) => {
                     const isCustomer = message.senderType === "customer";
@@ -33,7 +33,7 @@ export function MessageConversation({ messages }: MessageConversationProps) {
                                 <div
                                     className={`px-4 py-3 rounded-2xl text-sm leading-relaxed break-words ${isCustomer
                                         ? "bg-primary-100 text-white"
-                                        : "bg-white text-secondary-000 shadow-sm"
+                                        : "bg-accent-10 text-secondary-000"
                                         }`}
                                 >
                                     {message.message}

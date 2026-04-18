@@ -151,23 +151,6 @@ export function MessageVendorDrawer({
     return client;
   };
 
-  const tryLoadExistingChannel = async () => {
-    if (!appointment) return null;
-
-    try {
-      const client = await ensureConnectedClient();
-      const existingChannelId = `appointment-${appointment.id}`;
-      const existingChannel = client.channel("messaging", existingChannelId);
-      await existingChannel.watch();
-      seedMessagesFromChannel(existingChannel);
-      setChannel(existingChannel);
-      return existingChannel;
-    } catch {
-      // No existing channel yet (or not accessible) — wait for first send to create/get it.
-      return null;
-    }
-  };
-
   const ensureChannel = async () => {
     if (!appointment) {
       throw new Error("Appointment is not available.");
@@ -181,6 +164,7 @@ export function MessageVendorDrawer({
 
     const nextChannel = client.channel("messaging", channelId);
     await nextChannel.watch();
+    await nextChannel.markRead();
     seedMessagesFromChannel(nextChannel);
     setChannel(nextChannel);
     return nextChannel;
@@ -194,10 +178,10 @@ export function MessageVendorDrawer({
     (async () => {
       setIsLoadingHistory(true);
       try {
-        const loadedChannel = await tryLoadExistingChannel();
-        if (!cancelled && loadedChannel) {
-          setChannel(loadedChannel);
-        }
+        const ch = await ensureChannel();
+        if (!cancelled) setChannel(ch);
+      } catch {
+        // channel doesn't exist yet — user will create it on first send
       } finally {
         if (!cancelled) {
           setIsLoadingHistory(false);
