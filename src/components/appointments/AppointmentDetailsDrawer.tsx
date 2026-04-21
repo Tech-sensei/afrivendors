@@ -8,6 +8,15 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -19,11 +28,13 @@ import {
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import http from "@/lib/http";
+import { useCancelAppointment } from "@/services/useAppointments";
 import {
   type Appointment,
   type AppointmentDetailsDrawerProps,
   isActiveBookingStatus,
   isBookAgainStatus,
+  normalizeAppointmentStatus,
 } from "@/types/appointments";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -77,6 +88,8 @@ export function AppointmentDetailsDrawer({
 }: AppointmentDetailsDrawerProps) {
   const router = useRouter();
   const [isMobile, setIsMobile] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const { mutate: cancelAppointment, isPending: isCancelling } = useCancelAppointment();
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -85,12 +98,20 @@ export function AppointmentDetailsDrawer({
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) setShowCancelConfirm(false);
+  }, [isOpen]);
+
   // Fetch full detail when drawer is open
   const { data: detail, isLoading } = useQuery<Appointment>({
     queryKey: ["appointment-detail", appointment?.id],
     queryFn: async () => {
       const { data } = await http.get(`/users/appointments/${appointment!.id}`);
-      return (data?.data ?? data) as Appointment;
+      const row = (data?.data ?? data) as Appointment;
+      return {
+        ...row,
+        status: normalizeAppointmentStatus(String(row.status)),
+      };
     },
     enabled: isOpen && !!appointment?.id,
     staleTime: 30_000,
@@ -118,6 +139,7 @@ export function AppointmentDetailsDrawer({
                                        "bg-amber-100 text-amber-700";
 
   return (
+    <>
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
@@ -284,7 +306,8 @@ export function AppointmentDetailsDrawer({
             <Button
               variant="destructive"
               className="w-full bg-red-700 hover:bg-red-800 cursor-pointer"
-              disabled={isLoading}
+              disabled={isLoading || isCancelling}
+              onClick={() => setShowCancelConfirm(true)}
             >
               Cancel Appointment
             </Button>
@@ -292,5 +315,56 @@ export function AppointmentDetailsDrawer({
         </div>
       </SheetContent>
     </Sheet>
+
+    <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
+      <AlertDialogContent className="rounded-2xl border-accent-20">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="font-unbounded text-xl font-semibold text-secondary-000">
+            Cancel this appointment?
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-sm text-accent-80">
+            The vendor will be notified. If you paid in advance, refund rules from
+            your booking terms apply.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl border-accent-20"
+              disabled={isCancelling}
+            >
+              Keep appointment
+            </Button>
+          </AlertDialogCancel>
+          <Button
+            type="button"
+            variant="destructive"
+            className="rounded-xl bg-red-700 hover:bg-red-800 inline-flex items-center gap-2"
+            disabled={isCancelling || !appt}
+            onClick={() => {
+              if (!appt) return;
+              cancelAppointment(appt.id, {
+                onSuccess: () => {
+                  setShowCancelConfirm(false);
+                  onClose();
+                },
+              });
+            }}
+          >
+            {isCancelling ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Cancelling…
+              </>
+            ) : (
+              "Yes, cancel"
+            )}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

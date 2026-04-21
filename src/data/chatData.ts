@@ -1,13 +1,14 @@
 import type { ChatConversation } from "@/types/messages";
 
+/** Single demo conversation for the Messages inbox. */
 export const chatConversations: ChatConversation[] = [
   {
     id: "conv-1",
     vendorName: "Zuriglow Beauty Hub",
     vendorCategory: "Beauty & Spa",
     lastMessage: "Thank you for booking with us!",
-    lastMessageTime: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    unreadCount: 2,
+    lastMessageTime: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    unreadCount: 1,
     messages: [
       {
         id: "msg-1",
@@ -39,74 +40,6 @@ export const chatConversations: ChatConversation[] = [
         senderType: "vendor",
         message: "Thank you for booking with us!",
         timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        read: false,
-      },
-    ],
-  },
-  {
-    id: "conv-2",
-    vendorName: "Elite Catering Services",
-    vendorCategory: "Catering",
-    lastMessage: "We can accommodate your dietary requirements.",
-    lastMessageTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    unreadCount: 0,
-    messages: [
-      {
-        id: "msg-5",
-        senderId: "customer-1",
-        senderType: "customer",
-        message: "Do you offer vegetarian options?",
-        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        read: true,
-      },
-      {
-        id: "msg-6",
-        senderId: "vendor-2",
-        senderType: "vendor",
-        message: "Yes, we have a wide variety of vegetarian options.",
-        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        read: true,
-      },
-      {
-        id: "msg-7",
-        senderId: "vendor-2",
-        senderType: "vendor",
-        message: "We can accommodate your dietary requirements.",
-        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        read: true,
-      },
-    ],
-  },
-  {
-    id: "conv-3",
-    vendorName: "TastyRoots Catering",
-    vendorCategory: "Catering",
-    lastMessage: "We can accommodate your dietary requirements.",
-    lastMessageTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    unreadCount: 1,
-    messages: [
-      {
-        id: "msg-5",
-        senderId: "customer-1",
-        senderType: "customer",
-        message: "Do you offer vegetarian options?",
-        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        read: false,
-      },
-      {
-        id: "msg-6",
-        senderId: "vendor-2",
-        senderType: "vendor",
-        message: "Yes, we have a wide variety of vegetarian options.",
-        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        read: true,
-      },
-      {
-        id: "msg-7",
-        senderId: "vendor-2",
-        senderType: "vendor",
-        message: "We can accommodate your dietary requirements.",
-        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
         read: false,
       },
     ],

@@ -48,6 +48,7 @@ export function AppointmentCard({
       case "pending":
         return "text-amber-700 bg-amber-100";
       case "cancelled":
+      case "canceled":
       case "rejected":
         return "text-red-700 bg-red-100";
       case "completed":
@@ -67,6 +68,7 @@ export function AppointmentCard({
       case "completed":
         return "Completed";
       case "cancelled":
+      case "canceled":
         return "Cancelled";
       case "rejected":
         return "Rejected";

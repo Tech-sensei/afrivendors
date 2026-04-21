@@ -5,7 +5,14 @@ export type AppointmentStatus =
   | "accepted"
   | "completed"
   | "cancelled"
+  | "canceled"
   | "rejected";
+
+/** Backend may return US spelling `canceled`; app logic uses `cancelled`. */
+export function normalizeAppointmentStatus(status: string): AppointmentStatus {
+  if (status.toLowerCase() === "canceled") return "cancelled";
+  return status as AppointmentStatus;
+}
 
 /** Upcoming tab: vendor accepted (or legacy confirmed). */
 export const isUpcomingStatus = (s: AppointmentStatus) =>
@@ -17,7 +24,7 @@ export const isPendingStatus = (s: AppointmentStatus) => s === "pending";
 export const isPastStatus = (s: AppointmentStatus) => s === "completed";
 
 export const isCancelledStatus = (s: AppointmentStatus) =>
-  s === "cancelled" || s === "rejected";
+  s === "cancelled" || s === "canceled" || s === "rejected";
 
 /** Can reschedule or cancel before the service is done or rejected. */
 export const isActiveBookingStatus = (s: AppointmentStatus) =>

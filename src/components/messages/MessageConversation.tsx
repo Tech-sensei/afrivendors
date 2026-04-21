@@ -15,7 +15,7 @@ export function MessageConversation({ messages }: MessageConversationProps) {
     }, [messages]);
 
     return (
-        <div className="bg-white rounded-xl p-4 flex-1 min-h-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex-1 min-h-0 overflow-y-auto bg-transparent [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <div className="flex flex-col gap-4">
                 {messages.map((message, index) => {
                     const isCustomer = message.senderType === "customer";
