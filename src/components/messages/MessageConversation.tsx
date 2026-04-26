@@ -3,9 +3,16 @@
 import { useRef, useEffect } from "react";
 import { CheckCheck } from "lucide-react";
 import { formatMessageTime } from "@/data/chatData";
-import type { MessageConversationProps } from "@/types/messages";
+import { MessageResponse } from "stream-chat";
+import { RootState } from "@/store/store";
+import { useSelector } from "react-redux";
 
-export function MessageConversation({ messages }: MessageConversationProps) {
+export function MessageConversation({
+    messages,
+}: {
+    messages: MessageResponse[];
+}) {
+    const user = useSelector((state: RootState) => state.auth.user);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -15,14 +22,10 @@ export function MessageConversation({ messages }: MessageConversationProps) {
     }, [messages]);
 
     return (
-        <div className="flex-1 min-h-0 overflow-y-auto bg-transparent [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="h-full flex-1 min-h-0 overflow-y-auto overscroll-contain bg-transparent [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <div className="flex flex-col gap-4">
-                {messages.map((message, index) => {
-                    const isCustomer = message.senderType === "customer";
-                    const showTime =
-                        index === 0 ||
-                        messages[index - 1].timestamp.getTime() - message.timestamp.getTime() >
-                        5 * 60 * 1000;
+                {messages.map((message) => {
+                    const isCustomer = Number(message.user?.id) === Number(user?.id);
 
                     return (
                         <div
@@ -31,25 +34,26 @@ export function MessageConversation({ messages }: MessageConversationProps) {
                         >
                             <div className="max-w-[75%]">
                                 <div
-                                    className={`px-4 py-3 rounded-2xl text-sm leading-relaxed break-words ${isCustomer
-                                        ? "bg-primary-100 text-white"
-                                        : "bg-accent-10 text-secondary-000"
+                                    className={`px-4 py-3 rounded-2xl text-sm leading-relaxed wrap-break-word ${isCustomer
+                                            ? "bg-primary-100 text-white"
+                                            : "bg-accent-10 text-secondary-000"
                                         }`}
                                 >
-                                    {message.message}
+                                    {message.text}
                                 </div>
                                 <div
                                     className={`flex items-center gap-1 mt-1 ${isCustomer ? "justify-end pr-1" : "justify-start pl-1"
                                         }`}
                                 >
                                     <span className="text-[11px] text-accent-80">
-                                        {formatMessageTime(message.timestamp)}
+                                        {formatMessageTime(new Date(message.created_at ?? ""))}
                                     </span>
                                     {isCustomer && (
                                         <CheckCheck
-                                            className={`h-3 w-3 ${message.read
-                                                ? "text-primary-100"
-                                                : "text-accent-80"
+                                            className={`h-3 w-3 ${message.latest_reactions?.length &&
+                                                    message.latest_reactions?.length > 0
+                                                    ? "text-primary-100"
+                                                    : "text-accent-80"
                                                 }`}
                                         />
                                     )}

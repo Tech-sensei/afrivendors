@@ -1,33 +1,101 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { ConversationItem } from "@/components/messages/ConversationItem";
 import { SearchBar } from "@/components/messages/SearchBar";
-import type { ChatConversation, ChatMessage } from "@/types/messages";
-import { chatConversations } from "@/data/chatData";
 import { ConversationSheet } from "@/components/messages/ConversationSheet";
+import useStreamChat from "@/hooks/useStreamChat";
+import { Channel } from "stream-chat";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { useStreamChatToken } from "@/services/useStreamChat";
+import streamChat from "@/lib/streamChat";
 
 export default function MessagesPage() {
-  const [selectedChat, setSelectedChat] = useState<ChatConversation | null>(null);
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [conversations, setConversations] = useState<ChatConversation[]>(() =>
-    chatConversations.map((c) => ({
-      ...c,
-      messages: c.messages.map((m) => ({ ...m, timestamp: new Date(m.timestamp) })),
-    }))
-  );
+  const [conversations, setConversations] = useState<Channel[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useSelector((state: RootState) => state.auth);
 
-  const handleSelectChat = (chat: ChatConversation) => {
-    const cleared: ChatConversation = {
-      ...chat,
-      unreadCount: 0,
-      messages: chat.messages.map((m) => ({ ...m, read: true })),
+  const { getAllChannels, instantiateUser } = useStreamChat();
+  const { data: streamChatToken } = useStreamChatToken();
+  const [streamReady, setStreamReady] = useState(false);
+  const [channelsRefreshKey, setChannelsRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const token = streamChatToken?.userChatToken;
+    if (user?.id && token) {
+      let cancelled = false;
+      setStreamReady(false);
+
+      const userName = `${user?.firstName} ${user?.lastName}`;
+      const userImage = user?.profilePhoto;
+      void instantiateUser(
+        user?.id as number,
+        userName,
+        userImage ?? "",
+        token,
+      ).then(
+        () => {
+          if (!cancelled) setStreamReady(true);
+        },
+        () => {
+          if (!cancelled) setStreamReady(false);
+        },
+      );
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setStreamReady(false);
+    return undefined;
+  }, [
+    instantiateUser,
+    user?.id,
+    user?.firstName,
+    user?.lastName,
+    user?.profilePhoto,
+    streamChatToken?.userChatToken,
+  ]);
+
+  useEffect(() => {
+    if (!streamReady || !user?.id) return;
+    void getAllChannels(String(user.id)).then((channels) => {
+      // console.log(channels);
+      setConversations(channels);
+    });
+  }, [getAllChannels, streamReady, user?.id, channelsRefreshKey]);
+
+  useEffect(() => {
+    if (!streamReady) return;
+
+    // Keep channel list (unreadCount / last_message) in sync without refresh.
+    const handler = () => setChannelsRefreshKey((k) => k + 1);
+
+    streamChat.on("message.new", handler);
+    streamChat.on("notification.message_new", handler);
+    streamChat.on("message.read", handler);
+    streamChat.on("notification.mark_read", handler);
+    streamChat.on("notification.mark_unread", handler);
+    streamChat.on("channel.updated", handler);
+
+    return () => {
+      streamChat.off("message.new", handler);
+      streamChat.off("notification.message_new", handler);
+      streamChat.off("message.read", handler);
+      streamChat.off("notification.mark_read", handler);
+      streamChat.off("notification.mark_unread", handler);
+      streamChat.off("channel.updated", handler);
     };
-    setSelectedChat(cleared);
+  }, [streamReady]);
+
+  const handleSelectChat = (chatId: string) => {
+    setSelectedChat(chatId);
     setDrawerOpen(true);
-    setConversations((prev) => prev.map((c) => (c.id === chat.id ? cleared : c)));
   };
 
   const handleCloseDrawer = (open: boolean) => {
@@ -37,33 +105,11 @@ export default function MessagesPage() {
     }
   };
 
-  const filteredConversations = conversations.filter(
-    (conv) =>
-      conv.vendorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conv.vendorCategory.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const totalUnread = conversations.reduce((sum, conv) => sum + conv.unreadCount, 0);
-
-  const handleSendMessage = (text: string) => {
-    if (!selectedChat) return;
-    const newMsg: ChatMessage = {
-      id: `local-${Date.now()}`,
-      senderId: "customer",
-      senderType: "customer",
-      message: text,
-      timestamp: new Date(),
-      read: true,
-    };
-    const updated: ChatConversation = {
-      ...selectedChat,
-      messages: [...selectedChat.messages, newMsg],
-      lastMessage: text,
-      lastMessageTime: newMsg.timestamp,
-    };
-    setSelectedChat(updated);
-    setConversations((prev) => prev.map((c) => (c.id === selectedChat.id ? updated : c)));
-  };
+  const filteredConversations = conversations.filter((conv: any) => {
+    if (!searchQuery) return true;
+    const name = String(conv?.data?.name ?? conv?.id ?? "").toLowerCase();
+    return name.includes(searchQuery.toLowerCase());
+  });
 
   return (
     <div className="">
@@ -73,11 +119,11 @@ export default function MessagesPage() {
         </h1>
         <p className="text-sm text-accent-80 leading-relaxed">
           Chat with vendors you&apos;ve booked services with
-          {totalUnread > 0 && (
+          {/* {totalUnread > 0 && (
             <span className="ml-2 inline-flex items-center justify-center bg-primary-100 text-white rounded-xl px-2 py-0.5 text-xs font-semibold align-middle">
               {totalUnread} unread
             </span>
-          )}
+          )} */}
         </p>
       </div>
 
@@ -86,7 +132,15 @@ export default function MessagesPage() {
       </div>
 
       <div className="bg-white rounded-2xl border border-accent-20 overflow-hidden">
-        {filteredConversations.length === 0 ? (
+        {!streamReady ? (
+          <div className="p-12 text-center">
+            <MessageCircle className="h-12 w-12 text-accent-80 mx-auto mb-4" />
+            <p className="text-base font-medium text-secondary-000 mb-2">
+              Connecting chat…
+            </p>
+            <p className="text-sm text-accent-80">Please wait a moment.</p>
+          </div>
+        ) : filteredConversations.length === 0 ? (
           <div className="p-12 text-center">
             <MessageCircle className="h-12 w-12 text-accent-80 mx-auto mb-4" />
             <p className="text-base font-medium text-secondary-000 mb-2">
@@ -98,24 +152,26 @@ export default function MessagesPage() {
           </div>
         ) : (
           <div>
-            {filteredConversations.map((conversation, index) => (
+            {filteredConversations.map((conversation: any) => (
               <ConversationItem
                 key={conversation.id}
                 conversation={conversation}
-                isLast={index === filteredConversations.length - 1}
-                onClick={() => handleSelectChat(conversation)}
+                onClick={() => handleSelectChat(conversation.id as string)}
               />
             ))}
           </div>
         )}
       </div>
 
-      {selectedChat && (
+      {streamReady && selectedChat && (
         <ConversationSheet
           open={drawerOpen}
           onOpenChange={handleCloseDrawer}
-          conversation={selectedChat}
-          onSendMessage={handleSendMessage}
+          conversationId={selectedChat}
+          onConversationRead={() => {
+            // Force re-fetch so ConversationItem reflects updated unread counts.
+            setChannelsRefreshKey((k) => k + 1);
+          }}
         />
       )}
     </div>

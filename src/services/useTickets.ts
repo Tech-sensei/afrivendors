@@ -188,3 +188,42 @@ export function useCreateTicket() {
     },
   });
 }
+
+async function postTicketMessage(params: {
+  ticketId: string;
+  message: string;
+  attachments?: string[];
+}): Promise<SupportMessage | null> {
+  const numericTicketId = Number(params.ticketId);
+  if (!Number.isFinite(numericTicketId)) {
+    throw new Error("Invalid ticket id.");
+  }
+
+  const payload = {
+    ticketId: numericTicketId,
+    message: params.message.trim(),
+    attachments: params.attachments ?? [],
+  };
+
+  const { data } = await http.post("/tickets/message", payload);
+  const raw =
+    data && typeof data === "object" && "data" in (data as object)
+      ? (data as { data: unknown }).data
+      : data;
+
+  if (!raw || typeof raw !== "object") return null;
+  return mapTicketMessageApiToSupportMessage(raw as Record<string, unknown>);
+}
+
+export function useSendTicketMessage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: postTicketMessage,
+    onSuccess: (_message, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ticketMessagesQueryKey(variables.ticketId),
+      });
+      queryClient.invalidateQueries({ queryKey: [...TICKETS_LIST_ROOT_KEY] });
+    },
+  });
+}

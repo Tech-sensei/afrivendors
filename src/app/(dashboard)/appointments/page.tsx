@@ -17,23 +17,30 @@ import {
 } from "@/types/appointments";
 
 const EmptyTab = ({ message }: { message: string }) => (
-  <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-[#f4ebe5]/30 rounded-2xl border border-dashed border-[#8a5f43]/20">
-    <p className="text-[#8a5f43]">{message}</p>
+  <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-primary-300/30 rounded-2xl border border-dashed border-primary-300/20">
+    <p className="text-secondary-300">{message}</p>
   </div>
 );
 
 export default function AppointmentPage() {
   const { data: appointments = [], isLoading } = useAppointments();
 
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<Appointment | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMessageOpen, setIsMessageOpen] = useState(false);
 
-  const upcomingAppointments = appointments.filter((a) => isUpcomingStatus(a.status));
-  const pendingAppointments = appointments.filter((a) => isPendingStatus(a.status));
+  const upcomingAppointments = appointments.filter((a) =>
+    isUpcomingStatus(a.status),
+  );
+  const pendingAppointments = appointments.filter((a) =>
+    isPendingStatus(a.status),
+  );
   const pastAppointments = appointments.filter((a) => isPastStatus(a.status));
-  const cancelledAppointments = appointments.filter((a) => isCancelledStatus(a.status));
+  const cancelledAppointments = appointments.filter((a) =>
+    isCancelledStatus(a.status),
+  );
 
   const handleViewDetails = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
@@ -69,10 +76,10 @@ export default function AppointmentPage() {
 
       <Tabs defaultValue="upcoming" className="w-full">
         <div className="flex justify-between mb-8">
-          <TabsList className="bg-transparent h-auto p-0 gap-2 sm:gap-3 w-full grid grid-cols-2 md:grid-cols-4 bg-secondary-700 rounded-full">
+          <TabsList className=" h-auto p-0 gap-2 sm:gap-3 w-full grid grid-cols-2 md:grid-cols-4 bg-secondary-700 rounded-full">
             <TabsTrigger
               value="upcoming"
-              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-[#231305] text-[#8a5f43] font-bold transition-all hover:text-[#231305]/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
+              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
             >
               Upcoming
               {upcomingAppointments.length > 0 && (
@@ -83,7 +90,7 @@ export default function AppointmentPage() {
             </TabsTrigger>
             <TabsTrigger
               value="pending"
-              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-[#231305] text-[#8a5f43] font-bold transition-all hover:text-[#231305]/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
+              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
             >
               Pending
               {pendingAppointments.length > 0 && (
@@ -94,7 +101,7 @@ export default function AppointmentPage() {
             </TabsTrigger>
             <TabsTrigger
               value="past"
-              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-[#231305] text-[#8a5f43] font-bold transition-all hover:text-[#231305]/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
+              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
             >
               Past
               {pastAppointments.length > 0 && (
@@ -105,7 +112,7 @@ export default function AppointmentPage() {
             </TabsTrigger>
             <TabsTrigger
               value="cancelled"
-              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-[#231305] text-[#8a5f43] font-bold transition-all hover:text-[#231305]/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
+              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
             >
               Cancelled
               {cancelledAppointments.length > 0 && (
@@ -117,7 +124,10 @@ export default function AppointmentPage() {
           </TabsList>
         </div>
 
-        <TabsContent value="upcoming" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
+        <TabsContent
+          value="upcoming"
+          className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
+        >
           {upcomingAppointments.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {upcomingAppointments.map((appointment) => (
@@ -135,7 +145,10 @@ export default function AppointmentPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="pending" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
+        <TabsContent
+          value="pending"
+          className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
+        >
           {pendingAppointments.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {pendingAppointments.map((appointment) => (
@@ -153,7 +166,10 @@ export default function AppointmentPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="past" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
+        <TabsContent
+          value="past"
+          className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
+        >
           {pastAppointments.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {pastAppointments.map((appointment) => (
@@ -171,7 +187,10 @@ export default function AppointmentPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="cancelled" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
+        <TabsContent
+          value="cancelled"
+          className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
+        >
           {cancelledAppointments.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {cancelledAppointments.map((appointment) => (

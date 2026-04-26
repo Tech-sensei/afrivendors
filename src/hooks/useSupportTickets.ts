@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   useCreateTicket,
+  useSendTicketMessage,
   useTicketsInfinite,
   patchTicketInListInfiniteCache,
 } from "@/services/useTickets";
@@ -24,6 +25,7 @@ import {
 export function useSupportTickets() {
   const queryClient = useQueryClient();
   const createTicket = useCreateTicket();
+  const sendTicketMessage = useSendTicketMessage();
 
   const [activeTab, setActiveTab] = useState<HelpSupportTabId>("tickets");
   const [searchQuery, setSearchQuery] = useState("");
@@ -109,26 +111,75 @@ export function useSupportTickets() {
   const handleSendMessage = useCallback(() => {
     const trimmed = newMessage.trim();
     if (!trimmed || !selectedTicket) return;
-
-    const message: SupportMessage = {
-      id: String(selectedTicket.messages.length + 1),
+    const optimisticMessage: SupportMessage = {
+      id: `tmp-${Date.now()}`,
       sender: "user",
       content: trimmed,
       timestamp: new Date().toISOString(),
       senderName: "You",
     };
 
-    const updated: SupportTicket = {
+    const previousTicket = selectedTicket;
+    const optimistic: SupportTicket = {
       ...selectedTicket,
-      messages: [...selectedTicket.messages, message],
+      messages: [...selectedTicket.messages, optimisticMessage],
       updatedAt: new Date().toISOString(),
     };
 
-    patchTicketInListInfiniteCache(queryClient, selectedTicket.id, () => updated);
-    setSelectedTicket(updated);
+    patchTicketInListInfiniteCache(queryClient, selectedTicket.id, () => optimistic);
+    setSelectedTicket(optimistic);
     setNewMessage("");
-    toast.success("Message sent");
-  }, [newMessage, selectedTicket, queryClient]);
+
+    sendTicketMessage.mutate(
+      { ticketId: selectedTicket.id, message: trimmed },
+      {
+        onSuccess: (serverMessage) => {
+          if (!serverMessage) {
+            toast.success("Message sent");
+            return;
+          }
+          setSelectedTicket((current) => {
+            if (!current || current.id !== previousTicket.id) return current;
+            const rolled = current.messages.filter((m) => m.id !== optimisticMessage.id);
+            const merged: SupportTicket = {
+              ...current,
+              messages: [...rolled, serverMessage],
+              updatedAt: new Date().toISOString(),
+            };
+            patchTicketInListInfiniteCache(queryClient, current.id, () => merged);
+            return merged;
+          });
+          toast.success("Message sent");
+        },
+        onError: (err: unknown) => {
+          let msg = "Could not send message. Please try again.";
+          if (axios.isAxiosError(err)) {
+            const data = err.response?.data as
+              | { message?: string | string[] }
+              | undefined;
+            if (data?.message != null) {
+              msg = Array.isArray(data.message)
+                ? data.message.join(", ")
+                : String(data.message);
+            } else if (err.message) {
+              msg = err.message;
+            }
+          }
+
+          patchTicketInListInfiniteCache(
+            queryClient,
+            previousTicket.id,
+            () => previousTicket
+          );
+          setSelectedTicket((current) =>
+            current?.id === previousTicket.id ? previousTicket : current
+          );
+          setNewMessage(trimmed);
+          toast.error(msg);
+        },
+      }
+    );
+  }, [newMessage, queryClient, selectedTicket, sendTicketMessage]);
 
   const handleUpdateTicketStatus = useCallback(
     (status: SupportTicketStatus) => {

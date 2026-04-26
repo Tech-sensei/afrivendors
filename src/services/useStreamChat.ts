@@ -1,0 +1,37 @@
+import http from "@/lib/http";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+export const useStreamChatToken = () => {
+  return useQuery({
+    queryKey: ["stream-chat-token"],
+    queryFn: async () => {
+      const { data } = await http.get("/messages/stream-chat-token");
+      return data;
+    },
+  });
+};
+
+//create stream chat channel
+
+export const useCreateStreamChatChannel = () => {
+  return useMutation({
+    mutationFn: async (createChanneldata: {
+      otherUserId: number;
+      appointmentId: number;
+    }) => {
+      const { data } = await http.post(
+        "/messages/create-channel",
+        createChanneldata,
+      );
+      return data;
+    },
+    onError: (error: { response?: { data?: { message?: string } } }) => {
+      toast.error(
+        error?.response?.data?.message ??
+          "Unable to create stream chat channel. Please try again.",
+      );
+      console.log(error?.response?.data?.message);
+    },
+  });
+};
