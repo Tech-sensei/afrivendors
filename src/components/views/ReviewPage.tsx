@@ -3,11 +3,12 @@ import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Separator } from '../ui/separator';
 import type { ReviewPageProps } from '@/types/misc';
+import { formatVendorPrice } from '@/services/vendor';
 
 export function ReviewPage({ onNavigate, vendor, service, services: servicesProp, date, time, name, email, phone, notes, paymentMethod = 'venue' }: ReviewPageProps) {
   const bookingServices = servicesProp || (service ? [service] : []);
   const totalPrice = bookingServices.reduce((sum, svc) => sum + (svc.priceValue || 0), 0);
-  const formattedTotal = `₦${totalPrice.toLocaleString()}`;
+  const formattedTotal = formatVendorPrice(totalPrice);
   const bookingId = `AFV-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
 
   return (

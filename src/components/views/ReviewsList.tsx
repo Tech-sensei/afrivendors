@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star, Edit2, Trash2 } from 'lucide-react';
+import { Star, Edit2, Trash2, MessageSquare } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
@@ -114,6 +114,24 @@ export function ReviewsList({ reviews, onEdit, onDelete }: ReviewsListProps) {
                     <p className="font-unageo text-base text-secondary-000 leading-relaxed">
                       {review.comment}
                     </p>
+                    {review.vendorReply ? (
+                      <div className="rounded-xl border border-accent-20 bg-accent-10/60 p-4 mt-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <MessageSquare className="h-4 w-4 shrink-0 text-primary-100" aria-hidden />
+                          <span className="font-unageo text-xs font-semibold uppercase tracking-wide text-accent-80">
+                            Response from {review.vendorReplyAuthor ?? 'the vendor'}
+                          </span>
+                        </div>
+                        <p className="font-unageo text-sm text-secondary-000 leading-relaxed">
+                          {review.vendorReply}
+                        </p>
+                        {review.vendorReplyDate ? (
+                          <p className="font-unageo text-xs text-accent-80 mt-2">
+                            {review.vendorReplyDate}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </CardContent>

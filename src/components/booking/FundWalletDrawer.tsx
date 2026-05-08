@@ -1,6 +1,6 @@
 "use client";
 
-import { DollarSign } from 'lucide-react';
+import { PoundSterling } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ export function FundWalletDrawer({ isOpen, onClose }: FundWalletDrawerProps) {
                             Amount
                         </Label>
                         <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-accent-60" />
+                            <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-accent-60" />
                             <Input
                                 id="amount"
                                 type="number"

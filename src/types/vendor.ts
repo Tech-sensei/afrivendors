@@ -84,6 +84,8 @@ export interface PublicVendorDetailApiResponse {
     rating: number;
     comment?: string;
     review?: string;
+    reply?: string | null;
+    replyAt?: string | null;
     createdAt?: string;
     user?: {
       id?: number;
@@ -143,6 +145,12 @@ export interface VendorDetailReview {
   date: string;
   /** When present, used to detect the current user's review for UI. */
   reviewerUserId?: number | null;
+  /** Vendor response text; mirrors API `reply`. */
+  vendorReply?: string | null;
+  /** Formatted date for the vendor reply; from API `replyAt`. */
+  vendorReplyDate?: string;
+  /** Label for the reply (typically business name). */
+  vendorReplyAuthor?: string;
 }
 
 /** One row for the opening hours schedule (from API `openingHours` array). */

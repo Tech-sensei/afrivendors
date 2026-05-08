@@ -4,6 +4,7 @@ import http from "@/lib/http";
 import { toast } from "sonner";
 import { useAppDispatch } from "@/store/hooks";
 import { clearAuth, fetchUserProfile } from "@/store/authSlice";
+import useStreamChat from "@/hooks/useStreamChat";
 import type {
   ChangePasswordPayload,
   ForgotPasswordPayload,
@@ -11,6 +12,7 @@ import type {
   ResetPasswordPayload,
   SignInPayload,
   SignUpPayload,
+  TwoFactorVerifyPayload,
   VerifyEmailPayload,
 } from "@/types/auth";
 
@@ -19,6 +21,7 @@ import type {
 export const useAuthAPI = () => {
   const queryClient = useQueryClient();
   const dispatch = useAppDispatch();
+  const { disconnectUser } = useStreamChat();
 
   // 🔐 Sign In
   const signInMutation = useMutation({
@@ -27,15 +30,15 @@ export const useAuthAPI = () => {
       return response.data;
     },
     onSuccess: (data) => {
+      // If 2FA is required, skip token storage — page handles the redirect
+      if (data?.twoFactorRequired) return;
+
       if (data?.accessToken) {
-        // accessToken: 1 hour
-        setCookie(null, "accessToken", data.accessToken, { maxAge: 60 * 60, path: "/" });
+        setCookie(null, "accessToken", data.accessToken, { maxAge: 30 * 60, path: "/" });
       }
       if (data?.refreshToken) {
-        // refreshToken: 7 days
-        setCookie(null, "refreshToken", data.refreshToken, { maxAge: 60 * 60 * 24 * 7, path: "/" });
+        setCookie(null, "refreshToken", data.refreshToken, { maxAge: 24 * 60 * 60, path: "/" });
       }
-      // Fetch full profile immediately — login response is partial (no dob, gender, photo, addresses)
       dispatch(fetchUserProfile());
       toast.success("Welcome back!");
     },
@@ -44,6 +47,87 @@ export const useAuthAPI = () => {
         error?.response?.data?.responseMessage ||
           error?.response?.data?.message ||
           "Sign in failed"
+      );
+    },
+  });
+
+  // 🔁 Resend Two-Factor Code
+  const resendTwoFactorMutation = useMutation({
+    mutationFn: async (payload: { challengeId: number }) => {
+      const response = await http.post("/auth/resend-2fa-code", payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("A new code has been sent.");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.responseMessage ||
+          error?.response?.data?.message ||
+          "Failed to resend code"
+      );
+    },
+  });
+
+  // 🔐 Verify Two-Factor Challenge
+  const verifyTwoFactorMutation = useMutation({
+    mutationFn: async (payload: TwoFactorVerifyPayload) => {
+      const response = await http.post("/auth/two-factor/verify", payload);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      if (data?.accessToken) {
+        setCookie(null, "accessToken", data.accessToken, { maxAge: 30 * 60, path: "/" });
+      }
+      if (data?.refreshToken) {
+        setCookie(null, "refreshToken", data.refreshToken, { maxAge: 24 * 60 * 60, path: "/" });
+      }
+      dispatch(fetchUserProfile());
+      toast.success("Welcome back!");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.responseMessage ||
+          error?.response?.data?.message ||
+          "Invalid or expired code"
+      );
+    },
+  });
+
+  // 🛡️ Enable Two-Factor Authentication
+  const enableTwoFactorMutation = useMutation({
+    mutationFn: async () => {
+      const response = await http.post("/users/two-factor/enable");
+      return response.data;
+    },
+    onSuccess: () => {
+      dispatch(fetchUserProfile());
+      toast.success("Two-factor authentication enabled.");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.responseMessage ||
+          error?.response?.data?.message ||
+          "Failed to enable two-factor authentication"
+      );
+    },
+  });
+
+  // 🛡️ Disable Two-Factor Authentication
+  const disableTwoFactorMutation = useMutation({
+    mutationFn: async () => {
+      const response = await http.post("/users/two-factor/disable");
+      return response.data;
+    },
+    onSuccess: () => {
+      dispatch(fetchUserProfile());
+      toast.success("Two-factor authentication disabled.");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.responseMessage ||
+          error?.response?.data?.message ||
+          "Failed to disable two-factor authentication"
       );
     },
   });
@@ -167,6 +251,7 @@ export const useAuthAPI = () => {
       destroyCookie(null, "refreshToken", { path: "/" });
       dispatch(clearAuth());
       queryClient.clear();
+      void disconnectUser();
       toast.success("You've been signed out.");
     },
     onError: (error: any) => {
@@ -183,6 +268,20 @@ export const useAuthAPI = () => {
     signInAsync: signInMutation.mutateAsync,
     isSigningIn: signInMutation.isPending,
     signInError: signInMutation.error,
+
+    // 🔐 Two-Factor Verify
+    verifyTwoFactorAsync: verifyTwoFactorMutation.mutateAsync,
+    isVerifyingTwoFactor: verifyTwoFactorMutation.isPending,
+
+    // 🔁 Resend Two-Factor Code
+    resendTwoFactorAsync: resendTwoFactorMutation.mutateAsync,
+    isResendingTwoFactor: resendTwoFactorMutation.isPending,
+
+    // 🛡️ Enable / Disable Two-Factor
+    enableTwoFactorAsync: enableTwoFactorMutation.mutateAsync,
+    isEnablingTwoFactor: enableTwoFactorMutation.isPending,
+    disableTwoFactorAsync: disableTwoFactorMutation.mutateAsync,
+    isDisablingTwoFactor: disableTwoFactorMutation.isPending,
 
     // 📝 Sign Up
     signUpAsync: signUpMutation.mutateAsync,

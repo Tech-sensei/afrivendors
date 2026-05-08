@@ -73,7 +73,7 @@ const PricingPage = () => {
   const pricingPlans = [
     {
       title: "Free",
-      price: "$0",
+      price: "£0",
       period: "/month",
       description: "Perfect for trying out our platform",
       features: [
@@ -88,7 +88,7 @@ const PricingPage = () => {
     },
     {
       title: "Professional",
-      price: "$29",
+      price: "£29",
       period: "/month",
       description: "For established vendors looking to grow",
       features: [
@@ -106,7 +106,7 @@ const PricingPage = () => {
     },
     {
       title: "Enterprise",
-      price: "$99",
+      price: "£99",
       period: "/month",
       description: "For large businesses with multiple locations",
       features: [

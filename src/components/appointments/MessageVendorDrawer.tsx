@@ -46,7 +46,7 @@ export function MessageVendorDrawer({
 
     const userName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim();
     void instantiateUser(
-      user?.id ?? "",
+      user?.id ?? 0,
       userName,
       user?.profilePhoto ?? "",
       token,

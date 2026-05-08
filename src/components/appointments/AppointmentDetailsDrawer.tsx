@@ -36,6 +36,7 @@ import {
   isBookAgainStatus,
   normalizeAppointmentStatus,
 } from "@/types/appointments";
+import { formatVendorPrice } from "@/services/vendor";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -204,14 +205,14 @@ export function AppointmentDetailsDrawer({
                     </p>
                   </div>
                   <span className="font-bold text-base text-primary-100 shrink-0">
-                    ₦{Number(service.price).toLocaleString()}
+                    {formatVendorPrice(Number(service.price))}
                   </span>
                 </div>
               ))}
               <div className="flex items-center justify-between pt-1">
                 <span className="text-sm font-semibold text-secondary-000">Total</span>
                 <span className="font-bold text-xl text-primary-100">
-                  ₦{appt.totalAmount.toLocaleString()}
+                  {formatVendorPrice(appt.totalAmount)}
                 </span>
               </div>
             </div>

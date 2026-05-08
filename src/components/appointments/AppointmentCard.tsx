@@ -12,6 +12,7 @@ import {
   isActiveBookingStatus,
   isBookAgainStatus,
 } from "@/types/appointments";
+import { formatVendorPrice } from "@/services/vendor";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop";
 
@@ -111,7 +112,7 @@ export function AppointmentCard({
               {displayServiceName}
             </h3>
             <span className="text-xl font-bold text-primary-100 shrink-0">
-              ₦{appointment.totalAmount.toLocaleString()}
+              {formatVendorPrice(appointment.totalAmount)}
             </span>
           </div>
 

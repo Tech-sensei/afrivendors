@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import {
   Calendar,
   Clock,
-  DollarSign,
   MapPin,
+  PoundSterling,
   User,
 } from "lucide-react";
 import Image from "next/image";
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import type { MockVendor } from "@/types/misc";
 import type { ServiceForm } from "@/types/customServiceForms";
 import { ServiceFormStatusBadge } from "./ServiceFormStatusBadge";
+import { formatVendorPrice } from "@/services/vendor";
 
 function SoftPanel({
   className,
@@ -230,7 +231,7 @@ export function ServiceFormDetailsDrawer({
                     {item.description}
                   </span>
                   <span className="shrink-0 text-sm font-semibold text-secondary-000">
-                    ${item.price.toFixed(2)}
+                    {formatVendorPrice(item.price)}
                   </span>
                 </div>
               ))}
@@ -240,7 +241,7 @@ export function ServiceFormDetailsDrawer({
                 Total Quote
               </span>
               <span className="font-unbounded text-xl font-semibold text-primary-100">
-                ${form.quote.amount.toFixed(2)}
+                {formatVendorPrice(form.quote.amount)}
               </span>
             </div>
             <p className="mt-2 text-xs text-amber-800">
@@ -272,13 +273,13 @@ export function ServiceFormDetailsDrawer({
           </div>
           <div className="col-span-2">
             <div className="mb-1 flex items-center gap-2">
-              <DollarSign className="h-3 w-3 text-accent-60" />
+              <PoundSterling className="h-3 w-3 text-accent-60" />
               <p className="text-xs uppercase tracking-wide text-accent-80">
                 Budget
               </p>
             </div>
             <p className="font-unbounded text-base font-semibold text-primary-100">
-              ${form.budget.toFixed(2)}
+              {formatVendorPrice(form.budget)}
             </p>
           </div>
         </div>

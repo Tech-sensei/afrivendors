@@ -38,6 +38,9 @@ export interface ReviewListItem {
   comment: string;
   avatar: string;
   isUserReview?: boolean;
+  vendorReply?: string | null;
+  vendorReplyDate?: string;
+  vendorReplyAuthor?: string;
 }
 
 export interface ReviewsListProps {

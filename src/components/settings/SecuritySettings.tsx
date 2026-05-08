@@ -7,17 +7,18 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Lock, Shield, Mail, Phone, CheckCircle2, XCircle, Eye, EyeOff } from 'lucide-react';
-import { toast } from 'sonner';
+import { Lock, Shield, Mail, CheckCircle2, XCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuthAPI } from '@/services/useAuthAPI';
 import { changePasswordSchema } from '@/lib/validations/authValidationSchema';
+import { useAppSelector } from '@/store/hooks';
 
 export function SecuritySettings() {
-    const { changePasswordAsync, isChangingPassword } = useAuthAPI();
+    const { changePasswordAsync, isChangingPassword, enableTwoFactorAsync, disableTwoFactorAsync, isEnablingTwoFactor, isDisablingTwoFactor } = useAuthAPI();
+    const user = useAppSelector((state) => state.auth.user);
 
-    const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-    const [emailVerified, setEmailVerified] = useState(true);
-    const [phoneVerified, setPhoneVerified] = useState(false);
+    const twoFactorEnabled =
+        user?.allow2faLogin ?? user?.twoFactorEnabled ?? false;
+    const emailVerified = !!user?.emailVerifiedAt;
     const [showChangePassword, setShowChangePassword] = useState(false);
 
     const emptyPasswordData = { oldPassword: '', newPassword: '', confirmNewPassword: '' };
@@ -46,14 +47,16 @@ export function SecuritySettings() {
         }
     };
 
-    const handleVerifyEmail = () => {
-        // TODO: Implement email verification
-        toast.info('Verification email sent. Please check your inbox.');
-    };
-
-    const handleVerifyPhone = () => {
-        // TODO: Implement phone verification
-        toast.info('Verification code sent to your phone.');
+    const handleToggleTwoFactor = async () => {
+        try {
+            if (twoFactorEnabled) {
+                await disableTwoFactorAsync();
+            } else {
+                await enableTwoFactorAsync();
+            }
+        } catch {
+            // error toast handled inside useAuthAPI
+        }
     };
 
     return (
@@ -204,7 +207,8 @@ export function SecuritySettings() {
                     </div>
                     <Switch
                         checked={twoFactorEnabled}
-                        onCheckedChange={setTwoFactorEnabled}
+                        onCheckedChange={handleToggleTwoFactor}
+                        disabled={isEnablingTwoFactor || isDisablingTwoFactor}
                     />
                 </div>
 
@@ -237,50 +241,14 @@ export function SecuritySettings() {
                     {!emailVerified && (
                         <Button
                             variant="outline"
-                            onClick={handleVerifyEmail}
                             className="h-9 rounded-xl border-accent-20 text-sm font-semibold"
+                            disabled
                         >
                             Verify
                         </Button>
                     )}
                 </div>
 
-                <Separator className="bg-accent-20" />
-
-                {/* Phone Verification */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${phoneVerified ? 'bg-green-50' : 'bg-accent-20'
-                            }`}>
-                            <Phone className={`h-5 w-5 ${phoneVerified ? 'text-green-600' : 'text-accent-60'
-                                }`} />
-                        </div>
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                                <Label className="text-sm font-semibold text-secondary-000">
-                                    Phone Verification
-                                </Label>
-                                {phoneVerified ? (
-                                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                ) : (
-                                    <XCircle className="h-4 w-4 text-red-600" />
-                                )}
-                            </div>
-                            <p className="text-xs text-accent-80">
-                                {phoneVerified ? 'Your phone is verified' : 'Please verify your phone number'}
-                            </p>
-                        </div>
-                    </div>
-                    {!phoneVerified && (
-                        <Button
-                            variant="outline"
-                            onClick={handleVerifyPhone}
-                            className="h-9 rounded-xl border-accent-20 text-sm font-semibold"
-                        >
-                            Verify
-                        </Button>
-                    )}
-                </div>
             </CardContent>
         </Card>
     );

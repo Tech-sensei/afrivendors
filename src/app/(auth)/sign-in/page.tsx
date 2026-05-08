@@ -42,7 +42,14 @@ const SignInPageContent = () => {
     const handleSignIn = async () => {
         if (!validateForm()) return;
         try {
-            await signInAsync({ email: formData.email, password: formData.password });
+            const data = await signInAsync({ email: formData.email, password: formData.password });
+            if (data?.twoFactorRequired && data?.challengeId) {
+                const redirectTo = searchParams.get("redirect");
+                const params = new URLSearchParams({ challengeId: data.challengeId });
+                if (redirectTo) params.set("redirect", redirectTo);
+                router.replace(`/two-factor?${params.toString()}`);
+                return;
+            }
             const redirectTo = searchParams.get("redirect");
             router.replace(redirectTo || '/');
         } catch {

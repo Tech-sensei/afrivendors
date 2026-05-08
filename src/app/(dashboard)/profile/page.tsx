@@ -53,6 +53,17 @@ function formatAddressLine(a: ProfileAddress) {
     return [a.street, a.city, a.country].filter(Boolean).join(", ");
 }
 
+/** Profile API may return E.164 string or signup-style { code, number }. */
+function phoneFromProfileApi(raw: unknown): string {
+    if (raw == null) return "";
+    if (typeof raw === "string") return raw.trim();
+    if (typeof raw === "object") {
+        const o = raw as { code?: string; number?: string };
+        return `${o.code ?? ""} ${o.number ?? ""}`.trim();
+    }
+    return "";
+}
+
 function mapApiEntryToProfile(entry: unknown): ProfileAddress | null {
     if (!entry || typeof entry !== "object") return null;
     const o = entry as Record<string, unknown>;
@@ -169,10 +180,7 @@ export default function ProfilePage() {
     useEffect(() => {
         if (!authUser) return;
         const u = authUser as Record<string, unknown>;
-        const phoneObj = u.phoneNumber as { code?: string; number?: string } | undefined;
-        const phone = phoneObj
-            ? `${phoneObj.code ?? ""} ${phoneObj.number ?? ""}`.trim()
-            : "";
+        const phone = phoneFromProfileApi(u.phoneNumber);
         const dobRaw = u.dob;
         let dateOfBirth = "";
         if (typeof dobRaw === "string" && dobRaw) {

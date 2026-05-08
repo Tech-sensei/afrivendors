@@ -1,7 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import { DollarSign, MapPin } from "lucide-react";
+import { MapPin, PoundSterling } from "lucide-react";
 import { Drawer, DrawerSection } from "@/app/(dashboard)/Drawer";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -362,10 +362,10 @@ export function ServiceFormEditorDrawer({
         <div className="space-y-4">
           <div>
             <Label htmlFor="budget" className={formField.label}>
-              Estimated Budget (USD) *
+              Estimated Budget (GBP) *
             </Label>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-accent-60" />
+              <PoundSterling className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-accent-60" />
               <Input
                 id="budget"
                 type="number"

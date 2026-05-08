@@ -13,10 +13,9 @@ import type {
 
 const FALLBACK_VENDOR_IMAGE = "/assets/images/vendor.jpeg";
 
-const currencyFormatter = new Intl.NumberFormat("en-NG", {
+const currencyFormatter = new Intl.NumberFormat("en-GB", {
   style: "currency",
-  currency: "NGN",
-  maximumFractionDigits: 0,
+  currency: "GBP",
 });
 
 function getVendorImage(image?: string | null) {
@@ -86,10 +85,27 @@ function formatOpeningHours(
     .join(", ");
 }
 
-function mapReview(review: PublicVendorDetailApiResponse["reviews"][number]): VendorDetailReview {
+function mapReview(
+  review: PublicVendorDetailApiResponse["reviews"][number],
+  vendorReplyAuthor: string
+): VendorDetailReview {
   const firstName = review.user?.firstName?.trim() || "";
   const lastName = review.user?.lastName?.trim() || "";
   const author = `${firstName} ${lastName}`.trim() || "Anonymous";
+
+  const replyText =
+    review.reply != null && String(review.reply).trim() !== ""
+      ? String(review.reply).trim()
+      : null;
+
+  const vendorReplyDate =
+    replyText && review.replyAt
+      ? new Date(review.replyAt).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })
+      : undefined;
 
   return {
     id: String(review.id),
@@ -104,6 +120,9 @@ function mapReview(review: PublicVendorDetailApiResponse["reviews"][number]): Ve
         })
       : "Recent",
     reviewerUserId: review.user?.id ?? null,
+    vendorReply: replyText,
+    vendorReplyDate,
+    vendorReplyAuthor: replyText ? vendorReplyAuthor : undefined,
   };
 }
 
@@ -156,7 +175,7 @@ export function mapPublicVendorDetail(
     .filter((service) => service.isPublished)
     .map(mapService);
 
-  const reviews = payload.reviews.map(mapReview);
+  const reviews = payload.reviews.map((r) => mapReview(r, businessName));
   const bannerImage =
     getVendorImage(payload.kyc?.bannerImage || payload.gallery.find((item) => item.isBanner)?.imageUrl);
   const gallery = payload.gallery.length

@@ -1,7 +1,8 @@
-import axios from "axios";
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { parseCookies, destroyCookie } from "nookies";
 import { store } from "@/store/store";
 import { clearAuth } from "@/store/authSlice";
+import { performTokenRefresh } from "@/lib/authRefresh";
 
 const http = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -10,7 +11,26 @@ const http = axios.create({
   },
 });
 
-// Attach accessToken to every request if available
+type RetryableRequest = InternalAxiosRequestConfig & { _retry?: boolean };
+
+/** 401 on these routes must not trigger refresh (wrong password, invalid 2FA code, etc.). */
+function isAuthPublic401Path(config: InternalAxiosRequestConfig): boolean {
+  const path = `${config.baseURL ?? ""}${config.url ?? ""}`.toLowerCase();
+  const needles = [
+    "/auth/login",
+    "/auth/register",
+    "/auth/refresh",
+    "/auth/forgot-password",
+    "/auth/reset-password",
+    "/auth/verify-email",
+    "/auth/resend-verification",
+    "/auth/resend-2fa-code",
+    "/auth/two-factor/verify",
+    "/auth/sign-out",
+  ];
+  return needles.some((n) => path.includes(n));
+}
+
 http.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const { accessToken } = parseCookies();
@@ -21,17 +41,60 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 globally — clear tokens and redirect to sign-in
+let isRedirecting = false;
+let refreshPromise: Promise<string | null> | null = null;
+
+export function redirectToSignIn() {
+  if (isRedirecting || typeof window === "undefined") return;
+  isRedirecting = true;
+  destroyCookie(null, "accessToken", { path: "/" });
+  destroyCookie(null, "refreshToken", { path: "/" });
+  store.dispatch(clearAuth());
+  window.location.href = "/sign-in";
+}
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      const body = await performTokenRefresh();
+      return body?.accessToken ?? null;
+    })().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+}
+
 http.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401 && typeof window !== "undefined") {
-      destroyCookie(null, "accessToken", { path: "/" });
-      destroyCookie(null, "refreshToken", { path: "/" });
-      store.dispatch(clearAuth());
-      window.location.href = "/sign-in";
+  async (error: AxiosError) => {
+    const originalRequest = error.config as RetryableRequest | undefined;
+    const status = error.response?.status;
+
+    if (status !== 401 || !originalRequest) {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    if (isAuthPublic401Path(originalRequest)) {
+      return Promise.reject(error);
+    }
+
+    if (originalRequest._retry) {
+      redirectToSignIn();
+      return Promise.reject(error);
+    }
+
+    const newAccess = await refreshAccessToken();
+    if (!newAccess) {
+      redirectToSignIn();
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+    originalRequest.headers = originalRequest.headers ?? {};
+    originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+
+    return http(originalRequest);
   }
 );
 
