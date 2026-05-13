@@ -251,7 +251,7 @@ export function formatVendorPriceRange(minPrice: number, maxPrice: number) {
   }
 
   if (minPrice > 0) {
-    return `From ${currencyFormatter.format(minPrice)}`;
+    return currencyFormatter.format(minPrice);
   }
 
   if (maxPrice > 0) {

@@ -21,7 +21,10 @@ export const isUpcomingStatus = (s: AppointmentStatus) =>
 /** Pending tab: awaiting vendor action. */
 export const isPendingStatus = (s: AppointmentStatus) => s === "pending";
 
-export const isPastStatus = (s: AppointmentStatus) => s === "completed";
+export const isCompletedStatus = (s: AppointmentStatus) => s === "completed";
+
+/** Past / Completed tab: finished appointments. */
+export const isPastStatus = isCompletedStatus;
 
 export const isCancelledStatus = (s: AppointmentStatus) =>
   s === "cancelled" || s === "canceled" || s === "rejected";
@@ -31,7 +34,7 @@ export const isActiveBookingStatus = (s: AppointmentStatus) =>
   isUpcomingStatus(s) || isPendingStatus(s);
 
 export const isBookAgainStatus = (s: AppointmentStatus) =>
-  isPastStatus(s) || isCancelledStatus(s);
+  isCompletedStatus(s) || isCancelledStatus(s);
 export type PaymentStatus = "pending" | "paid" | "failed";
 export type AppointmentPaymentMethod = "online" | "wallet";
 

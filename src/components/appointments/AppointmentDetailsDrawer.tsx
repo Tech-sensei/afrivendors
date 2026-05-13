@@ -24,16 +24,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import {
   Calendar, Clock, MapPin, MessageCircle, PenLine,
-  ExternalLink, RotateCcw, CreditCard, Loader2,
+  ExternalLink, RotateCcw, CreditCard, Loader2, Banknote,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import http from "@/lib/http";
-import { useCancelAppointment } from "@/services/useAppointments";
+import { useCancelAppointment, useReleaseAppointmentFunds } from "@/services/useAppointments";
 import {
   type Appointment,
   type AppointmentDetailsDrawerProps,
   isActiveBookingStatus,
-  isBookAgainStatus,
+  isCancelledStatus,
+  isCompletedStatus,
   normalizeAppointmentStatus,
 } from "@/types/appointments";
 import { formatVendorPrice } from "@/services/vendor";
@@ -91,6 +92,8 @@ export function AppointmentDetailsDrawer({
   const [isMobile, setIsMobile] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const { mutate: cancelAppointment, isPending: isCancelling } = useCancelAppointment();
+  const { mutate: releaseFunds, isPending: isReleasingFunds } =
+    useReleaseAppointmentFunds();
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -125,8 +128,10 @@ export function AppointmentDetailsDrawer({
 
   const isActive =
     appt?.status !== undefined && isActiveBookingStatus(appt.status);
-  const isBookAgain =
-    appt?.status !== undefined && isBookAgainStatus(appt.status);
+  const isCompleted =
+    appt?.status !== undefined && isCompletedStatus(appt.status);
+  const isCancelled =
+    appt?.status !== undefined && isCancelledStatus(appt.status);
 
   const vendorName  = appt ? `${appt.vendor.firstName} ${appt.vendor.lastName}` : "";
   const displayTime = appt?.time?.slice(0, 5) ?? "";
@@ -270,15 +275,34 @@ export function AppointmentDetailsDrawer({
         <div className="p-6 border-t bg-background shrink-0 mt-auto space-y-3">
           <Button
             className="w-full gap-2 bg-primary-100 hover:bg-[#a65620] text-white h-11 rounded-xl shadow-md font-medium cursor-pointer"
-            disabled={!appt || isLoading}
-            onClick={() =>
-              isBookAgain
-                ? router.push(`/categories/${appt!.vendor.id}`)
-                : onMessageVendor?.(appt!)
-            }
+            disabled={!appt || isLoading || (isCompleted && isReleasingFunds)}
+            onClick={() => {
+              if (!appt) return;
+              if (isCompleted) {
+                releaseFunds(appt.id);
+              } else if (isCancelled) {
+                router.push(`/categories/${appt.vendor.id}`);
+              } else {
+                onMessageVendor?.(appt);
+              }
+            }}
           >
-            {isBookAgain ? <RotateCcw className="h-4 w-4" /> : <MessageCircle className="h-4 w-4" />}
-            {isBookAgain ? "Book Again" : "Message Vendor"}
+            {isCompleted ? (
+              <>
+                <Banknote className="h-4 w-4" />
+                Release Funds
+              </>
+            ) : isCancelled ? (
+              <>
+                <RotateCcw className="h-4 w-4" />
+                Book Again
+              </>
+            ) : (
+              <>
+                <MessageCircle className="h-4 w-4" />
+                Message Vendor
+              </>
+            )}
           </Button>
 
           {isActive && (

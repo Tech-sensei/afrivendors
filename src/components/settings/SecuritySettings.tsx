@@ -13,7 +13,7 @@ import { changePasswordSchema } from '@/lib/validations/authValidationSchema';
 import { useAppSelector } from '@/store/hooks';
 
 export function SecuritySettings() {
-    const { changePasswordAsync, isChangingPassword, enableTwoFactorAsync, disableTwoFactorAsync, isEnablingTwoFactor, isDisablingTwoFactor } = useAuthAPI();
+    const { changePasswordAsync, isChangingPassword, enableTwoFactorAsync, disableTwoFactorAsync, isEnablingTwoFactor, isDisablingTwoFactor, resendOTPAsync, isResendingOTP } = useAuthAPI();
     const user = useAppSelector((state) => state.auth.user);
 
     const twoFactorEnabled =
@@ -54,6 +54,15 @@ export function SecuritySettings() {
             } else {
                 await enableTwoFactorAsync();
             }
+        } catch {
+            // error toast handled inside useAuthAPI
+        }
+    };
+
+    const handleResendVerification = async () => {
+        if (emailVerified || !user?.email) return;
+        try {
+            await resendOTPAsync({ email: user.email });
         } catch {
             // error toast handled inside useAuthAPI
         }
@@ -238,13 +247,17 @@ export function SecuritySettings() {
                             </p>
                         </div>
                     </div>
-                    {!emailVerified && (
+                    {emailVerified ? (
+                        <span className="shrink-0 text-sm font-semibold text-green-600">Verified</span>
+                    ) : (
                         <Button
+                            type="button"
                             variant="outline"
-                            className="h-9 rounded-xl border-accent-20 text-sm font-semibold"
-                            disabled
+                            className="h-9 shrink-0 rounded-xl border-accent-20 text-sm font-semibold"
+                            onClick={handleResendVerification}
+                            disabled={isResendingOTP || !user?.email}
                         >
-                            Verify
+                            {isResendingOTP ? 'Sending…' : 'Resend verification'}
                         </Button>
                     )}
                 </div>

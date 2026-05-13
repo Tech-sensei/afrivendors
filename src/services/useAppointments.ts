@@ -17,6 +17,37 @@ export const useAppointments = () => {
   });
 };
 
+export function useReleaseAppointmentFunds() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (appointmentId: number) => {
+      const { data } = await http.patch(
+        `/users/appointments/${appointmentId}/release-fund`
+      );
+      return data;
+    },
+    onSuccess: (data, appointmentId) => {
+      const msg =
+        (data as { responseMessage?: string; message?: string })?.responseMessage ??
+        (data as { message?: string })?.message ??
+        "Funds released successfully.";
+      toast.success(msg);
+      queryClient.invalidateQueries({ queryKey: ["user-appointments"] });
+      queryClient.invalidateQueries({
+        queryKey: ["appointment-detail", appointmentId],
+      });
+    },
+    onError: (error: { response?: { data?: { message?: string; responseMessage?: string } } }) => {
+      toast.error(
+        error?.response?.data?.responseMessage ??
+          error?.response?.data?.message ??
+          "Unable to release funds. Please try again."
+      );
+    },
+  });
+}
+
 export function useCancelAppointment() {
   const queryClient = useQueryClient();
 

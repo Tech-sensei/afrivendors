@@ -2,7 +2,6 @@
 
 import { AccountSettings } from '@/components/settings/AccountSettings';
 import { SecuritySettings } from '@/components/settings/SecuritySettings';
-import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
 
 export default function SettingsPage() {
     return (
@@ -14,9 +13,6 @@ export default function SettingsPage() {
 
             {/* Security Settings */}
             <SecuritySettings />
-
-            {/* Notification Preferences */}
-            <NotificationPreferences />
 
             {/* Account Settings */}
             <AccountSettings />

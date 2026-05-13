@@ -103,7 +103,7 @@ export default function AppointmentPage() {
               value="past"
               className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
             >
-              Past
+              Completed
               {pastAppointments.length > 0 && (
                 <span className="ml-1.5 text-xs font-bold bg-primary-100 text-white rounded-full px-1.5 py-0.5">
                   {pastAppointments.length}
@@ -183,7 +183,7 @@ export default function AppointmentPage() {
               ))}
             </div>
           ) : (
-            <EmptyTab message="No past appointments found." />
+            <EmptyTab message="No completed appointments found." />
           )}
         </TabsContent>
 

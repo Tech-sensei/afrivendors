@@ -3,6 +3,7 @@
 import { User, Calendar, Wallet, Heart, FileText, Settings, LogOut, HelpCircle, Download, MessageCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ReactNode, useState } from 'react';
 import { LogoutConfirmModal } from '@/components/dashboard/LogoutConfirmModal';
 import { cn } from '@/lib/utils';
@@ -132,11 +133,21 @@ export default function DashboardLayout({
                             </Link>
 
                             <Button
+                                type="button"
                                 variant="ghost"
-                                className="w-full justify-start gap-3 h-11 text-sm text-secondary-000 rounded-xl transition-colors duration-150 hover:bg-primary-300"
+                                disabled
+                                className="w-full h-11 justify-between gap-2 rounded-xl px-3 text-sm font-normal text-secondary-000 hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
                             >
-                                <Download className="h-5 w-5 text-secondary-400" strokeWidth={2} />
-                                Download the app
+                                <span className="flex min-w-0 items-center gap-3">
+                                    <Download className="h-5 w-5 shrink-0 text-secondary-400" strokeWidth={2} />
+                                    <span className="truncate">Download the app</span>
+                                </span>
+                                <Badge
+                                    variant="outline"
+                                    className="shrink-0 border-accent-20 text-xs font-semibold text-accent-80"
+                                >
+                                    Coming soon
+                                </Badge>
                             </Button>
                         </nav>
 

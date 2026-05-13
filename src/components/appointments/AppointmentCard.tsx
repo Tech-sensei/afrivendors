@@ -3,16 +3,18 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MessageCircle, Eye, PenLine, RotateCcw } from "lucide-react";
+import { Calendar, Clock, MessageCircle, Eye, PenLine, RotateCcw, Banknote } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   type AppointmentCardProps,
   isActiveBookingStatus,
-  isBookAgainStatus,
+  isCancelledStatus,
+  isCompletedStatus,
 } from "@/types/appointments";
 import { formatVendorPrice } from "@/services/vendor";
+import { useReleaseAppointmentFunds } from "@/services/useAppointments";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop";
 
@@ -23,9 +25,12 @@ export function AppointmentCard({
   onMessageVendor,
 }: AppointmentCardProps) {
   const router = useRouter();
+  const { mutate: releaseFunds, isPending: isReleasingFunds } =
+    useReleaseAppointmentFunds();
 
   const isActive = isActiveBookingStatus(appointment.status);
-  const isBookAgain = isBookAgainStatus(appointment.status);
+  const isCompleted = isCompletedStatus(appointment.status);
+  const isCancelled = isCancelledStatus(appointment.status);
 
   const vendorName = `${appointment.vendor.firstName} ${appointment.vendor.lastName}`;
   const primaryService = appointment.services[0];
@@ -134,14 +139,33 @@ export function AppointmentCard({
         <div className="space-y-3 pt-2">
           <Button
             className="w-full gap-2 bg-primary-100 hover:bg-[#a65620] text-white font-semibold h-11 rounded-xl shadow-lg shadow-primary-100/20 tracking-wide transition-all active:scale-[0.98] cursor-pointer"
-            onClick={() =>
-              isBookAgain
-                ? router.push(`/categories/${appointment.vendor.id}`)
-                : onMessageVendor?.(appointment)
-            }
+            disabled={isCompleted && isReleasingFunds}
+            onClick={() => {
+              if (isCompleted) {
+                releaseFunds(appointment.id);
+              } else if (isCancelled) {
+                router.push(`/categories/${appointment.vendor.id}`);
+              } else {
+                onMessageVendor?.(appointment);
+              }
+            }}
           >
-            {isBookAgain ? <RotateCcw className="h-4 w-4" /> : <MessageCircle className="h-4 w-4" />}
-            {isBookAgain ? "Book Again" : "Message Vendor"}
+            {isCompleted ? (
+              <>
+                <Banknote className="h-4 w-4" />
+                Release Funds
+              </>
+            ) : isCancelled ? (
+              <>
+                <RotateCcw className="h-4 w-4" />
+                Book Again
+              </>
+            ) : (
+              <>
+                <MessageCircle className="h-4 w-4" />
+                Message Vendor
+              </>
+            )}
           </Button>
 
           {isActive && (
