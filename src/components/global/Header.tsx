@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, ArrowRight, Bell,TextAlignJustify } from "lucide-react";
+import { ArrowRight, Bell, TextAlignJustify } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { UserMenu } from "./UserMenu";
@@ -25,6 +25,7 @@ const NOTIFICATION_ROUTE_MAP: Record<string, string> = {
   "dashboard-appointments": "/appointments",
   "dashboard-messages": "/messages",
   "dashboard-wallet": "/wallet",
+  "dashboard-payments": "/payments",
   "dashboard-favourites": "/favourites",
   "dashboard-profile": "/profile",
   "dashboard-settings": "/settings",
@@ -61,116 +62,102 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-accent-20">
       <div className="container mx-auto px-4 md:px-6 lg:px-24">
-        <div className="flex items-center justify-between h-20 gap-4">
-          {/* Mobile Menu Button */}
-          {isMounted && (
-            <Sheet>
-              <SheetTrigger asChild>
-                <button
-                  type="button"
-                  className="lg:hidden text-secondary-000 hover:text-accent-80 transition-colors"
-                  aria-label="Open menu"
-                >
-                  <TextAlignJustify className="size-6" />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[85%] sm:w-[400px] rounded-r-3xl border-l-0 p-0">
-                <SheetHeader className="px-6 pt-8 pb-6">
-                  <SheetTitle className="text-secondary-000 font-bold text-3xl tracking-[-0.02em]">Menu</SheetTitle>
-                  <p className="text-secondary-000 text-base font-normal mt-2">Browse and explore Afrivendor</p>
-                </SheetHeader>
+        <div className="relative grid h-20 w-full grid-cols-[auto_1fr] items-center gap-3 md:gap-4 lg:grid-cols-[1fr_auto_1fr]">
+          {/* Logo + mobile menu (single grid column) */}
+          <div className="flex min-w-0 items-center gap-3 justify-self-start">
+            {isMounted && (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="lg:hidden text-secondary-000 hover:text-accent-80 transition-colors"
+                    aria-label="Open menu"
+                  >
+                    <TextAlignJustify className="size-6" />
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[85%] sm:w-[400px] rounded-r-3xl border-l-0 p-0">
+                  <SheetHeader className="px-6 pt-8 pb-6">
+                    <SheetTitle className="text-secondary-000 font-bold text-3xl tracking-[-0.02em]">Menu</SheetTitle>
+                    <p className="text-secondary-000 text-base font-normal mt-2">Browse and explore Afrivendor</p>
+                  </SheetHeader>
 
-                {/* Mobile Menu Content */}
-                <div className="flex flex-col px-6 pb-6">
-                  {/* Mobile Navigation Links */}
-                  <nav className="flex flex-col gap-1">
-                    {NAV_LINKS.map((link) => (
-                      <SheetClose key={link.href} asChild>
-                        <Link
-                          href={link.href}
-                          className="text-secondary-000 font-normal text-base transition-colors tracking-[-0.01em] py-3 px-4 rounded-lg hover:bg-primary-300/50"
-                        >
-                          {link.label}
-                        </Link>
-                      </SheetClose>
-                    ))}
-                  </nav>
+                  <div className="flex flex-col px-6 pb-6">
+                    <nav className="flex flex-col gap-1">
+                      {NAV_LINKS.map((link) => (
+                        <SheetClose key={link.href} asChild>
+                          <Link
+                            href={link.href}
+                            className="text-secondary-000 font-normal text-base transition-colors tracking-[-0.01em] py-3 px-4 rounded-lg hover:bg-primary-300/50"
+                          >
+                            {link.label}
+                          </Link>
+                        </SheetClose>
+                      ))}
+                    </nav>
 
-                  {/* Mobile Action Buttons */}
-                  <div className="flex flex-col gap-4 mt-8 pt-6 border-t border-accent-20">
-                    <SheetClose asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full border-secondary-000 text-secondary-000 bg-white hover:bg-secondary-000 hover:text-white rounded-full transition-all duration-300 h-12"
-                        asChild
-                      >
-                        <Link
-                          href="/vendor/register"
-                          className="text-secondary-000 font-semibold text-base transition-colors tracking-[-0.01em]"
-                        >
-                          Become a Vendor
-                        </Link>
-                      </Button>
-                    </SheetClose>
-
-                    {!isLoggedIn && (
+                    <div className="flex flex-col gap-4 mt-8 pt-6 border-t border-accent-20">
                       <SheetClose asChild>
                         <Button
-                          className="w-full bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full h-12"
+                          variant="outline"
+                          className="w-full border-secondary-000 text-secondary-000 bg-white hover:bg-secondary-000 hover:text-white rounded-full transition-all duration-300 h-12"
                           asChild
                         >
                           <Link
-                            href="/sign-up-choice"
-                            className="flex items-center justify-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]"
+                            href="/vendor/register"
+                            className="text-secondary-000 font-semibold text-base transition-colors tracking-[-0.01em]"
                           >
-                            Log In/Sign Up
-                            <ArrowRight className="size-4" />
+                            Become a Vendor
                           </Link>
                         </Button>
                       </SheetClose>
-                    )}
+
+                      {!isLoggedIn && (
+                        <SheetClose asChild>
+                          <Button
+                            className="w-full bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full h-12"
+                            asChild
+                          >
+                            <Link
+                              href="/sign-up-choice"
+                              className="flex items-center justify-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]"
+                            >
+                              Log In/Sign Up
+                              <ArrowRight className="size-4" />
+                            </Link>
+                          </Button>
+                        </SheetClose>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          )}
+                </SheetContent>
+              </Sheet>
+            )}
 
-          {!isMounted && (
-            <button
-              type="button"
-              className="lg:hidden p-2 text-secondary-000 hover:text-accent-80 transition-colors"
-              aria-label="Open menu"
-            >
-              <TextAlignJustify className="size-6" />
-            </button>
-          )}
+            {!isMounted && (
+              <button
+                type="button"
+                className="lg:hidden p-2 text-secondary-000 hover:text-accent-80 transition-colors"
+                aria-label="Open menu"
+              >
+                <TextAlignJustify className="size-6" />
+              </button>
+            )}
 
-          {/* Logo */}
-          <Link href="/" className="shrink-0">
-            <Image
-              src="/assets/images/Logo.svg"
-              alt="Afrivendor Logo"
-              width={220}
-              height={23}
-              className="h-6 sm:h-7 w-auto hover:opacity-80 transition-opacity duration-300"
-              priority
-            />
-          </Link>
-
-          {/* Search Bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-sm mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent-60 size-5" />
-              <input
-                type="text"
-                placeholder="Search vendors, services, categories..."
-                className="w-full h-10 pl-10 pr-4 rounded-full border border-accent-60 text-accent-80 placeholder:text-accent-60 focus:outline-none focus:ring-2 focus:ring-primary-100/20 focus:border-primary-100 transition-all"
+            <Link href="/" className="shrink-0">
+              <Image
+                src="/assets/images/Logo.svg"
+                alt="Afrivendor Logo"
+                width={220}
+                height={23}
+                className="h-6 sm:h-7 w-auto hover:opacity-80 transition-opacity duration-300"
+                priority
               />
-            </div>
+            </Link>
           </div>
 
-          {/* Navigation Links - Desktop */}
-          <nav className="hidden lg:flex items-center gap-8">
+          {/* Navigation Links - Desktop, centered in header */}
+          <nav className="hidden items-center justify-center gap-6 xl:gap-8 lg:flex lg:justify-self-center">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
@@ -182,8 +169,8 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Action Buttons - Desktop */}
-          <div className="flex items-center gap-4 shrink-0">
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-3 sm:gap-4 shrink-0 justify-self-end">
             {/* Become a Vendor Button - Desktop */}
             <Button
               variant="outline"

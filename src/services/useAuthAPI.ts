@@ -14,7 +14,13 @@ import type {
   SignUpPayload,
   TwoFactorVerifyPayload,
   VerifyEmailPayload,
+  ClientLoginResponseBody,
 } from "@/types/auth";
+import {
+  APP_AUTH_PORTAL,
+  assertLoginAccountTypeOrThrow,
+  wrongPortalLoginMessage,
+} from "@/lib/authPortal";
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
@@ -26,8 +32,13 @@ export const useAuthAPI = () => {
   // 🔐 Sign In
   const signInMutation = useMutation({
     mutationFn: async (payload: SignInPayload) => {
-      const response = await http.post("/auth/login", payload);
-      return response.data;
+      const response = await http.post<ClientLoginResponseBody>("/auth/login", {
+        ...payload,
+        portal: APP_AUTH_PORTAL,
+      });
+      const data = response.data;
+      if (!data?.twoFactorRequired) assertLoginAccountTypeOrThrow(data);
+      return data;
     },
     onSuccess: (data) => {
       // If 2FA is required, skip token storage — page handles the redirect
@@ -43,11 +54,18 @@ export const useAuthAPI = () => {
       toast.success("Welcome back!");
     },
     onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.responseMessage ||
-          error?.response?.data?.message ||
-          "Sign in failed"
-      );
+      if (error?.wrongPortal) {
+        toast.error(error.message || wrongPortalLoginMessage());
+        return;
+      }
+      const status = error?.response?.status;
+      const msg =
+        error?.response?.data?.responseMessage || error?.response?.data?.message;
+      if (status === 403) {
+        toast.error(msg || wrongPortalLoginMessage());
+        return;
+      }
+      toast.error(msg || "Sign in failed");
     },
   });
 
@@ -72,8 +90,13 @@ export const useAuthAPI = () => {
   // 🔐 Verify Two-Factor Challenge
   const verifyTwoFactorMutation = useMutation({
     mutationFn: async (payload: TwoFactorVerifyPayload) => {
-      const response = await http.post("/auth/two-factor/verify", payload);
-      return response.data;
+      const response = await http.post<ClientLoginResponseBody>(
+        "/auth/two-factor/verify",
+        payload
+      );
+      const data = response.data;
+      assertLoginAccountTypeOrThrow(data);
+      return data;
     },
     onSuccess: (data) => {
       if (data?.accessToken) {
@@ -86,6 +109,10 @@ export const useAuthAPI = () => {
       toast.success("Welcome back!");
     },
     onError: (error: any) => {
+      if (error?.wrongPortal) {
+        toast.error(error.message || wrongPortalLoginMessage());
+        return;
+      }
       toast.error(
         error?.response?.data?.responseMessage ||
           error?.response?.data?.message ||

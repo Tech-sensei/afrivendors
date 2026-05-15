@@ -90,19 +90,19 @@ const VendorCard = ({
           {/* Location */}
           <div className="flex items-center gap-2 mb-4">
             <MapPin className="h-4 w-4 text-secondary-100 opacity-70" />
-            <span className="text-sm text-secondary-100 opacity-70">{vendor.location}</span>
+            <span className="text-sm text-secondary-100 opacity-70 line-clamp-1">{vendor.location}</span>
           </div>
 
           {/* Price & Button — pinned to bottom */}
           <div className="mt-auto flex items-center justify-between pt-3 border-t border-[#EFE6E1]">
-            <span className="text-base text-primary-100 font-semibold font-unbounded">
+            <span className="text-sm text-primary-100 font-unbounded font-semibold">
               {formatVendorPriceRange(Number(vendor.minPrice) || 0, Number(vendor.maxPrice) || 0)}
             </span>
             <Button
               size="sm"
               className="bg-secondary-000 text-white hover:bg-secondary-000/90 rounded-[18px] h-9 px-5 text-sm font-semibold transition-all duration-300"
             >
-              View Services
+              View Vendor
             </Button>
           </div>
         </CardContent>

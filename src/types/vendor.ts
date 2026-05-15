@@ -1,3 +1,16 @@
+/** Public vendor APIs may return a plain string or a structured address. */
+export type PublicVendorLocationApi =
+  | string
+  | {
+      id?: number;
+      street_address?: string | null;
+      city?: string | null;
+      state?: string | null;
+      zip?: string | null;
+    }
+  | null
+  | undefined;
+
 export interface PublicVendorListApiItem {
   id: number;
   firstName: string;
@@ -7,7 +20,7 @@ export interface PublicVendorListApiItem {
   phoneNumber: string;
   profilePhoto: string | null;
   businessName: string;
-  location: string;
+  location: PublicVendorLocationApi;
   bannerImage: string | null;
   category: {
     id: number;
@@ -44,7 +57,7 @@ export interface PublicVendorDetailApiResponse {
   kyc: {
     id: number;
     businessName: string;
-    location: string;
+    location: PublicVendorLocationApi;
     aboutBusiness: string;
     website: string | null;
     bannerImage: string | null;

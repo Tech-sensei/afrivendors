@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Calendar, Wallet, Heart, FileText, Settings, LogOut, HelpCircle, Download, MessageCircle } from 'lucide-react';
+import { User, Calendar, Wallet, Heart, FileText, Settings, LogOut, HelpCircle, Download, MessageCircle, CreditCard } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ const DASHBOARD_TABS = [
     { id: 'dashboard-appointments', label: 'Appointments', icon: Calendar, page: '/appointments' },
     { id: 'dashboard-messages', label: 'Messages', icon: MessageCircle, page: '/messages' },
     { id: 'dashboard-wallet', label: 'Wallet', icon: Wallet, page: '/wallet' },
+    { id: 'dashboard-payments', label: 'Payments', icon: CreditCard, page: '/payments' },
     { id: 'dashboard-favourites', label: 'Favourites', icon: Heart, page: '/favourites' },
     { id: 'dashboard-custom-service-forms', label: 'Custom Service Forms', icon: FileText, page: '/custom-service-forms' },
     { id: 'dashboard-settings', label: 'Settings', icon: Settings, page: '/settings' },

@@ -42,6 +42,17 @@ export interface AuthState {
 export interface SignInPayload {
   email: string;
   password: string;
+  /** Injected by `useAuthAPI` — do not omit when calling mutate. */
+  portal?: string;
+}
+
+/** Typical `POST /auth/login` body after success (tokens / 2FA / accountType). */
+export interface ClientLoginResponseBody {
+  twoFactorRequired?: boolean;
+  challengeId?: number;
+  accountType?: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export interface SignUpPayload {

@@ -1,4 +1,5 @@
 import http from "@/lib/http";
+import { normalizeVendorLocation } from "@/services/vendor";
 import type {
   FavoriteVendorCard,
   FavoritesApiResponse,
@@ -122,7 +123,10 @@ function mapFavoriteApiItemToCard(item: any): FavoriteVendorCard {
       "Vendor",
     businessName: item.businessName || item.vendor?.businessName,
     category: item.category?.name || item.vendor?.category?.name || "Uncategorized",
-    location: item.location || item.vendor?.location || item.country || item.vendor?.country || "Location unavailable",
+    location: normalizeVendorLocation(
+      item.location ?? item.vendor?.location,
+      item.country || item.vendor?.country || "Location unavailable"
+    ),
     rating: Number(item.averageRating ?? item.vendor?.averageRating) || 0,
     reviewCount: Number(item.reviewCount ?? item.vendor?.reviewCount) || 0,
     minPrice: Number(item.minServicePrice ?? item.vendor?.minServicePrice) || 0,

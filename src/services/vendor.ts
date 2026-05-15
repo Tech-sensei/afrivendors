@@ -4,6 +4,7 @@ import type {
   PublicVendorDetailApiResponse,
   PublicVendorListApiItem,
   PublicVendorListApiResponse,
+  PublicVendorLocationApi,
   VendorDetail,
   VendorDetailReview,
   VendorDetailService,
@@ -20,6 +21,22 @@ const currencyFormatter = new Intl.NumberFormat("en-GB", {
 
 function getVendorImage(image?: string | null) {
   return image || FALLBACK_VENDOR_IMAGE;
+}
+
+/** Turn API `location` (string or address object) into a single display line. */
+export function normalizeVendorLocation(
+  location: PublicVendorLocationApi,
+  fallback: string
+): string {
+  if (location == null) return fallback;
+  if (typeof location === "string") {
+    const s = location.trim();
+    return s || fallback;
+  }
+  const parts = [location.street_address, location.city, location.state, location.zip]
+    .map((p) => (typeof p === "string" ? p.trim() : ""))
+    .filter(Boolean);
+  return parts.join(", ") || fallback;
 }
 
 function formatTime(time?: string | null) {
@@ -150,7 +167,7 @@ export function mapPublicVendorListItem(vendor: PublicVendorListApiItem): Vendor
     businessName,
     category: vendor.category?.name || "Uncategorized",
     categoryId: vendor.category?.id ?? null,
-    location: vendor.location,
+    location: normalizeVendorLocation(vendor.location, vendor.country),
     country: vendor.country,
     rating: Number(vendor.averageRating) || 0,
     reviewCount: Number(vendor.reviewCount) || 0,
@@ -189,7 +206,10 @@ export function mapPublicVendorDetail(
     businessName,
     category: payload.kyc?.category?.name || "Uncategorized",
     categoryId: payload.kyc?.category?.id ?? null,
-    location: payload.kyc?.location || payload.vendor.country,
+    location: normalizeVendorLocation(
+      payload.kyc?.location,
+      payload.vendor.country
+    ),
     country: payload.vendor.country,
     rating: Number(payload.averageRating) || 0,
     reviewCount: reviews.length,
