@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ServiceFormDraft } from "@/types/customServiceForms";
+import type { CustomOrderDraft } from "@/types/customOrders";
 
 const budgetStringSchema = z
   .string()
@@ -10,13 +10,10 @@ const budgetStringSchema = z
     return Number.isFinite(n) && n > 0;
   }, "Enter a valid budget greater than 0");
 
-export const serviceFormDraftSchema = z
+export const customOrderDraftSchema = z
   .object({
     title: z.string().trim().min(1, "Title is required").max(200, "Title is too long"),
     category: z.string().trim().min(1, "Category is required"),
-    service: z.string().trim().min(1, "Service is required"),
-    vendorId: z.string(),
-    vendorSelectionType: z.enum(["specific", "all"]),
     description: z
       .string()
       .trim()
@@ -28,8 +25,7 @@ export const serviceFormDraftSchema = z
     flexibleEnd: z.string(),
     preferredTime: z.string().trim().min(1, "Preferred time is required"),
     budget: budgetStringSchema,
-    location: z.string(),
-    isRemote: z.boolean(),
+    location: z.string().trim().min(1, "Location is required"),
     customerName: z
       .string()
       .trim()
@@ -40,14 +36,6 @@ export const serviceFormDraftSchema = z
     agreeToTerms: z.literal(true, { error: "You must agree to the terms" }),
   })
   .superRefine((data, ctx) => {
-    if (data.vendorSelectionType === "specific" && !data.vendorId.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Select a vendor",
-        path: ["vendorId"],
-      });
-    }
-
     const hasFixedDate = Boolean(data.preferredDate.trim());
     const hasFlexible =
       data.isFlexibleDates &&
@@ -61,18 +49,16 @@ export const serviceFormDraftSchema = z
         path: ["preferredDate"],
       });
     }
-
-    if (!data.isRemote && !data.location.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Enter a location or mark as remote",
-        path: ["location"],
-      });
-    }
   });
 
-export type ServiceFormDraftValues = z.infer<typeof serviceFormDraftSchema>;
+export type CustomOrderDraftValues = z.infer<typeof customOrderDraftSchema>;
 
-export function validateServiceFormDraft(data: ServiceFormDraft) {
-  return serviceFormDraftSchema.safeParse(data);
+export function validateCustomOrderDraft(data: CustomOrderDraft) {
+  return customOrderDraftSchema.safeParse(data);
 }
+
+/** @deprecated Use validateCustomOrderDraft */
+export const validateServiceFormDraft = validateCustomOrderDraft;
+
+/** @deprecated Use customOrderDraftSchema */
+export const serviceFormDraftSchema = customOrderDraftSchema;

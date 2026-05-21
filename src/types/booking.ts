@@ -43,6 +43,8 @@ export interface PaymentMethodSectionProps {
   hasInsufficientFunds: boolean;
   onPaymentMethodChange: (method: PaymentMethod) => void;
   onFundWallet: () => void;
+  /** Unique prefix for radio `id`s when multiple pickers can mount (e.g. modals). */
+  radioIdPrefix?: string;
 }
 
 export interface ContactFormData {

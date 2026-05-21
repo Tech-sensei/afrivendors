@@ -6,7 +6,7 @@ const protectedRoutes = [
   '/messages',
   '/wallet',
   '/favourites',
-  '/custom-service-forms',
+  '/custom-orders',
   '/settings',
 ];
 
@@ -48,7 +48,7 @@ export const config = {
     '/messages/:path*',
     '/wallet/:path*',
     '/favourites/:path*',
-    '/custom-service-forms/:path*',
+    '/custom-orders/:path*',
     '/settings/:path*',
     '/sign-in',
     '/sign-up',

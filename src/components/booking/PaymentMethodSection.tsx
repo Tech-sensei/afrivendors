@@ -16,7 +16,10 @@ export function PaymentMethodSection({
     hasInsufficientFunds,
     onPaymentMethodChange,
     onFundWallet,
+    radioIdPrefix = "booking",
 }: PaymentMethodSectionProps) {
+    const onlineId = `${radioIdPrefix}-online`;
+    const walletId = `${radioIdPrefix}-wallet`;
     return (
         <Card className="rounded-2xl border border-accent-20">
             <CardHeader>
@@ -30,7 +33,7 @@ export function PaymentMethodSection({
                     <div className="space-y-3">
                         {/* Pay Online */}
                         <label
-                            htmlFor="online"
+                            htmlFor={onlineId}
                             className={cn(
                                 "flex items-start space-x-3 p-4 cursor-pointer transition-all rounded-xl",
                                 paymentMethod === 'online'
@@ -38,7 +41,7 @@ export function PaymentMethodSection({
                                     : "border-2 border-accent-20 bg-white"
                             )}
                         >
-                            <RadioGroupItem value="online" id="online" className="mt-1" />
+                            <RadioGroupItem value="online" id={onlineId} className="mt-1" />
                             <div className="flex-1">
                                 <h4 className="text-base font-semibold text-secondary-000 mb-1">
                                     Pay Now Online
@@ -51,7 +54,7 @@ export function PaymentMethodSection({
 
                         {/* Wallet */}
                         <label
-                            htmlFor="wallet"
+                            htmlFor={walletId}
                             className={cn(
                                 "flex items-start space-x-3 p-4 cursor-pointer transition-all rounded-xl",
                                 paymentMethod === 'wallet'
@@ -59,7 +62,7 @@ export function PaymentMethodSection({
                                     : "border-2 border-accent-20 bg-white"
                             )}
                         >
-                            <RadioGroupItem value="wallet" id="wallet" className="mt-1" />
+                            <RadioGroupItem value="wallet" id={walletId} className="mt-1" />
                             <div className="flex-1">
                                 <div className="flex items-center justify-between mb-1">
                                     <h4 className="text-base font-semibold text-secondary-000">

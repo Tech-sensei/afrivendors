@@ -21,7 +21,7 @@ const pageToRoute: Record<string, string> = {
     "dashboard-messages": "/messages",
     "dashboard-wallet": "/wallet",
     "dashboard-favourites": "/favourites",
-    "dashboard-forms": "/custom-service-forms",
+    "dashboard-custom-orders": "/custom-orders",
     "dashboard-settings": "/settings",
 };
 
@@ -59,10 +59,10 @@ export function UserMenu({
             page: "dashboard-favourites",
         },
         {
-            id: "dashboard-forms",
-            label: "Service Forms",
+            id: "dashboard-custom-orders",
+            label: "Custom Orders",
             icon: FileText,
-            page: "dashboard-forms",
+            page: "dashboard-custom-orders",
         },
         {
             id: "dashboard-settings",
