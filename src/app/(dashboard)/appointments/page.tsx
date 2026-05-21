@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppointmentCard } from "@/components/appointments/AppointmentCard";
@@ -23,6 +25,10 @@ const EmptyTab = ({ message }: { message: string }) => (
 );
 
 export default function AppointmentPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const appointmentDeepLinkHandled = useRef(false);
+
   const { data: appointments = [], isLoading } = useAppointments();
 
   const [selectedAppointment, setSelectedAppointment] =
@@ -46,6 +52,29 @@ export default function AppointmentPage() {
     setSelectedAppointment(appointment);
     setIsDrawerOpen(true);
   };
+
+  useEffect(() => {
+    const param = searchParams.get("appointmentId");
+    if (!param || appointmentDeepLinkHandled.current || isLoading) return;
+
+    const id = Number(param);
+    if (!Number.isFinite(id)) return;
+
+    const apt = appointments.find((a) => a.id === id);
+    appointmentDeepLinkHandled.current = true;
+
+    if (apt) {
+      setSelectedAppointment(apt);
+      setIsDrawerOpen(true);
+      router.replace("/appointments");
+      return;
+    }
+
+    if (appointments.length > 0) {
+      toast.error("Appointment not found.");
+      router.replace("/appointments");
+    }
+  }, [appointments, isLoading, router, searchParams]);
 
   const handleReschedule = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
@@ -74,20 +103,9 @@ export default function AppointmentPage() {
         </h1>
       </div>
 
-      <Tabs defaultValue="upcoming" className="w-full">
+      <Tabs defaultValue="pending" className="w-full">
         <div className="flex justify-between mb-8">
           <TabsList className=" h-auto p-0 gap-2 sm:gap-3 w-full grid grid-cols-2 md:grid-cols-4 bg-secondary-700 rounded-full">
-            <TabsTrigger
-              value="upcoming"
-              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
-            >
-              Upcoming
-              {upcomingAppointments.length > 0 && (
-                <span className="ml-1.5 text-xs font-bold bg-primary-100 text-white rounded-full px-1.5 py-0.5">
-                  {upcomingAppointments.length}
-                </span>
-              )}
-            </TabsTrigger>
             <TabsTrigger
               value="pending"
               className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
@@ -96,6 +114,17 @@ export default function AppointmentPage() {
               {pendingAppointments.length > 0 && (
                 <span className="ml-1.5 text-xs font-bold bg-primary-100 text-white rounded-full px-1.5 py-0.5">
                   {pendingAppointments.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger
+              value="upcoming"
+              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
+            >
+              Upcoming
+              {upcomingAppointments.length > 0 && (
+                <span className="ml-1.5 text-xs font-bold bg-primary-100 text-white rounded-full px-1.5 py-0.5">
+                  {upcomingAppointments.length}
                 </span>
               )}
             </TabsTrigger>
@@ -125,27 +154,6 @@ export default function AppointmentPage() {
         </div>
 
         <TabsContent
-          value="upcoming"
-          className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
-        >
-          {upcomingAppointments.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {upcomingAppointments.map((appointment) => (
-                <AppointmentCard
-                  key={appointment.id}
-                  appointment={appointment}
-                  onViewDetails={handleViewDetails}
-                  onReschedule={handleReschedule}
-                  onMessageVendor={handleMessageVendor}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyTab message="No upcoming appointments found." />
-          )}
-        </TabsContent>
-
-        <TabsContent
           value="pending"
           className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
         >
@@ -163,6 +171,27 @@ export default function AppointmentPage() {
             </div>
           ) : (
             <EmptyTab message="No pending appointments found." />
+          )}
+        </TabsContent>
+
+        <TabsContent
+          value="upcoming"
+          className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
+        >
+          {upcomingAppointments.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {upcomingAppointments.map((appointment) => (
+                <AppointmentCard
+                  key={appointment.id}
+                  appointment={appointment}
+                  onViewDetails={handleViewDetails}
+                  onReschedule={handleReschedule}
+                  onMessageVendor={handleMessageVendor}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyTab message="No upcoming appointments found." />
           )}
         </TabsContent>
 

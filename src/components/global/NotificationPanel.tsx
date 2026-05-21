@@ -1,63 +1,44 @@
 "use client";
 
-import { useState } from "react";
-import { Bell, Check, CheckCheck, X, Trash2, Calendar, Heart, MessageSquare, Package } from "lucide-react";
+import { useMemo } from "react";
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  X,
+  Calendar,
+  Heart,
+  MessageSquare,
+  Package,
+  Loader2,
+} from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { buildClientNotificationHref } from "@/lib/notificationRoutes";
 import type { Notification, NotificationPanelProps } from "@/types/notifications";
+import {
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotificationsInfinite,
+} from "@/services/useNotifications";
 
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "booking",
-    title: "Booking Confirmed",
-    message: "Your appointment with ZuriGlow Beauty Hub is confirmed for Dec 15, 2024",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    isRead: false,
-    actionUrl: "dashboard-appointments",
-  },
-  {
-    id: "2",
-    type: "message",
-    title: "New Message",
-    message: "Bite & Serve Catering sent you a message about your order",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3),
-    isRead: false,
-    actionUrl: "dashboard-appointments",
-  },
-  {
-    id: "3",
-    type: "favorite",
-    title: "Vendor Update",
-    message: "SweetCrust Bakery has new menu items available",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6),
-    isRead: true,
-    actionUrl: "vendor-sweetcrust-bakery",
-  },
-  {
-    id: "4",
-    type: "update",
-    title: "Service Completed",
-    message: "Your session with FrameTime Studio is now complete. Leave a review!",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    isRead: true,
-    actionUrl: "dashboard-appointments",
-  },
-  {
-    id: "5",
-    type: "booking",
-    title: "Upcoming Appointment",
-    message: "Reminder: Your appointment with Femi Digital Studios is tomorrow at 2:00 PM",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48),
-    isRead: true,
-    actionUrl: "dashboard-appointments",
-  },
-];
+export function NotificationPanel({
+  isOpen,
+  onClose,
+  onNavigate,
+}: NotificationPanelProps) {
+  const listQuery = useNotificationsInfinite(isOpen);
+  const markRead = useMarkNotificationRead();
+  const markAllRead = useMarkAllNotificationsRead();
 
-export function NotificationPanel({ isOpen, onClose, onNavigate }: NotificationPanelProps) {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const notifications = useMemo(
+    () => listQuery.data?.pages.flatMap((p) => p.items) ?? [],
+    [listQuery.data]
+  );
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -86,31 +67,42 @@ export function NotificationPanel({ isOpen, onClose, onNavigate }: NotificationP
     }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+  const handleMarkAsRead = (id: string) => {
+    markRead.mutate(id, {
+      onError: () => {
+        toast.error("Could not mark notification as read");
+      },
+    });
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-  };
-
-  const deleteNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const handleMarkAllAsRead = () => {
+    markAllRead.mutate(undefined, {
+      onSuccess: () => toast.success("All notifications marked as read"),
+      onError: () => {
+        toast.error("Could not mark all notifications as read");
+      },
+    });
   };
 
   const handleNotificationClick = (notification: Notification) => {
-    markAsRead(notification.id);
-    if (notification.actionUrl && onNavigate) {
-      onNavigate(notification.actionUrl);
+    if (!notification.isRead) {
+      handleMarkAsRead(notification.id);
+    }
+    if (onNavigate && buildClientNotificationHref(notification)) {
+      onNavigate(notification);
       onClose();
     }
   };
+
+  const isLoading = listQuery.isLoading;
+  const isError = listQuery.isError;
+  const hasNextPage = listQuery.hasNextPage ?? false;
+  const isFetchingNextPage = listQuery.isFetchingNextPage;
 
   if (!isOpen) return null;
 
   return (
     <>
-      {/* Overlay */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -124,7 +116,6 @@ export function NotificationPanel({ isOpen, onClose, onNavigate }: NotificationP
         )}
       </AnimatePresence>
 
-      {/* Panel */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -137,117 +128,190 @@ export function NotificationPanel({ isOpen, onClose, onNavigate }: NotificationP
               stiffness: 300,
               opacity: { duration: 0.2 },
             }}
-            className="fixed right-0 top-20 z-50 w-full sm:w-[420px] h-[calc(100vh-60px)] lg:h-[calc(100vh-90px)] flex flex-col bg-white rounded-tl-2xl rounded-bl-2xl shadow-lg"
+            className="fixed right-0 top-20 z-50 flex h-[calc(100vh-60px)] w-full flex-col rounded-tl-2xl rounded-bl-2xl bg-white shadow-lg sm:w-[420px] lg:h-[calc(100vh-90px)]"
           >
-            {/* Header */}
-            <div className="px-6 py-5 border-b border-accent-20">
-              <div className="flex items-center justify-between mb-3">
+            <div className="border-b border-accent-20 px-6 py-5">
+              <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <h3 className="text-secondary-000 font-semibold text-xl leading-[1.4]">Notifications</h3>
+                  <h3 className="text-xl font-semibold leading-[1.4] text-secondary-000">
+                    Notifications
+                  </h3>
                   {unreadCount > 0 && (
-                    <span className="flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-primary-100 text-white text-xs font-semibold">
-                      {unreadCount}
+                    <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary-100 px-2 text-xs font-semibold text-white">
+                      {unreadCount > 99 ? "99+" : unreadCount}
                     </span>
                   )}
                 </div>
-                <div
+                <button
+                  type="button"
                   onClick={onClose}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-transparent hover:bg-primary-300/50 transition-colors duration-150"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-transparent transition-colors duration-150 hover:bg-primary-300/50"
+                  aria-label="Close notifications"
                 >
                   <X className="size-5 text-accent-80" />
-                </div>
+                </button>
               </div>
 
               {unreadCount > 0 && (
                 <button
-                  onClick={markAllAsRead}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-transparent hover:bg-primary-300/50 transition-colors duration-150 text-primary-100 font-semibold text-sm"
+                  type="button"
+                  onClick={handleMarkAllAsRead}
+                  disabled={markAllRead.isPending}
+                  className="flex items-center gap-1.5 rounded-lg bg-transparent px-3 py-1.5 text-sm font-semibold text-primary-100 transition-colors duration-150 hover:bg-primary-300/50 disabled:opacity-60"
                 >
-                  <CheckCheck className="size-4" />
+                  {markAllRead.isPending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <CheckCheck className="size-4" />
+                  )}
                   Mark all as read
                 </button>
               )}
             </div>
 
-            {/* Notifications List */}
             <ScrollArea className="flex-1">
-              {notifications.length === 0 ? (
-                <div className="flex flex-col items-center gap-3 py-12 px-6">
-                  <div className="w-16 h-16 rounded-full bg-primary-300 flex items-center justify-center">
+              {isLoading && (
+                <div className="flex flex-col items-center gap-3 py-16">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-100" />
+                  <p className="text-sm text-accent-80">Loading notifications…</p>
+                </div>
+              )}
+
+              {isError && !isLoading && (
+                <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+                  <p className="text-base font-semibold text-secondary-000">
+                    Could not load notifications
+                  </p>
+                  <p className="text-sm text-accent-80">
+                    Check your connection and try again.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full border-accent-20"
+                    onClick={() => listQuery.refetch()}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
+
+              {!isLoading && !isError && notifications.length === 0 && (
+                <div className="flex flex-col items-center gap-3 px-6 py-12">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-300">
                     <Bell className="size-7 text-accent-80" />
                   </div>
                   <div className="text-center">
-                    <p className="text-secondary-000 font-semibold text-base mb-1">No notifications</p>
-                    <p className="text-accent-80 text-sm">You're all caught up!</p>
+                    <p className="mb-1 text-base font-semibold text-secondary-000">
+                      No notifications
+                    </p>
+                    <p className="text-sm text-accent-80">You&apos;re all caught up!</p>
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {!isLoading && !isError && notifications.length > 0 && (
                 <div>
                   {notifications.map((notification, index) => {
                     const Icon = getIcon(notification.type);
                     const isLast = index === notifications.length - 1;
+                    const isMarkingThis =
+                      markRead.isPending && markRead.variables === notification.id;
+
                     return (
                       <div key={notification.id}>
                         <div
+                          role="button"
+                          tabIndex={0}
                           onClick={() => handleNotificationClick(notification)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              handleNotificationClick(notification);
+                            }
+                          }}
                           className={cn(
-                            "px-6 py-4 cursor-pointer transition-colors duration-150 relative",
-                            notification.isRead ? "bg-transparent hover:bg-primary-300/50" : "bg-primary-300/50"
+                            "relative cursor-pointer px-6 py-4 transition-colors duration-150",
+                            notification.isRead
+                              ? "bg-transparent hover:bg-primary-300/50"
+                              : "bg-primary-300/50"
                           )}
                         >
                           <div className="flex gap-3">
-                            {/* Icon */}
                             <div
                               className={cn(
-                                "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                                "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
                                 notification.isRead ? "bg-accent-20" : "bg-primary-100"
                               )}
                             >
-                              <Icon className={cn("size-5", notification.isRead ? "text-accent-80" : "text-white")} />
+                              <Icon
+                                className={cn(
+                                  "size-5",
+                                  notification.isRead ? "text-accent-80" : "text-white"
+                                )}
+                              />
                             </div>
 
-                            {/* Content */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2 mb-1">
-                                <p className="text-secondary-000 font-semibold text-sm leading-[1.4]">{notification.title}</p>
-                                <span className="text-accent-80 text-xs whitespace-nowrap shrink-0">
+                            <div className="min-w-0 flex-1">
+                              <div className="mb-1 flex items-start justify-between gap-2">
+                                <p className="text-sm font-semibold leading-[1.4] text-secondary-000">
+                                  {notification.title}
+                                </p>
+                                <span className="shrink-0 whitespace-nowrap text-xs text-accent-80">
                                   {getTimeAgo(notification.timestamp)}
                                 </span>
                               </div>
-                              <p className="text-accent-80 text-sm leading-normal">{notification.message}</p>
+                              <p className="text-sm leading-normal text-accent-80">
+                                {notification.message}
+                              </p>
                             </div>
 
-                            {/* Actions */}
-                            <div className="flex items-start gap-1">
-                              {!notification.isRead && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    markAsRead(notification.id);
-                                  }}
-                                  className="w-8 h-8 flex items-center justify-center rounded-md bg-transparent hover:bg-accent-20 transition-colors duration-150"
-                                  title="Mark as read"
-                                >
-                                  <Check className="size-4 text-accent-80" />
-                                </button>
-                              )}
+                            {!notification.isRead && (
                               <button
+                                type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  deleteNotification(notification.id);
+                                  handleMarkAsRead(notification.id);
                                 }}
-                                className="w-8 h-8 flex items-center justify-center rounded-md bg-transparent hover:bg-red-50 transition-colors duration-150"
-                                title="Delete"
+                                disabled={isMarkingThis}
+                                className="flex h-8 w-8 items-center justify-center rounded-md bg-transparent transition-colors duration-150 hover:bg-accent-20 disabled:opacity-50"
+                                title="Mark as read"
+                                aria-label="Mark as read"
                               >
-                                <Trash2 className="size-4 text-accent-80" />
+                                {isMarkingThis ? (
+                                  <Loader2 className="size-4 animate-spin text-accent-80" />
+                                ) : (
+                                  <Check className="size-4 text-accent-80" />
+                                )}
                               </button>
-                            </div>
+                            )}
                           </div>
                         </div>
                         {!isLast && <Separator className="bg-accent-20" />}
                       </div>
                     );
                   })}
+
+                  {hasNextPage && (
+                    <div className="border-t border-accent-20 px-6 py-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full border-accent-20 font-unageo text-sm font-semibold"
+                        disabled={isFetchingNextPage}
+                        onClick={() => listQuery.fetchNextPage()}
+                      >
+                        {isFetchingNextPage ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Loading…
+                          </>
+                        ) : (
+                          "Load more"
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </ScrollArea>

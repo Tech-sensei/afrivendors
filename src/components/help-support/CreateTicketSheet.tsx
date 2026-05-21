@@ -15,6 +15,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { NewTicketFormState } from "@/types/support";
+import {
+  createSupportTicketSchema,
+  zodFieldErrors,
+} from "@/lib/validations";
 import { TicketCategorySelect } from "./TicketCategorySelect";
 import { TicketPrioritySelect } from "./TicketPrioritySelect";
 
@@ -38,6 +42,9 @@ export function CreateTicketSheet({
 }) {
   const [isMobile, setIsMobile] = useState(false);
   const [form, setForm] = useState<NewTicketFormState>(emptyForm);
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof NewTicketFormState, string>>
+  >({});
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -47,17 +54,34 @@ export function CreateTicketSheet({
   }, []);
 
   useEffect(() => {
-    if (isOpen) setForm(emptyForm);
+    if (isOpen) {
+      setForm(emptyForm);
+      setErrors({});
+    }
   }, [isOpen]);
 
-  const canSubmit =
-    Boolean(form.subject.trim()) &&
-    Boolean(form.category) &&
-    Boolean(form.description.trim());
+  const patchForm = (patch: Partial<NewTicketFormState>) => {
+    setForm((f) => ({ ...f, ...patch }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(patch) as (keyof NewTicketFormState)[]) {
+        delete next[key];
+      }
+      return next;
+    });
+  };
+
+  const canSubmit = createSupportTicketSchema.safeParse(form).success;
 
   const handleSubmit = () => {
-    if (!canSubmit || isSubmitting) return;
-    onSubmit(form);
+    if (isSubmitting) return;
+    const result = createSupportTicketSchema.safeParse(form);
+    if (!result.success) {
+      setErrors(zodFieldErrors(result.error));
+      return;
+    }
+    setErrors({});
+    onSubmit(result.data);
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -94,11 +118,14 @@ export function CreateTicketSheet({
               <Input
                 id="new-ticket-subject"
                 value={form.subject}
-                onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+                onChange={(e) => patchForm({ subject: e.target.value })}
                 placeholder="Brief description of your issue"
                 disabled={isSubmitting}
-                className="mt-2 h-12 rounded-xl border-accent-20 focus-visible:border-primary-100"
+                className={`mt-2 h-12 rounded-xl focus-visible:border-primary-100 ${errors.subject ? "border-red-500" : "border-accent-20"}`}
               />
+              {errors.subject && (
+                <p className="mt-1 font-unageo text-sm text-red-600">{errors.subject}</p>
+              )}
             </div>
             <div>
               <Label
@@ -111,10 +138,13 @@ export function CreateTicketSheet({
                 <TicketCategorySelect
                   id="new-ticket-category"
                   value={form.category}
-                  onChange={(category) => setForm((f) => ({ ...f, category }))}
+                  onChange={(category) => patchForm({ category })}
                   disabled={isSubmitting}
                 />
               </div>
+              {errors.category && (
+                <p className="mt-1 font-unageo text-sm text-red-600">{errors.category}</p>
+              )}
             </div>
             <div>
               <Label
@@ -127,7 +157,7 @@ export function CreateTicketSheet({
                 <TicketPrioritySelect
                   id="new-ticket-priority"
                   value={form.priority}
-                  onChange={(priority) => setForm((f) => ({ ...f, priority }))}
+                  onChange={(priority) => patchForm({ priority })}
                   disabled={isSubmitting}
                 />
               </div>
@@ -142,14 +172,15 @@ export function CreateTicketSheet({
               <Textarea
                 id="new-ticket-description"
                 value={form.description}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, description: e.target.value }))
-                }
+                onChange={(e) => patchForm({ description: e.target.value })}
                 placeholder="Provide as much detail as you can…"
                 rows={6}
                 disabled={isSubmitting}
-                className="mt-2 rounded-xl border-accent-20 focus-visible:border-primary-100"
+                className={`mt-2 rounded-xl focus-visible:border-primary-100 ${errors.description ? "border-red-500" : "border-accent-20"}`}
               />
+              {errors.description && (
+                <p className="mt-1 font-unageo text-sm text-red-600">{errors.description}</p>
+              )}
             </div>
           </div>
         </div>

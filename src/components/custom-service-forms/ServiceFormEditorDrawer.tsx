@@ -32,6 +32,7 @@ type Props = {
   filteredVendors: MockVendor[];
   onSubmit: () => void;
   isValid: boolean;
+  fieldErrors?: Partial<Record<keyof ServiceFormDraft, string>>;
 };
 
 export function ServiceFormEditorDrawer({
@@ -45,7 +46,12 @@ export function ServiceFormEditorDrawer({
   filteredVendors,
   onSubmit,
   isValid,
+  fieldErrors = {},
 }: Props) {
+  const err = (key: keyof ServiceFormDraft) =>
+    fieldErrors[key] ? (
+      <p className="mt-1 font-unageo text-sm text-red-600">{fieldErrors[key]}</p>
+    ) : null;
   return (
     <Drawer
       open={open}
@@ -95,6 +101,7 @@ export function ServiceFormEditorDrawer({
               placeholder="e.g., Box Braids for Birthday Event"
               className={formField.input}
             />
+            {err("title")}
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -124,6 +131,7 @@ export function ServiceFormEditorDrawer({
                   ))}
                 </SelectContent>
               </Select>
+              {err("category")}
             </div>
 
             <div>
@@ -154,6 +162,7 @@ export function ServiceFormEditorDrawer({
                   ))}
                 </SelectContent>
               </Select>
+              {err("service")}
             </div>
           </div>
         </div>
@@ -239,6 +248,7 @@ export function ServiceFormEditorDrawer({
                 {filteredVendors.length} vendor
                 {filteredVendors.length !== 1 ? "s" : ""} available
               </p>
+              {err("vendorId")}
             </div>
           )}
         </div>
@@ -263,6 +273,7 @@ export function ServiceFormEditorDrawer({
             Be specific about your requirements, preferences, and any special
             considerations
           </p>
+          {err("description")}
         </div>
       </DrawerSection>
 
@@ -354,7 +365,9 @@ export function ServiceFormEditorDrawer({
                 <SelectItem value="Flexible">Flexible / Anytime</SelectItem>
               </SelectContent>
             </Select>
+            {err("preferredTime")}
           </div>
+          {err("preferredDate")}
         </div>
       </DrawerSection>
 
@@ -382,6 +395,7 @@ export function ServiceFormEditorDrawer({
             <p className={formField.hint}>
               Vendors will use this as guidance when preparing quotes
             </p>
+            {err("budget")}
           </div>
 
           <div className="flex items-center gap-3">
@@ -418,6 +432,7 @@ export function ServiceFormEditorDrawer({
                   className={cn(formField.input, "pl-10")}
                 />
               </div>
+              {err("location")}
             </div>
           )}
         </div>
@@ -441,6 +456,7 @@ export function ServiceFormEditorDrawer({
             <p className={formField.hint}>
               Vendors will contact you through chat for further details
             </p>
+            {err("customerName")}
           </div>
 
           <div>
@@ -498,6 +514,7 @@ export function ServiceFormEditorDrawer({
             vendor regarding this service request
           </Label>
         </div>
+        {err("agreeToTerms")}
       </DrawerSection>
     </Drawer>
   );

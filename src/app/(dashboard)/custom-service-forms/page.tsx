@@ -19,6 +19,10 @@ import type {
   ServiceForm,
   ServiceFormStatus,
 } from "@/types/customServiceForms";
+import {
+  validateServiceFormDraft,
+  zodFieldErrors,
+} from "@/lib/validations";
 
 const categories = Array.from(new Set(vendors.map((v) => v.category)));
 
@@ -179,6 +183,8 @@ export default function CustomServiceFormsPage() {
   };
 
   const handleSubmitForm = () => {
+    if (!validateBeforeSubmit()) return;
+
     const isOpenToAll = formData.vendorSelectionType === "all";
     const vendor = isOpenToAll ? null : vendors.find((v) => v.id === formData.vendorId);
 
@@ -261,24 +267,20 @@ export default function CustomServiceFormsPage() {
     setNewFormOpen(false);
   };
 
-  const isFormValid = () => {
-    const hasValidVendorSelection =
-      formData.vendorSelectionType === "all" || formData.vendorId;
-    return (
-      !!formData.title &&
-      !!formData.category &&
-      !!formData.service &&
-      !!hasValidVendorSelection &&
-      !!formData.description &&
-      !!(formData.preferredDate ||
-        (formData.flexibleStart && formData.flexibleEnd)) &&
-      !!formData.preferredTime &&
-      !!formData.budget &&
-      Number.parseFloat(formData.budget) > 0 &&
-      !!(formData.location || formData.isRemote) &&
-      !!formData.customerName &&
-      formData.agreeToTerms
-    );
+  const [formErrors, setFormErrors] = useState<
+    Partial<Record<keyof typeof formData, string>>
+  >({});
+
+  const isFormValid = () => validateServiceFormDraft(formData).success;
+
+  const validateBeforeSubmit = () => {
+    const result = validateServiceFormDraft(formData);
+    if (!result.success) {
+      setFormErrors(zodFieldErrors(result.error));
+      return false;
+    }
+    setFormErrors({});
+    return true;
   };
 
   return (
@@ -336,6 +338,7 @@ export default function CustomServiceFormsPage() {
         filteredVendors={filteredVendors}
         onSubmit={handleSubmitForm}
         isValid={isFormValid()}
+        fieldErrors={formErrors}
       />
 
       <CloseServiceFormDialog

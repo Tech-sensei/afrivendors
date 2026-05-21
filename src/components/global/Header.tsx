@@ -11,32 +11,19 @@ import { UserMenu } from "./UserMenu";
 import { NotificationPanel } from "./NotificationPanel";
 import { LogoutConfirmModal } from "@/components/dashboard/LogoutConfirmModal";
 import { useAuthAPI } from "@/services/useAuthAPI";
+import { useUnreadNotificationCount } from "@/services/useNotifications";
 import { useAppSelector } from "@/store/hooks";
 
 // Module-level constants — never recreated on re-render
 const NAV_LINKS = [
-  { label: "Browse", href: "/categories" },
-  { label: "About", href: "/about-us" },
+  { label: "About Us", href: "/about-us" },
+  { label: "Browse Vendors", href: "/categories" },
   { label: "How it Works", href: "/how-it-works" },
   { label: "Contact Us", href: "/contact-us" },
 ];
 
-const NOTIFICATION_ROUTE_MAP: Record<string, string> = {
-  "dashboard-appointments": "/appointments",
-  "dashboard-messages": "/messages",
-  "dashboard-wallet": "/wallet",
-  "dashboard-payments": "/payments",
-  "dashboard-favourites": "/favourites",
-  "dashboard-profile": "/profile",
-  "dashboard-settings": "/settings",
-};
-
-function mapNotificationUrl(url: string): string {
-  if (url.startsWith("dashboard-")) {
-    return NOTIFICATION_ROUTE_MAP[url] ?? url;
-  }
-  return url;
-}
+import { buildClientNotificationHref } from "@/lib/notificationRoutes";
+import type { Notification } from "@/types/notifications";
 
 const Header = () => {
   const router = useRouter();
@@ -57,7 +44,11 @@ const Header = () => {
   const userInitials = currentUser
     ? `${currentUser.firstName?.[0] ?? ''}${currentUser.lastName?.[0] ?? ''}`.toUpperCase()
     : '';
-  const notificationCount = 2;
+  const { data: unreadNotificationCount = 0 } = useUnreadNotificationCount(
+    isMounted && isLoggedIn
+  );
+  const notificationBadge =
+    unreadNotificationCount > 99 ? "99+" : String(unreadNotificationCount);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-accent-20">
@@ -198,9 +189,9 @@ const Header = () => {
                   aria-label="Notifications"
                 >
                   <Bell className="size-6" />
-                  {notificationCount > 0 && (
-                    <span className="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-primary-100 text-white text-xs font-semibold rounded-full">
-                      {notificationCount}
+                  {unreadNotificationCount > 0 && (
+                    <span className="absolute top-1 right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary-100 px-1 text-xs font-semibold text-white">
+                      {notificationBadge}
                     </span>
                   )}
                 </button>
@@ -239,8 +230,13 @@ const Header = () => {
       <NotificationPanel
         isOpen={isNotificationOpen}
         onClose={() => setNotificationOpen(false)}
-        onNavigate={(page) => {
-          const route = mapNotificationUrl(page);
+        onNavigate={(notification) => {
+          const route = buildClientNotificationHref(notification);
+          if (!route) return;
+          if (route.startsWith("http://") || route.startsWith("https://")) {
+            window.location.href = route;
+            return;
+          }
           router.push(route);
         }}
       />

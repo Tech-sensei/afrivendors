@@ -6,9 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import type { ContactInformationFormProps } from '@/types/booking';
 
+const fieldErrorClass = "text-sm text-red-600 mt-1";
+
 export function ContactInformationForm({
     formData,
     onFormDataChange,
+    errors = {},
 }: ContactInformationFormProps) {
     return (
         <Card className="rounded-2xl border border-accent-20">
@@ -29,8 +32,9 @@ export function ContactInformationForm({
                             value={formData.name}
                             onChange={(e) => onFormDataChange({ name: e.target.value })}
                             placeholder="Enter your full name"
-                            className="h-12 rounded-xl border-accent-20 text-sm"
+                            className={`h-12 rounded-xl text-sm ${errors.name ? "border-red-500" : "border-accent-20"}`}
                         />
+                        {errors.name && <p className={fieldErrorClass}>{errors.name}</p>}
                     </div>
                     <div>
                         <Label htmlFor="phone" className="block mb-2 text-sm font-semibold text-secondary-000">
@@ -43,8 +47,9 @@ export function ContactInformationForm({
                             value={formData.phone}
                             onChange={(e) => onFormDataChange({ phone: e.target.value })}
                             placeholder="+234 123 456 7890"
-                            className="h-12 rounded-xl border-accent-20 text-sm"
+                            className={`h-12 rounded-xl text-sm ${errors.phone ? "border-red-500" : "border-accent-20"}`}
                         />
+                        {errors.phone && <p className={fieldErrorClass}>{errors.phone}</p>}
                     </div>
                     <div className="md:col-span-2">
                         <Label htmlFor="email" className="block mb-2 text-sm font-semibold text-secondary-000">
@@ -57,8 +62,9 @@ export function ContactInformationForm({
                             value={formData.email}
                             onChange={(e) => onFormDataChange({ email: e.target.value })}
                             placeholder="your.email@example.com"
-                            className="h-12 rounded-xl border-accent-20 text-sm"
+                            className={`h-12 rounded-xl text-sm ${errors.email ? "border-red-500" : "border-accent-20"}`}
                         />
+                        {errors.email && <p className={fieldErrorClass}>{errors.email}</p>}
                     </div>
                     <div className="md:col-span-2">
                         <Label htmlFor="notes" className="block mb-2 text-sm font-semibold text-secondary-000">
@@ -70,8 +76,9 @@ export function ContactInformationForm({
                             onChange={(e) => onFormDataChange({ notes: e.target.value })}
                             placeholder="Any special requests or notes..."
                             rows={3}
-                            className="rounded-xl border-accent-20 text-sm"
+                            className={`rounded-xl text-sm ${errors.notes ? "border-red-500" : "border-accent-20"}`}
                         />
+                        {errors.notes && <p className={fieldErrorClass}>{errors.notes}</p>}
                     </div>
                 </div>
             </CardContent>

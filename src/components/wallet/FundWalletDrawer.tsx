@@ -16,12 +16,14 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useFundWallet } from "@/services/useTransactions";
 import type { FundWalletDrawerProps } from "@/types/wallet";
+import { fundWalletAmountSchema, zodFieldErrors } from "@/lib/validations";
 
 const QUICK_AMOUNTS = [10, 20, 50, 100, 200, 500];
 
 export function FundWalletDrawer({ isOpen, onClose }: FundWalletDrawerProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [amount, setAmount] = useState("");
+  const [amountError, setAmountError] = useState("");
 
   const { mutate: fundWallet, isPending } = useFundWallet();
 
@@ -34,19 +36,27 @@ export function FundWalletDrawer({ isOpen, onClose }: FundWalletDrawerProps) {
 
   // Reset form when drawer opens
   useEffect(() => {
-    if (isOpen) setAmount("");
+    if (isOpen) {
+      setAmount("");
+      setAmountError("");
+    }
   }, [isOpen]);
 
-  const parsedAmount = parseFloat(amount);
-  const isValid = !isNaN(parsedAmount) && parsedAmount > 0;
+  const amountValidation = fundWalletAmountSchema.safeParse({ amount });
+  const parsedAmount = Number(amount);
+  const isValid = amountValidation.success;
 
   const handleSubmit = () => {
-    if (!isValid) {
-      toast.error("Please enter a valid amount");
+    const result = fundWalletAmountSchema.safeParse({ amount });
+    if (!result.success) {
+      const errs = zodFieldErrors(result.error);
+      setAmountError(errs.amount ?? "Please enter a valid amount");
       return;
     }
+    setAmountError("");
+    const validAmount = Number(result.data.amount);
 
-    fundWallet(parsedAmount, {
+    fundWallet(validAmount, {
       onSuccess: ({ checkoutUrl }) => {
         window.location.href = checkoutUrl;
       },
@@ -93,12 +103,18 @@ export function FundWalletDrawer({ isOpen, onClose }: FundWalletDrawerProps) {
                   step="0.01"
                   min="1"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => {
+                    setAmount(e.target.value);
+                    if (amountError) setAmountError("");
+                  }}
                   placeholder="0.00"
                   disabled={isPending}
-                  className="h-14 pl-10 rounded-xl border-accent-20 text-xl font-bold focus:border-primary-100"
+                  className={`h-14 pl-10 rounded-xl text-xl font-bold focus:border-primary-100 ${amountError ? "border-red-500" : "border-accent-20"}`}
                 />
               </div>
+              {amountError && (
+                <p className="mt-1 text-sm text-red-600">{amountError}</p>
+              )}
             </div>
 
             {/* Quick-select amounts */}
@@ -112,7 +128,10 @@ export function FundWalletDrawer({ isOpen, onClose }: FundWalletDrawerProps) {
                     key={q}
                     type="button"
                     disabled={isPending}
-                    onClick={() => setAmount(String(q))}
+                    onClick={() => {
+                      setAmount(String(q));
+                      if (amountError) setAmountError("");
+                    }}
                     className={`h-11 rounded-xl text-sm font-semibold border transition-all ${
                       amount === String(q)
                         ? "bg-secondary-000 text-white border-secondary-000 shadow-md"

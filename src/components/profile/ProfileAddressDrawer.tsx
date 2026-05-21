@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { profileAddressFormSchema, zodFieldErrors } from "@/lib/validations";
 import { Loader2 } from "lucide-react";
 import type {
     AddressLabel,
@@ -49,6 +49,9 @@ export function ProfileAddressDrawer({
 }: ProfileAddressDrawerProps) {
     const [isMobile, setIsMobile] = useState(false);
     const [form, setForm] = useState<ProfileAddressFormValues>(emptyForm);
+    const [errors, setErrors] = useState<
+        Partial<Record<keyof ProfileAddressFormValues, string>>
+    >({});
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 640);
@@ -69,25 +72,34 @@ export function ProfileAddressDrawer({
         } else {
             setForm(emptyForm());
         }
+        setErrors({});
     }, [isOpen, mode, address]);
 
     const handleOpenChange = (open: boolean) => {
         if (!open && !isSubmitting) onClose();
     };
 
+    const patchForm = (patch: Partial<ProfileAddressFormValues>) => {
+        setForm((f) => ({ ...f, ...patch }));
+        setErrors((prev) => {
+            const next = { ...prev };
+            for (const key of Object.keys(patch) as (keyof ProfileAddressFormValues)[]) {
+                delete next[key];
+            }
+            return next;
+        });
+    };
+
     const handleSubmit = async () => {
-        if (!form.street.trim() || !form.city.trim() || !form.region.trim()) {
-            toast.error("Please fill in street, city, and state / region.");
+        const result = profileAddressFormSchema.safeParse(form);
+        if (!result.success) {
+            setErrors(zodFieldErrors(result.error));
             return;
         }
+        setErrors({});
         try {
             await onSave(
-                {
-                    label: form.label,
-                    street: form.street.trim(),
-                    city: form.city.trim(),
-                    region: form.region.trim(),
-                },
+                result.data,
                 mode === "edit" && address ? address.id : null
             );
             onClose();
@@ -129,7 +141,7 @@ export function ProfileAddressDrawer({
                             <Select
                                 value={form.label}
                                 onValueChange={(v) =>
-                                    setForm((f) => ({ ...f, label: v as AddressLabel }))
+                                    patchForm({ label: v as AddressLabel })
                                 }
                                 disabled={isSubmitting}
                             >
@@ -154,13 +166,14 @@ export function ProfileAddressDrawer({
                             <Input
                                 id="profile-addr-street"
                                 value={form.street}
-                                onChange={(e) =>
-                                    setForm((f) => ({ ...f, street: e.target.value }))
-                                }
+                                onChange={(e) => patchForm({ street: e.target.value })}
                                 placeholder="e.g. 123 Admiralty Way"
                                 disabled={isSubmitting}
-                                className="h-12 rounded-xl border-accent-20 text-sm"
+                                className={`h-12 rounded-xl text-sm ${errors.street ? "border-red-500" : "border-accent-20"}`}
                             />
+                            {errors.street && (
+                                <p className="mt-1 text-sm text-red-600">{errors.street}</p>
+                            )}
                         </div>
 
                         <div>
@@ -173,13 +186,14 @@ export function ProfileAddressDrawer({
                             <Input
                                 id="profile-addr-city"
                                 value={form.city}
-                                onChange={(e) =>
-                                    setForm((f) => ({ ...f, city: e.target.value }))
-                                }
+                                onChange={(e) => patchForm({ city: e.target.value })}
                                 placeholder="e.g. Lagos"
                                 disabled={isSubmitting}
-                                className="h-12 rounded-xl border-accent-20 text-sm"
+                                className={`h-12 rounded-xl text-sm ${errors.city ? "border-red-500" : "border-accent-20"}`}
                             />
+                            {errors.city && (
+                                <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+                            )}
                         </div>
 
                         <div>
@@ -192,13 +206,14 @@ export function ProfileAddressDrawer({
                             <Input
                                 id="profile-addr-region"
                                 value={form.region}
-                                onChange={(e) =>
-                                    setForm((f) => ({ ...f, region: e.target.value }))
-                                }
+                                onChange={(e) => patchForm({ region: e.target.value })}
                                 placeholder="e.g. Lagos State"
                                 disabled={isSubmitting}
-                                className="h-12 rounded-xl border-accent-20 text-sm"
+                                className={`h-12 rounded-xl text-sm ${errors.region ? "border-red-500" : "border-accent-20"}`}
                             />
+                            {errors.region && (
+                                <p className="mt-1 text-sm text-red-600">{errors.region}</p>
+                            )}
                         </div>
                     </div>
                 </div>

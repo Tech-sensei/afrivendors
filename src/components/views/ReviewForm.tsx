@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
 import type { ReviewFormProps } from '@/types/reviews';
+import { clientReviewFormSchema, zodFieldErrors } from '@/lib/validations';
 
 export function ReviewForm({
   existingReview,
@@ -16,6 +17,7 @@ export function ReviewForm({
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState(existingReview?.comment || '');
   const [isSubmittingLocal, setIsSubmittingLocal] = useState(false);
+  const [errors, setErrors] = useState<{ rating?: string; comment?: string }>({});
 
   const isSubmitting = isSubmittingExternal ?? isSubmittingLocal;
 
@@ -23,9 +25,16 @@ export function ReviewForm({
     e.preventDefault();
     if (isSubmitting) return;
 
+    const result = clientReviewFormSchema.safeParse({ rating, comment });
+    if (!result.success) {
+      setErrors(zodFieldErrors(result.error));
+      return;
+    }
+    setErrors({});
+
     setIsSubmittingLocal(true);
     try {
-      await Promise.resolve(onSave({ rating, comment }));
+      await Promise.resolve(onSave(result.data));
       if (!existingReview) {
         setRating(0);
         setComment('');
@@ -77,7 +86,10 @@ export function ReviewForm({
                     <button
                       key={index}
                       type="button"
-                      onClick={() => setRating(starValue)}
+                      onClick={() => {
+                        setRating(starValue);
+                        if (errors.rating) setErrors((e) => ({ ...e, rating: undefined }));
+                      }}
                       onMouseEnter={() => setHoverRating(starValue)}
                       onMouseLeave={() => setHoverRating(0)}
                       disabled={isSubmitting}
@@ -93,7 +105,10 @@ export function ReviewForm({
                   );
                 })}
               </div>
-              {rating > 0 && (
+              {errors.rating && (
+                <p className="font-unageo text-sm text-red-600">{errors.rating}</p>
+              )}
+              {rating > 0 && !errors.rating && (
                 <p className="font-unageo text-sm text-accent-80">
                   {rating === 1 && 'Poor'}
                   {rating === 2 && 'Fair'}
@@ -112,13 +127,19 @@ export function ReviewForm({
               <textarea
                 id="comment"
                 value={comment}
-                onChange={(e) => setComment(e.target.value)}
+                onChange={(e) => {
+                  setComment(e.target.value);
+                  if (errors.comment) setErrors((prev) => ({ ...prev, comment: undefined }));
+                }}
                 placeholder="Share your experience with this vendor..."
                 required
                 rows={5}
                 disabled={isSubmitting}
-                className="w-full px-4 py-3 rounded-lg border border-accent-20 bg-white text-secondary-000 placeholder:text-accent-60 focus:outline-none focus:ring-2 focus:ring-primary-100/20 focus:border-primary-100 transition-all font-unageo text-sm resize-none disabled:opacity-60"
+                className={`w-full px-4 py-3 rounded-lg border bg-white text-secondary-000 placeholder:text-accent-60 focus:outline-none focus:ring-2 focus:ring-primary-100/20 focus:border-primary-100 transition-all font-unageo text-sm resize-none disabled:opacity-60 ${errors.comment ? "border-red-500" : "border-accent-20"}`}
               />
+              {errors.comment && (
+                <p className="font-unageo text-sm text-red-600">{errors.comment}</p>
+              )}
               <p className="font-unageo text-xs text-accent-80">
                 {comment.length} characters
               </p>

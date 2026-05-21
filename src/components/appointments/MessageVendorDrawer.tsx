@@ -28,7 +28,7 @@ export function MessageVendorDrawer({
   const [channelExists, setChannelExists] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!appointment) {
+    if (!appointment || !isOpen) {
       setStreamClientReady(false);
       setChannelExists(null);
       return undefined;
@@ -66,10 +66,12 @@ export function MessageVendorDrawer({
     };
   }, [
     appointment,
+    isOpen,
     streamChatToken?.userChatToken,
     user?.firstName,
     user?.lastName,
     user?.profilePhoto,
+    user?.id,
     instantiateUser,
   ]);
 
@@ -107,7 +109,7 @@ export function MessageVendorDrawer({
   // `streamChat` is a singleton client; disconnecting in this drawer will break other pages
   // (e.g. navigating to `/messages` right after leaving appointments).
 
-  if (!appointment) return null;
+  if (!appointment || !isOpen) return null;
 
   const handleCreateStreamChatChannel = () => {
     createStreamChatChannel(

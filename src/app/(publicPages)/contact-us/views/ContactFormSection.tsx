@@ -4,6 +4,10 @@ import { useState } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import {
+    publicContactFormSchema,
+    zodFieldErrors,
+} from "@/lib/validations";
 
 const ContactFormSection = () => {
     const [formData, setFormData] = useState({
@@ -16,10 +20,39 @@ const ContactFormSection = () => {
     });
 
     const [focusedField, setFocusedField] = useState<string | null>(null);
+    const [errors, setErrors] = useState<
+        Partial<Record<keyof typeof formData, string>>
+    >({});
+
+    const updateField = (field: keyof typeof formData, value: string) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        if (errors[field]) {
+            setErrors((prev) => {
+                const next = { ...prev };
+                delete next[field];
+                return next;
+            });
+        }
+    };
+
+    const fieldClass = (field: keyof typeof formData) =>
+        `h-14 px-4 font-unageo text-base text-secondary-000 bg-white border rounded-xl outline-none transition-colors duration-200 ${
+            errors[field]
+                ? "border-red-500"
+                : focusedField === field
+                  ? "border-primary-100"
+                  : "border-accent-20"
+        }`;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Contact form submitted:", formData);
+        const result = publicContactFormSchema.safeParse(formData);
+        if (!result.success) {
+            setErrors(zodFieldErrors(result.error));
+            return;
+        }
+        setErrors({});
+        console.log("Contact form submitted:", result.data);
         toast.success("Message sent successfully! We'll get back to you soon.");
         // Reset form
         setFormData({
@@ -32,12 +65,7 @@ const ContactFormSection = () => {
         });
     };
 
-    const isValid =
-        formData.firstName &&
-        formData.lastName &&
-        formData.email &&
-        formData.subject &&
-        formData.message;
+    const isValid = publicContactFormSchema.safeParse(formData).success;
 
     return (
         <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-24 bg-white">
@@ -63,17 +91,15 @@ const ContactFormSection = () => {
                                         type="text"
                                         placeholder="John"
                                         value={formData.firstName}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, firstName: e.target.value })
-                                        }
+                                        onChange={(e) => updateField("firstName", e.target.value)}
                                         onFocus={() => setFocusedField("firstName")}
                                         onBlur={() => setFocusedField(null)}
                                         required
-                                        className={`h-14 px-4 font-unageo text-base text-secondary-000 bg-white border rounded-xl outline-none transition-colors duration-200 ${focusedField === "firstName"
-                                                ? "border-primary-100"
-                                                : "border-accent-20"
-                                            }`}
+                                        className={fieldClass("firstName")}
                                     />
+                                    {errors.firstName && (
+                                        <p className="font-unageo text-sm text-red-600">{errors.firstName}</p>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col gap-2">
@@ -88,17 +114,15 @@ const ContactFormSection = () => {
                                         type="text"
                                         placeholder="Doe"
                                         value={formData.lastName}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, lastName: e.target.value })
-                                        }
+                                        onChange={(e) => updateField("lastName", e.target.value)}
                                         onFocus={() => setFocusedField("lastName")}
                                         onBlur={() => setFocusedField(null)}
                                         required
-                                        className={`h-14 px-4 font-unageo text-base text-secondary-000 bg-white border rounded-xl outline-none transition-colors duration-200 ${focusedField === "lastName"
-                                                ? "border-primary-100"
-                                                : "border-accent-20"
-                                            }`}
+                                        className={fieldClass("lastName")}
                                     />
+                                    {errors.lastName && (
+                                        <p className="font-unageo text-sm text-red-600">{errors.lastName}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -116,17 +140,15 @@ const ContactFormSection = () => {
                                         type="email"
                                         placeholder="john@example.com"
                                         value={formData.email}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, email: e.target.value })
-                                        }
+                                        onChange={(e) => updateField("email", e.target.value)}
                                         onFocus={() => setFocusedField("email")}
                                         onBlur={() => setFocusedField(null)}
                                         required
-                                        className={`h-14 px-4 font-unageo text-base text-secondary-000 bg-white border rounded-xl outline-none transition-colors duration-200 ${focusedField === "email"
-                                                ? "border-primary-100"
-                                                : "border-accent-20"
-                                            }`}
+                                        className={fieldClass("email")}
                                     />
+                                    {errors.email && (
+                                        <p className="font-unageo text-sm text-red-600">{errors.email}</p>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col gap-2">
@@ -144,16 +166,14 @@ const ContactFormSection = () => {
                                         type="tel"
                                         placeholder="+44 20 1234 5678"
                                         value={formData.phone}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, phone: e.target.value })
-                                        }
+                                        onChange={(e) => updateField("phone", e.target.value)}
                                         onFocus={() => setFocusedField("phone")}
                                         onBlur={() => setFocusedField(null)}
-                                        className={`h-14 px-4 font-unageo text-base text-secondary-000 bg-white border rounded-xl outline-none transition-colors duration-200 ${focusedField === "phone"
-                                                ? "border-primary-100"
-                                                : "border-accent-20"
-                                            }`}
+                                        className={fieldClass("phone")}
                                     />
+                                    {errors.phone && (
+                                        <p className="font-unageo text-sm text-red-600">{errors.phone}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -170,17 +190,15 @@ const ContactFormSection = () => {
                                     type="text"
                                     placeholder="How can we help you?"
                                     value={formData.subject}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, subject: e.target.value })
-                                    }
+                                    onChange={(e) => updateField("subject", e.target.value)}
                                     onFocus={() => setFocusedField("subject")}
                                     onBlur={() => setFocusedField(null)}
                                     required
-                                    className={`h-14 px-4 font-unageo text-base text-secondary-000 bg-white border rounded-xl outline-none transition-colors duration-200 ${focusedField === "subject"
-                                            ? "border-primary-100"
-                                            : "border-accent-20"
-                                        }`}
+                                    className={fieldClass("subject")}
                                 />
+                                {errors.subject && (
+                                    <p className="font-unageo text-sm text-red-600">{errors.subject}</p>
+                                )}
                             </div>
 
                             {/* Message */}
@@ -195,18 +213,22 @@ const ContactFormSection = () => {
                                     id="message"
                                     placeholder="Tell us more about your inquiry..."
                                     value={formData.message}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, message: e.target.value })
-                                    }
+                                    onChange={(e) => updateField("message", e.target.value)}
                                     onFocus={() => setFocusedField("message")}
                                     onBlur={() => setFocusedField(null)}
                                     required
                                     rows={6}
-                                    className={`px-4 py-4 font-unageo text-base text-secondary-000 bg-white border rounded-xl outline-none transition-colors duration-200 resize-y min-h-[120px] ${focusedField === "message"
-                                            ? "border-primary-100"
-                                            : "border-accent-20"
-                                        }`}
+                                    className={`px-4 py-4 font-unageo text-base text-secondary-000 bg-white border rounded-xl outline-none transition-colors duration-200 resize-y min-h-[120px] ${
+                                        errors.message
+                                            ? "border-red-500"
+                                            : focusedField === "message"
+                                              ? "border-primary-100"
+                                              : "border-accent-20"
+                                    }`}
                                 />
+                                {errors.message && (
+                                    <p className="font-unageo text-sm text-red-600">{errors.message}</p>
+                                )}
                             </div>
 
                             {/* Submit Button */}

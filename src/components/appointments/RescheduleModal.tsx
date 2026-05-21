@@ -19,6 +19,10 @@ import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import http from "@/lib/http";
 import type { RescheduleModalProps } from "@/types/appointments";
+import {
+  rescheduleAppointmentSchema,
+  zodFieldErrors,
+} from "@/lib/validations";
 
 const TIME_SLOTS = [
   "9:00 AM", "10:00 AM", "11:00 AM",
@@ -45,6 +49,11 @@ export function RescheduleModal({
   const [selectedSlot, setSelectedSlot] = useState("");
   const [notes, setNotes] = useState("");
   const [isMobile, setIsMobile] = useState(false);
+  const [errors, setErrors] = useState<{
+    date?: string;
+    time?: string;
+    notes?: string;
+  }>({});
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -59,15 +68,25 @@ export function RescheduleModal({
       setDate(undefined);
       setSelectedSlot("");
       setNotes("");
+      setErrors({});
     }
   }, [isOpen]);
 
   const { mutate: reschedule, isPending } = useMutation({
     mutationFn: async () => {
+      const validation = rescheduleAppointmentSchema.safeParse({
+        date,
+        time: selectedSlot,
+        notes,
+      });
+      if (!validation.success) {
+        setErrors(zodFieldErrors(validation.error));
+        throw new Error(validation.error.issues[0]?.message ?? "Invalid reschedule details");
+      }
       const payload = {
-        rescheduleDate: format(date!, "yyyy-MM-dd"),
-        rescheduleTime: to24h(selectedSlot),
-        rescheduleNote: notes,
+        rescheduleDate: format(validation.data.date, "yyyy-MM-dd"),
+        rescheduleTime: to24h(validation.data.time),
+        rescheduleNote: validation.data.notes ?? "",
       };
       const { data } = await http.post(
         `/users/appointments/${appointment!.id}/reschedule`,
@@ -91,7 +110,27 @@ export function RescheduleModal({
 
   if (!appointment) return null;
 
-  const canSubmit = !!date && !!selectedSlot && !isPending;
+  const canSubmit =
+    rescheduleAppointmentSchema.safeParse({
+      date,
+      time: selectedSlot,
+      notes,
+    }).success && !isPending;
+
+  const handleRescheduleClick = () => {
+    const validation = rescheduleAppointmentSchema.safeParse({
+      date,
+      time: selectedSlot,
+      notes,
+    });
+    if (!validation.success) {
+      setErrors(zodFieldErrors(validation.error));
+      toast.error(validation.error.issues[0]?.message ?? "Please complete all required fields");
+      return;
+    }
+    setErrors({});
+    reschedule();
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={isPending ? undefined : onClose}>
@@ -121,40 +160,44 @@ export function RescheduleModal({
                 onSelect={(newDate) => {
                   setDate(newDate);
                   setSelectedSlot("");
+                  if (errors.date) setErrors((e) => ({ ...e, date: undefined }));
                 }}
                 disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
-                initialFocus
                 className="p-0 w-full"
                 classNames={{
                   months: "w-full",
                   month: "w-full space-y-4",
-                  caption: "flex justify-center items-center relative py-1 mb-2",
-                  caption_label: "text-sm font-bold text-secondary-000 font-unbounded",
+                  month_caption:
+                    "flex justify-center items-center relative py-1 mb-2",
+                  caption_label:
+                    "text-sm font-bold text-secondary-000 font-unbounded",
                   nav: "flex items-center gap-1",
-                  nav_button:
-                    "h-8 w-8 bg-transparent hover:bg-primary-300/60 rounded-full flex items-center justify-center transition-colors text-secondary-300 hover:text-secondary-000",
-                  nav_button_previous: "absolute left-0",
-                  nav_button_next: "absolute right-0",
-                  table: "!w-full border-collapse table-fixed",
-                  head_row: "w-full",
-                  head_cell:
-                    "text-secondary-300 font-semibold text-[0.72rem] uppercase tracking-wider w-full text-center pb-3",
-                  row: "w-full",
-                  cell: "w-full text-center p-0 py-1 relative focus-within:relative focus-within:z-20",
-                  day: "mx-auto h-10 w-10 flex items-center justify-center rounded-full text-sm font-medium text-secondary-000 hover:bg-primary-300 hover:text-secondary-000 transition-colors cursor-pointer aria-selected:opacity-100",
-                  day_selected:
+                  button_previous:
+                    "h-8 w-8 bg-transparent hover:bg-primary-300/60 rounded-full flex items-center justify-center transition-colors text-secondary-300 hover:text-secondary-000 absolute left-0",
+                  button_next:
+                    "h-8 w-8 bg-transparent hover:bg-primary-300/60 rounded-full flex items-center justify-center transition-colors text-secondary-300 hover:text-secondary-000 absolute right-0",
+                  weekdays: "w-full",
+                  weekday:
+                    "text-secondary-300 font-semibold text-[0.72rem] uppercase tracking-wider flex-1 text-center pb-3",
+                  week: "w-full",
+                  day: "w-full text-center p-0 py-1 relative focus-within:relative focus-within:z-20",
+                  day_button:
+                    "mx-auto h-10 w-10 flex items-center justify-center rounded-full text-sm font-medium text-secondary-000 hover:bg-primary-300 hover:text-secondary-000 transition-colors cursor-pointer",
+                  selected:
                     "bg-secondary-000 !text-white hover:bg-secondary-000 hover:!text-white focus:bg-secondary-000 rounded-full font-bold shadow-md",
-                  day_today:
-                    "border-2 border-primary-100 text-primary-100 font-bold",
-                  day_outside: "text-muted-foreground opacity-30",
-                  day_disabled:
+                  today: "border-2 border-primary-100 text-primary-100 font-bold",
+                  outside: "text-muted-foreground opacity-30",
+                  disabled:
                     "text-muted-foreground opacity-25 cursor-not-allowed hover:bg-transparent",
-                  day_range_middle:
+                  range_middle:
                     "aria-selected:bg-accent aria-selected:text-accent-foreground",
-                  day_hidden: "invisible",
+                  hidden: "invisible",
                 }}
               />
             </div>
+            {errors.date && (
+              <p className="text-sm text-red-600">{errors.date}</p>
+            )}
           </div>
 
           {/* Time Selection */}
@@ -166,7 +209,10 @@ export function RescheduleModal({
               {TIME_SLOTS.map((slot) => (
                 <button
                   key={slot}
-                  onClick={() => setSelectedSlot(slot)}
+                  onClick={() => {
+                    setSelectedSlot(slot);
+                    if (errors.time) setErrors((e) => ({ ...e, time: undefined }));
+                  }}
                   disabled={!date || isPending}
                   className={cn(
                     "py-3 px-2 rounded-xl text-sm font-semibold border transition-all duration-200",
@@ -180,6 +226,9 @@ export function RescheduleModal({
                 </button>
               ))}
             </div>
+            {errors.time && (
+              <p className="text-sm text-red-600">{errors.time}</p>
+            )}
           </div>
 
           {/* Notes */}
@@ -192,9 +241,15 @@ export function RescheduleModal({
               placeholder="Any special requests or reasons for rescheduling..."
               className="resize-none rounded-2xl border-border/50 bg-white min-h-[100px] text-secondary-000 placeholder:text-secondary-300/60 focus:border-primary-100 focus:ring-primary-100/20"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e) => {
+                setNotes(e.target.value);
+                if (errors.notes) setErrors((prev) => ({ ...prev, notes: undefined }));
+              }}
               disabled={isPending}
             />
+            {errors.notes && (
+              <p className="text-sm text-red-600">{errors.notes}</p>
+            )}
           </div>
         </div>
 
@@ -208,7 +263,7 @@ export function RescheduleModal({
             Cancel
           </Button>
           <Button
-            onClick={() => reschedule()}
+            onClick={handleRescheduleClick}
             disabled={!canSubmit}
             className="w-full h-12 rounded-xl bg-primary-100 hover:bg-[#a65620] text-white font-semibold text-base shadow-lg shadow-primary-100/20 cursor-pointer flex items-center justify-center gap-2"
           >

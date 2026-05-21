@@ -18,6 +18,11 @@ import { FundWalletDrawer } from "@/components/booking/FundWalletDrawer";
 import { getPublicVendorById } from "@/services/vendor";
 import { useWallet } from "@/services/useTransactions";
 import http from "@/lib/http";
+import {
+    bookingSubmitSchema,
+    zodFieldErrors,
+} from "@/lib/validations";
+import type { ContactFormData } from "@/types/booking";
 
 function BookingPageContent() {
     const router = useRouter();
@@ -40,6 +45,9 @@ function BookingPageContent() {
         phone: "",
         notes: "",
     });
+    const [contactErrors, setContactErrors] = useState<
+        Partial<Record<keyof ContactFormData, string>>
+    >({});
 
     // Pre-fill contact form from user profile
     useEffect(() => {
@@ -85,17 +93,46 @@ function BookingPageContent() {
         router.push(`/booking?vendorId=${vendorId}&serviceIds=${serviceIds.join(",")}`);
     };
 
-    const isFormValid = () => {
-        if (selectedServices.length === 0) return false;
-        if (!date || !selectedTime) return false;
-        if (!contactFormData.name || !contactFormData.email || !contactFormData.phone) return false;
-        if (paymentMethod === "wallet" && hasInsufficientFunds) return false;
+    const validateBooking = () => {
+        const result = bookingSubmitSchema.safeParse({
+            hasServices: selectedServices.length > 0,
+            date,
+            selectedTime,
+            contact: contactFormData,
+            paymentMethod,
+            hasInsufficientFunds,
+        });
+        if (!result.success) {
+            const flat = zodFieldErrors<keyof ContactFormData | "date" | "selectedTime" | "paymentMethod">(
+                result.error
+            );
+            const { date: dateErr, selectedTime: timeErr, paymentMethod: payErr, ...contactOnly } = flat;
+            setContactErrors(contactOnly as Partial<Record<keyof ContactFormData, string>>);
+            const firstMsg =
+                dateErr ||
+                timeErr ||
+                payErr ||
+                Object.values(contactOnly)[0] ||
+                "Please fill in all required fields";
+            toast.error(firstMsg);
+            return false;
+        }
+        setContactErrors({});
         return true;
     };
 
+    const isFormValid = () =>
+        bookingSubmitSchema.safeParse({
+            hasServices: selectedServices.length > 0,
+            date,
+            selectedTime,
+            contact: contactFormData,
+            paymentMethod,
+            hasInsufficientFunds,
+        }).success;
+
     const handleSubmit = async () => {
-        if (!isFormValid()) {
-            toast.error('Please fill in all required fields');
+        if (!validateBooking()) {
             return;
         }
 
@@ -267,7 +304,17 @@ function BookingPageContent() {
 
                             <ContactInformationForm
                                 formData={contactFormData}
-                                onFormDataChange={(data) => setContactFormData({ ...contactFormData, ...data })}
+                                errors={contactErrors}
+                                onFormDataChange={(data) => {
+                                    setContactFormData({ ...contactFormData, ...data });
+                                    const cleared = { ...contactErrors };
+                                    for (const key of Object.keys(data) as (keyof ContactFormData)[]) {
+                                        if (cleared[key]) delete cleared[key];
+                                    }
+                                    if (Object.keys(cleared).length !== Object.keys(contactErrors).length) {
+                                        setContactErrors(cleared);
+                                    }
+                                }}
                             />
 
                             <PaymentMethodSection

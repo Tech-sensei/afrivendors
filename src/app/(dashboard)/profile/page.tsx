@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { useAppSelector } from "@/store/hooks";
 import { useProfileAPI, profileLabelToApi } from "@/services/useProfileAPI";
+import { profilePersonalFormSchema, zodFieldErrors } from "@/lib/validations";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import {
     Building2,
@@ -141,6 +142,10 @@ export default function ProfilePage() {
 
     const [personal, setPersonal] = useState(initialPersonal);
     const [personalBaseline, setPersonalBaseline] = useState(initialPersonal);
+    const [personalErrors, setPersonalErrors] = useState<{
+        firstName?: string;
+        lastName?: string;
+    }>({});
     const [addresses, setAddresses] = useState<ProfileAddress[]>([]);
 
     const [addressDrawerOpen, setAddressDrawerOpen] = useState(false);
@@ -292,13 +297,32 @@ export default function ProfilePage() {
     const updatePersonal = (field: keyof typeof personal, value: string) => {
         if (field === "email") return;
         setPersonal((p) => ({ ...p, [field]: value }));
+        if (field === "firstName" || field === "lastName") {
+            setPersonalErrors((prev) => {
+                if (!prev[field]) return prev;
+                const next = { ...prev };
+                delete next[field];
+                return next;
+            });
+        }
     };
 
     const handleSavePersonal = async () => {
+        const result = profilePersonalFormSchema.safeParse({
+            firstName: personal.firstName,
+            lastName: personal.lastName,
+            dateOfBirth: personal.dateOfBirth,
+            gender: personal.gender,
+        });
+        if (!result.success) {
+            setPersonalErrors(zodFieldErrors(result.error));
+            return;
+        }
+        setPersonalErrors({});
         try {
             await updateProfileAsync({
-                firstName: personal.firstName,
-                lastName: personal.lastName,
+                firstName: result.data.firstName,
+                lastName: result.data.lastName,
                 dob: parseDobToISO(personal.dateOfBirth),
                 gender: personal.gender ? personal.gender.toLowerCase() : null,
             });
@@ -310,6 +334,7 @@ export default function ProfilePage() {
 
     const handleCancelPersonal = () => {
         setPersonal(personalBaseline);
+        setPersonalErrors({});
     };
 
     const sortedAddresses = useMemo(
@@ -514,8 +539,11 @@ export default function ProfilePage() {
                                     id="firstName"
                                     value={personal.firstName}
                                     onChange={(e) => updatePersonal("firstName", e.target.value)}
-                                    className={inputClass}
+                                    className={cn(inputClass, personalErrors.firstName && "border-red-500")}
                                 />
+                                {personalErrors.firstName && (
+                                    <p className="text-sm text-red-600">{personalErrors.firstName}</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="lastName" className="text-xs font-semibold text-secondary-000">
@@ -525,8 +553,11 @@ export default function ProfilePage() {
                                     id="lastName"
                                     value={personal.lastName}
                                     onChange={(e) => updatePersonal("lastName", e.target.value)}
-                                    className={inputClass}
+                                    className={cn(inputClass, personalErrors.lastName && "border-red-500")}
                                 />
+                                {personalErrors.lastName && (
+                                    <p className="text-sm text-red-600">{personalErrors.lastName}</p>
+                                )}
                             </div>
                         </div>
                         <div className="space-y-2 sm:col-span-2">

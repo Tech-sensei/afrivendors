@@ -1,10 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { SupportTicket, SupportTicketPriority } from "@/types/support";
+import {
+  editSupportTicketSchema,
+  zodFieldErrors,
+} from "@/lib/validations";
 import { TicketCategorySelect } from "./TicketCategorySelect";
 import { TicketPrioritySelect } from "./TicketPrioritySelect";
 
@@ -26,10 +31,32 @@ export function TicketEditForm({
   onSave: () => void;
   onCancel: () => void;
 }) {
-  const canSave =
-    Boolean(values.subject.trim()) &&
-    Boolean(values.category) &&
-    Boolean(values.description.trim());
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof TicketEditFields, string>>
+  >({});
+
+  const patch = (patchValues: Partial<TicketEditFields>) => {
+    onChange(patchValues);
+    setErrors((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(patchValues) as (keyof TicketEditFields)[]) {
+        delete next[key];
+      }
+      return next;
+    });
+  };
+
+  const handleSaveClick = () => {
+    const result = editSupportTicketSchema.safeParse(values);
+    if (!result.success) {
+      setErrors(zodFieldErrors(result.error));
+      return;
+    }
+    setErrors({});
+    onSave();
+  };
+
+  const canSave = editSupportTicketSchema.safeParse(values).success;
 
   return (
     <div className="space-y-5">
@@ -43,9 +70,12 @@ export function TicketEditForm({
         <Input
           id="edit-subject"
           value={values.subject}
-          onChange={(e) => onChange({ subject: e.target.value })}
-          className="mt-2 h-12 rounded-xl border-accent-20"
+          onChange={(e) => patch({ subject: e.target.value })}
+          className={`mt-2 h-12 rounded-xl ${errors.subject ? "border-red-500" : "border-accent-20"}`}
         />
+        {errors.subject && (
+          <p className="mt-1 font-unageo text-sm text-red-600">{errors.subject}</p>
+        )}
       </div>
       <div>
         <Label htmlFor="edit-category" className="font-unageo text-sm font-semibold text-secondary-000">
@@ -55,9 +85,12 @@ export function TicketEditForm({
           <TicketCategorySelect
             id="edit-category"
             value={values.category}
-            onChange={(category) => onChange({ category })}
+            onChange={(category) => patch({ category })}
           />
         </div>
+        {errors.category && (
+          <p className="mt-1 font-unageo text-sm text-red-600">{errors.category}</p>
+        )}
       </div>
       <div>
         <Label htmlFor="edit-priority" className="font-unageo text-sm font-semibold text-secondary-000">
@@ -67,7 +100,7 @@ export function TicketEditForm({
           <TicketPrioritySelect
             id="edit-priority"
             value={values.priority}
-            onChange={(priority) => onChange({ priority })}
+            onChange={(priority) => patch({ priority })}
           />
         </div>
       </div>
@@ -78,10 +111,13 @@ export function TicketEditForm({
         <Textarea
           id="edit-description"
           value={values.description}
-          onChange={(e) => onChange({ description: e.target.value })}
+          onChange={(e) => patch({ description: e.target.value })}
           rows={6}
-          className="mt-2 rounded-xl border-accent-20"
+          className={`mt-2 rounded-xl ${errors.description ? "border-red-500" : "border-accent-20"}`}
         />
+        {errors.description && (
+          <p className="mt-1 font-unageo text-sm text-red-600">{errors.description}</p>
+        )}
       </div>
       <div className="flex gap-3 pt-2">
         <Button
@@ -96,7 +132,7 @@ export function TicketEditForm({
           type="button"
           disabled={!canSave}
           className="flex-1 rounded-full bg-primary-100 font-unageo font-semibold text-white"
-          onClick={onSave}
+          onClick={handleSaveClick}
         >
           Save changes
         </Button>

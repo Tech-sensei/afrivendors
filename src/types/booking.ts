@@ -55,6 +55,7 @@ export interface ContactFormData {
 export interface ContactInformationFormProps {
   formData: ContactFormData;
   onFormDataChange: (data: Partial<ContactFormData>) => void;
+  errors?: Partial<Record<keyof ContactFormData, string>>;
 }
 
 export interface DateTimeSelectionProps {

@@ -4,6 +4,7 @@ import { X, Smartphone, CheckCircle2, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import type { OTPVerificationProps } from "@/types/misc";
+import { verifyEmailSchema } from "@/lib/validations/authValidationSchema";
 
 export function OTPVerification({ open, onClose, onVerify, phoneNumber, phoneCode }: OTPVerificationProps) {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -11,6 +12,7 @@ export function OTPVerification({ open, onClose, onVerify, phoneNumber, phoneCod
   const [canResend, setCanResend] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [otpError, setOtpError] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Countdown timer for resend
@@ -42,6 +44,7 @@ export function OTPVerification({ open, onClose, onVerify, phoneNumber, phoneCod
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
+    if (otpError) setOtpError("");
 
     // Auto-focus next input
     if (value && index < 5) {
@@ -82,10 +85,14 @@ export function OTPVerification({ open, onClose, onVerify, phoneNumber, phoneCod
 
   const handleVerify = async (code?: string) => {
     const otpCode = code || otp.join("");
-    if (otpCode.length !== 6) {
-      toast.error("Please enter all 6 digits");
+    const result = verifyEmailSchema.safeParse({ otp: otpCode });
+    if (!result.success) {
+      const msg = result.error.issues[0]?.message ?? "Please enter all 6 digits";
+      setOtpError(msg);
+      toast.error(msg);
       return;
     }
+    setOtpError("");
 
     setIsVerifying(true);
 
@@ -200,6 +207,9 @@ export function OTPVerification({ open, onClose, onVerify, phoneNumber, phoneCod
                         />
                       ))}
                     </div>
+                    {otpError && (
+                      <p className="mb-4 text-center text-sm text-red-600">{otpError}</p>
+                    )}
 
                     {/* Verify Button */}
                     <button

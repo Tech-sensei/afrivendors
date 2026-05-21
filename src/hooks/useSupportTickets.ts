@@ -21,6 +21,7 @@ import {
   ticketToEditFields,
   type TicketEditFields,
 } from "@/components/help-support/TicketEditForm";
+import { supportTicketReplySchema } from "@/lib/validations";
 
 export function useSupportTickets() {
   const queryClient = useQueryClient();
@@ -109,8 +110,13 @@ export function useSupportTickets() {
   );
 
   const handleSendMessage = useCallback(() => {
-    const trimmed = newMessage.trim();
-    if (!trimmed || !selectedTicket) return;
+    if (!selectedTicket) return;
+    const replyResult = supportTicketReplySchema.safeParse({ message: newMessage });
+    if (!replyResult.success) {
+      toast.error(replyResult.error.issues[0]?.message ?? "Invalid message");
+      return;
+    }
+    const trimmed = replyResult.data.message;
     const optimisticMessage: SupportMessage = {
       id: `tmp-${Date.now()}`,
       sender: "user",
@@ -225,10 +231,6 @@ export function useSupportTickets() {
   const handleSaveEdit = useCallback(() => {
     if (!selectedTicket) return;
     const { subject, category, description, priority } = editValues;
-    if (!subject.trim() || !category || !description.trim()) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
 
     const updated: SupportTicket = {
       ...selectedTicket,

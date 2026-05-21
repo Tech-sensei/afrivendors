@@ -6,6 +6,7 @@ import Image from 'next/image';
 import imgHeroImage from "../../../../public/assets/images/signInHeroImg.png";
 import Link from 'next/link';
 import { useAuthAPI } from '@/services/useAuthAPI';
+import { verifyEmailSchema } from '@/lib/validations/authValidationSchema';
 
 const TwoFactorContent = () => {
     const router = useRouter();
@@ -107,8 +108,9 @@ const TwoFactorContent = () => {
 
     const handleVerify = async (codeString?: string) => {
         const fullCode = codeString ?? code.join('');
-        if (fullCode.length < 6) {
-            setError('Please enter the 6-digit code.');
+        const otpResult = verifyEmailSchema.safeParse({ otp: fullCode });
+        if (!otpResult.success) {
+            setError(otpResult.error.issues[0]?.message ?? 'Please enter the 6-digit code.');
             return;
         }
         if (!challengeId || isNaN(challengeId)) {
@@ -116,7 +118,7 @@ const TwoFactorContent = () => {
             return;
         }
         try {
-            await verifyTwoFactorAsync({ challengeId, code: fullCode });
+            await verifyTwoFactorAsync({ challengeId, code: otpResult.data.otp });
             router.replace(redirectTo);
         } catch {
             setError('Invalid or expired code. Please try again.');

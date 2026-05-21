@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Calendar, Wallet, Heart, FileText, Settings, LogOut, MessageCircle, CreditCard } from "lucide-react";
+import { User, Calendar, Wallet, Heart, FileText, Settings, LogOut, MessageCircle } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,7 +20,6 @@ const pageToRoute: Record<string, string> = {
     "dashboard-appointments": "/appointments",
     "dashboard-messages": "/messages",
     "dashboard-wallet": "/wallet",
-    "dashboard-payments": "/payments",
     "dashboard-favourites": "/favourites",
     "dashboard-forms": "/custom-service-forms",
     "dashboard-settings": "/settings",
@@ -53,12 +52,6 @@ export function UserMenu({
             page: "dashboard-messages",
         },
         { id: "dashboard-wallet", label: "Wallet", icon: Wallet, page: "dashboard-wallet" },
-        {
-            id: "dashboard-payments",
-            label: "Payments",
-            icon: CreditCard,
-            page: "dashboard-payments",
-        },
         {
             id: "dashboard-favourites",
             label: "Favourites",

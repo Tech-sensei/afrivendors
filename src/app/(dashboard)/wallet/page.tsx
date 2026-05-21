@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import {
   Plus, ArrowDownCircle, ArrowUpCircle, RotateCcw,
-  ChevronRight, Loader2, Eye, EyeOff, CreditCard,
+  ChevronRight, Loader2, Eye, EyeOff,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -123,22 +122,14 @@ export default function WalletPage() {
         </CardContent>
       </Card>
 
-      {/* Fund wallet + Payments */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch mb-8">
+      <div className="mb-8">
         <Button
           onClick={() => setFundWalletOpen(true)}
-          className="flex-1 h-12 bg-primary-100 text-white hover:bg-[#a65620] rounded-xl text-sm font-semibold shadow-lg shadow-primary-100/20"
+          className="w-full h-12 bg-primary-100 text-white hover:bg-[#a65620] rounded-xl text-sm font-semibold shadow-lg shadow-primary-100/20"
         >
           <Plus className="h-4 w-4 mr-2" />
           Fund Wallet
         </Button>
-        <Link
-          href="/payments"
-          className="inline-flex flex-1 h-12 items-center justify-center gap-2 rounded-xl border-2 border-primary-100 bg-white px-4 text-sm font-semibold text-primary-100 transition-colors hover:bg-primary-100/5"
-        >
-          <CreditCard className="h-4 w-4 shrink-0" aria-hidden />
-          Payments
-        </Link>
       </div>
 
       {/* Transactions Header */}

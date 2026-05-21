@@ -18,6 +18,7 @@ import { MessageConversation } from "@/components/messages/MessageConversation";
 import useStreamChat from "@/hooks/useStreamChat";
 import { QueryChannelAPIResponse } from "stream-chat";
 import { toast } from "sonner";
+import { chatMessageSchema } from "@/lib/validations";
 
 interface VendorInfo {
   name: string;
@@ -68,6 +69,7 @@ export function ConversationSheet({
 }: ConversationSheetProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [draft, setDraft] = useState("");
+  const [draftError, setDraftError] = useState("");
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
@@ -77,7 +79,10 @@ export function ConversationSheet({
   }, []);
 
   useEffect(() => {
-    if (!open) setDraft("");
+    if (!open) {
+      setDraft("");
+      setDraftError("");
+    }
   }, [open, conversationId]);
 
   //get conversation from stream chat
@@ -95,23 +100,25 @@ export function ConversationSheet({
   }, [open, conversationId, getChannelMessages, onConversationRead]);
 
   const handleSend = () => {
-    const t = draft.trim();
-    if (t) {
-      void sendMessage(conversationId, t)
-        .then(() => {
-          //update conversation
-          void getChannelMessages(conversationId).then((response) => {
-            setConversation(response);
-          });
-          setDraft("");
-        })
-        .catch((error) => {
-          console.error(error);
-          toast.error("Failed to send message");
-        });
-    } else {
-      toast.error("Please enter a message");
+    const result = chatMessageSchema.safeParse({ message: draft });
+    if (!result.success) {
+      const msg = result.error.issues[0]?.message ?? "Invalid message";
+      setDraftError(msg);
+      toast.error(msg);
+      return;
     }
+    setDraftError("");
+    void sendMessage(conversationId, result.data.message)
+      .then(() => {
+        void getChannelMessages(conversationId).then((response) => {
+          setConversation(response);
+        });
+        setDraft("");
+      })
+      .catch((error) => {
+        console.error(error);
+        toast.error("Failed to send message");
+      });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -179,14 +186,22 @@ export function ConversationSheet({
                 <Paperclip className="h-4 w-4" />
               </Button>
 
-              <Textarea
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Type a message..."
-                rows={1}
-                className="flex-1 min-h-[40px] max-h-[120px] bg-transparent border-0 focus-visible:ring-0 px-2 py-2.5 text-sm resize-none placeholder:text-secondary-300/60"
-                onKeyDown={handleKeyPress}
-              />
+              <div className="flex min-w-0 flex-1 flex-col">
+                <Textarea
+                  value={draft}
+                  onChange={(e) => {
+                    setDraft(e.target.value);
+                    if (draftError) setDraftError("");
+                  }}
+                  placeholder="Type a message..."
+                  rows={1}
+                  className="flex-1 min-h-[40px] max-h-[120px] bg-transparent border-0 focus-visible:ring-0 px-2 py-2.5 text-sm resize-none placeholder:text-secondary-300/60"
+                  onKeyDown={handleKeyPress}
+                />
+                {draftError && (
+                  <p className="px-2 pb-1 text-xs text-red-600">{draftError}</p>
+                )}
+              </div>
 
               <Button
                 type="button"

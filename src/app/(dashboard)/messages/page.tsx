@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { MessageCircle } from "lucide-react";
 import { ConversationItem } from "@/components/messages/ConversationItem";
 import { SearchBar } from "@/components/messages/SearchBar";
@@ -11,8 +13,13 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { useStreamChatToken } from "@/services/useStreamChat";
 import streamChat from "@/lib/streamChat";
+import { findChannelForNotificationItem } from "@/lib/resolveStreamChannel";
 
 export default function MessagesPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const deepLinkHandled = useRef(false);
+
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [conversations, setConversations] = useState<Channel[]>([]);
@@ -97,6 +104,44 @@ export default function MessagesPage() {
     setSelectedChat(chatId);
     setDrawerOpen(true);
   };
+
+  useEffect(() => {
+    const channelIdParam = searchParams.get("channelId");
+    const itemIdParam = searchParams.get("itemId");
+    if (!channelIdParam && !itemIdParam) {
+      deepLinkHandled.current = false;
+      return;
+    }
+    if (!streamReady || deepLinkHandled.current) return;
+
+    let channelId: string | undefined;
+
+    if (channelIdParam) {
+      channelId = channelIdParam;
+    } else if (itemIdParam) {
+      const itemId = Number(itemIdParam);
+      if (Number.isFinite(itemId)) {
+        const channel = findChannelForNotificationItem(conversations, itemId);
+        channelId = channel ? String(channel.id) : undefined;
+      }
+    }
+
+    if (!channelId && conversations.length === 0) {
+      return;
+    }
+
+    deepLinkHandled.current = true;
+
+    if (channelId) {
+      setSelectedChat(channelId);
+      setDrawerOpen(true);
+      router.replace("/messages");
+      return;
+    }
+
+    toast.error("Conversation not found.");
+    router.replace("/messages");
+  }, [conversations, router, searchParams, streamReady]);
 
   const handleCloseDrawer = (open: boolean) => {
     setDrawerOpen(open);
