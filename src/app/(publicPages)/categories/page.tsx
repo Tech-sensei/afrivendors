@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { SlidersHorizontal } from "lucide-react";
@@ -11,6 +11,7 @@ import { motion } from "motion/react";
 import { FilterSection } from "@/components/views/FilterSection";
 import VendorCard from "@/components/views/VendorCard";
 import { getPublicVendors } from "@/services/vendor";
+import { usePublicCategories } from "@/services/usePublicCategories";
 import svgPaths from "@/lib/svgPath7";
 import type { VendorFilters } from "@/types/vendor";
 
@@ -29,6 +30,19 @@ const CategoryPage = () => {
     minServicePrice: "",
     maxServicePrice: "",
   });
+
+  const categoryFromUrlApplied = useRef(false);
+  useEffect(() => {
+    if (categoryFromUrlApplied.current || typeof window === "undefined") return;
+    const cid = new URLSearchParams(window.location.search).get("categoryId");
+    if (cid) {
+      categoryFromUrlApplied.current = true;
+      setFilters((prev) => ({ ...prev, categoryId: cid }));
+      setPage(1);
+    }
+  }, []);
+
+  const { data: publicCategories } = usePublicCategories();
 
   const { data, isLoading, isError, error, isFetching } = useQuery({
     queryKey: ["public-vendors", page, sortBy, filters],
@@ -50,12 +64,16 @@ const CategoryPage = () => {
   const categoryOptions = useMemo(() => {
     const entries = new Map<string, { id: string; name: string }>();
 
+    for (const c of publicCategories ?? []) {
+      entries.set(String(c.id), { id: String(c.id), name: c.name });
+    }
+
     for (const vendor of data?.vendors || []) {
       if (vendor.categoryId) {
-        entries.set(String(vendor.categoryId), {
-          id: String(vendor.categoryId),
-          name: vendor.category,
-        });
+        const id = String(vendor.categoryId);
+        if (!entries.has(id)) {
+          entries.set(id, { id, name: vendor.category });
+        }
       }
     }
 
@@ -67,7 +85,7 @@ const CategoryPage = () => {
     }
 
     return Array.from(entries.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [data?.vendors, filters.categoryId]);
+  }, [publicCategories, data?.vendors, filters.categoryId]);
 
   const countryOptions = useMemo(() => {
     const countries = new Set<string>();

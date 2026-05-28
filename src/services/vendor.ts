@@ -28,15 +28,34 @@ export function normalizeVendorLocation(
   location: PublicVendorLocationApi,
   fallback: string
 ): string {
-  if (location == null) return fallback;
+  return formatVendorAddress(location, fallback).fullAddress;
+}
+
+/** Summary for headers vs full address for the About tab. */
+export function formatVendorAddress(
+  location: PublicVendorLocationApi,
+  country: string
+): { summary: string; fullAddress: string } {
+  const countryLabel = country?.trim() || "";
+  if (location == null) {
+    return { summary: countryLabel, fullAddress: countryLabel };
+  }
   if (typeof location === "string") {
     const s = location.trim();
-    return s || fallback;
+    const line = s || countryLabel;
+    return { summary: line, fullAddress: line };
   }
-  const parts = [location.street_address, location.city, location.state, location.zip]
-    .map((p) => (typeof p === "string" ? p.trim() : ""))
-    .filter(Boolean);
-  return parts.join(", ") || fallback;
+  const street = location.street_address?.trim() || "";
+  const city = location.city?.trim() || "";
+  const state = location.state?.trim() || "";
+  const zip = location.zip?.trim() || "";
+  const fullParts = [street, city, state, zip].filter(Boolean);
+  const fullAddress = fullParts.length > 0 ? fullParts.join(", ") : countryLabel;
+  const summary =
+    city && countryLabel
+      ? `${city}, ${countryLabel}`
+      : city || state || countryLabel;
+  return { summary, fullAddress };
 }
 
 function formatTime(time?: string | null) {
@@ -198,6 +217,10 @@ export function mapPublicVendorDetail(
   const gallery = payload.gallery.length
     ? payload.gallery.map((item) => item.imageUrl)
     : [bannerImage];
+  const { summary: locationSummary, fullAddress } = formatVendorAddress(
+    payload.kyc?.location,
+    payload.vendor.country
+  );
 
   return {
     id: String(payload.vendor.id),
@@ -206,16 +229,11 @@ export function mapPublicVendorDetail(
     businessName,
     category: payload.kyc?.category?.name || "Uncategorized",
     categoryId: payload.kyc?.category?.id ?? null,
-    location: normalizeVendorLocation(
-      payload.kyc?.location,
-      payload.vendor.country
-    ),
+    location: locationSummary,
+    address: fullAddress,
     country: payload.vendor.country,
     rating: Number(payload.averageRating) || 0,
     reviewCount: reviews.length,
-    phoneNumber: payload.vendor.phoneNumber,
-    email: payload.vendor.email,
-    website: payload.kyc?.website || null,
     bannerImage,
     gallery,
     about:

@@ -14,7 +14,7 @@ const FOOTER_SECTIONS = {
   forVendors: [
     { label: "Become a vendor", href: "/vendor/register" },
     { label: "Pricing", href: "/pricing" },
-    { label: "Support", href: "/vendor/support" },
+    { label: "Vendor programme", href: "/vendor/register" },
   ],
   legal: [
     { label: "Privacy Policy", href: "/privacy-policy" },

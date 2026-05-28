@@ -218,7 +218,7 @@ const SignInPageContent = () => {
                                 <p className="text-base leading-6 text-accent-80">
                                     Are you a vendor?{' '}
                                     <a
-                                        href="https://afrivendors-vendor-dashboard.vercel.app/"
+                                        href={process.env.NEXT_PUBLIC_VENDOR_APP_URL ? `${process.env.NEXT_PUBLIC_VENDOR_APP_URL.replace(/\/$/, "")}/sign-in` : "/vendor/register"}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="font-semibold text-secondary-000 underline transition-opacity duration-200 ease-out hover:opacity-70"

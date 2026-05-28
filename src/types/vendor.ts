@@ -182,13 +182,13 @@ export interface VendorDetail {
   businessName: string;
   category: string;
   categoryId: number | null;
+  /** Short label for header (e.g. city, country). */
   location: string;
+  /** Full street address for the About tab. */
+  address: string;
   country: string;
   rating: number;
   reviewCount: number;
-  phoneNumber: string;
-  email: string;
-  website: string | null;
   bannerImage: string;
   gallery: string[];
   about: string;

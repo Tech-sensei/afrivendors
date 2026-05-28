@@ -9,44 +9,118 @@ import { AppointmentCard } from "@/components/appointments/AppointmentCard";
 import { AppointmentDetailsDrawer } from "@/components/appointments/AppointmentDetailsDrawer";
 import { RescheduleModal } from "@/components/appointments/RescheduleModal";
 import { MessageVendorDrawer } from "@/components/appointments/MessageVendorDrawer";
-import { useAppointments } from "@/services/useAppointments";
+import { OpenAppointmentDisputeDialog } from "@/components/appointments/OpenAppointmentDisputeDialog";
+import { DisputeResolutionDialog } from "@/components/appointments/DisputeResolutionDialog";
+import { AppointmentEmptyState } from "@/components/appointments/AppointmentEmptyState";
 import {
-  type Appointment,
-  isUpcomingStatus,
-  isPendingStatus,
-  isPastStatus,
-  isCancelledStatus,
-} from "@/types/appointments";
+  useAppointments,
+  useAppointmentTabCounts,
+  fetchUserAppointmentById,
+  useResolveDisputePayVendor,
+  useEscalateAppointmentDispute,
+} from "@/services/useAppointments";
+import type { Appointment, AppointmentTabId } from "@/types/appointments";
 
-const EmptyTab = ({ message }: { message: string }) => (
-  <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-primary-300/30 rounded-2xl border border-dashed border-primary-300/20">
-    <p className="text-secondary-300">{message}</p>
-  </div>
-);
+function TabCountBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span className="ml-1.5 rounded-full bg-primary-100 px-1.5 py-0.5 text-xs font-bold text-white">
+      {count}
+    </span>
+  );
+}
+
+function TabPanel({
+  tab,
+  appointments,
+  isLoading,
+  onViewDetails,
+  onReschedule,
+  onMessageVendor,
+  onOpenDispute,
+  onPayVendor,
+  onEscalateDispute,
+}: {
+  tab: AppointmentTabId;
+  appointments: Appointment[];
+  isLoading: boolean;
+  onViewDetails: (a: Appointment) => void;
+  onReschedule: (a: Appointment) => void;
+  onMessageVendor: (a: Appointment) => void;
+  onOpenDispute: (a: Appointment) => void;
+  onPayVendor: (a: Appointment) => void;
+  onEscalateDispute: (a: Appointment) => void;
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex h-48 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-100" />
+      </div>
+    );
+  }
+
+  if (appointments.length === 0) {
+    const emptyTab =
+      tab === "past" ? "completed" : tab === "upcoming" ? "upcoming" : tab;
+    return (
+      <AppointmentEmptyState
+        tab={emptyTab as "pending" | "upcoming" | "completed" | "cancelled"}
+      />
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+      {appointments.map((appointment) => (
+        <AppointmentCard
+          key={appointment.id}
+          appointment={appointment}
+          onViewDetails={onViewDetails}
+          onReschedule={onReschedule}
+          onMessageVendor={onMessageVendor}
+          onOpenDispute={onOpenDispute}
+          onPayVendor={onPayVendor}
+          onEscalateDispute={onEscalateDispute}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function AppointmentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const appointmentDeepLinkHandled = useRef(false);
 
-  const { data: appointments = [], isLoading } = useAppointments();
+  const [activeTab, setActiveTab] = useState<AppointmentTabId>("pending");
+  const {
+    data: appointments = [],
+    isLoading,
+    isFetching,
+  } = useAppointments(activeTab);
+  const { data: tabCounts } = useAppointmentTabCounts();
 
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMessageOpen, setIsMessageOpen] = useState(false);
+  const [disputeAppointment, setDisputeAppointment] =
+    useState<Appointment | null>(null);
+  const [isDisputeOpen, setIsDisputeOpen] = useState(false);
+  const [payVendorAppointment, setPayVendorAppointment] =
+    useState<Appointment | null>(null);
+  const [isPayVendorOpen, setIsPayVendorOpen] = useState(false);
+  const [escalateAppointment, setEscalateAppointment] =
+    useState<Appointment | null>(null);
+  const [isEscalateOpen, setIsEscalateOpen] = useState(false);
 
-  const upcomingAppointments = appointments.filter((a) =>
-    isUpcomingStatus(a.status),
-  );
-  const pendingAppointments = appointments.filter((a) =>
-    isPendingStatus(a.status),
-  );
-  const pastAppointments = appointments.filter((a) => isPastStatus(a.status));
-  const cancelledAppointments = appointments.filter((a) =>
-    isCancelledStatus(a.status),
-  );
+  const { mutate: resolvePayVendor, isPending: isPayingVendor } =
+    useResolveDisputePayVendor();
+  const { mutate: escalateDispute, isPending: isEscalating } =
+    useEscalateAppointmentDispute();
+
+  const tabLoading = isLoading || isFetching;
 
   const handleViewDetails = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
@@ -55,26 +129,34 @@ export default function AppointmentPage() {
 
   useEffect(() => {
     const param = searchParams.get("appointmentId");
-    if (!param || appointmentDeepLinkHandled.current || isLoading) return;
+    if (!param || appointmentDeepLinkHandled.current) return;
 
     const id = Number(param);
     if (!Number.isFinite(id)) return;
 
-    const apt = appointments.find((a) => a.id === id);
-    appointmentDeepLinkHandled.current = true;
-
-    if (apt) {
+    const openFromList = (apt: Appointment) => {
+      appointmentDeepLinkHandled.current = true;
       setSelectedAppointment(apt);
       setIsDrawerOpen(true);
       router.replace("/appointments");
+    };
+
+    const apt = appointments.find((a) => a.id === id);
+    if (apt) {
+      openFromList(apt);
       return;
     }
 
-    if (appointments.length > 0) {
-      toast.error("Appointment not found.");
-      router.replace("/appointments");
-    }
-  }, [appointments, isLoading, router, searchParams]);
+    if (tabLoading) return;
+
+    appointmentDeepLinkHandled.current = true;
+    fetchUserAppointmentById(id)
+      .then(openFromList)
+      .catch(() => {
+        toast.error("Appointment not found.");
+        router.replace("/appointments");
+      });
+  }, [appointments, tabLoading, router, searchParams]);
 
   const handleReschedule = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
@@ -87,68 +169,72 @@ export default function AppointmentPage() {
     setIsMessageOpen(true);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-primary-100 animate-spin" />
-      </div>
-    );
-  }
+  const handleOpenDispute = (appointment: Appointment) => {
+    setDisputeAppointment(appointment);
+    setIsDisputeOpen(true);
+  };
+
+  const handlePayVendor = (appointment: Appointment) => {
+    setPayVendorAppointment(appointment);
+    setIsPayVendorOpen(true);
+  };
+
+  const handleEscalateDispute = (appointment: Appointment) => {
+    setEscalateAppointment(appointment);
+    setIsEscalateOpen(true);
+  };
+
+  const panelProps = {
+    onViewDetails: handleViewDetails,
+    onReschedule: handleReschedule,
+    onMessageVendor: handleMessageVendor,
+    onOpenDispute: handleOpenDispute,
+    onPayVendor: handlePayVendor,
+    onEscalateDispute: handleEscalateDispute,
+  };
 
   return (
-    <div className="container mx-auto space-y-8 max-w-6xl">
+    <div className="container mx-auto max-w-6xl space-y-8">
       <div className="flex flex-col gap-2">
-        <h1 className="text-[28px] font-bold font-unbounded text-secondary-200 tracking-tight">
+        <h1 className="font-unbounded text-[28px] font-bold tracking-tight text-secondary-200">
           Appointments
         </h1>
       </div>
 
-      <Tabs defaultValue="pending" className="w-full">
-        <div className="flex justify-between mb-8">
-          <TabsList className=" h-auto p-0 gap-2 sm:gap-3 w-full grid grid-cols-2 md:grid-cols-4 bg-secondary-700 rounded-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as AppointmentTabId)}
+        className="w-full"
+      >
+        <div className="mb-8 flex justify-between">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-full bg-secondary-700 p-0 sm:gap-3 md:grid-cols-4">
             <TabsTrigger
               value="pending"
-              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
+              className="h-12 w-full rounded-full border border-transparent text-sm font-bold text-secondary-300 transition-all hover:text-secondary-000/80 data-[state=active]:border-border/10 data-[state=active]:bg-white data-[state=active]:text-secondary-000 data-[state=active]:shadow-md sm:text-base"
             >
               Pending
-              {pendingAppointments.length > 0 && (
-                <span className="ml-1.5 text-xs font-bold bg-primary-100 text-white rounded-full px-1.5 py-0.5">
-                  {pendingAppointments.length}
-                </span>
-              )}
+              <TabCountBadge count={tabCounts?.pending ?? 0} />
             </TabsTrigger>
             <TabsTrigger
               value="upcoming"
-              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
+              className="h-12 w-full rounded-full border border-transparent text-sm font-bold text-secondary-300 transition-all hover:text-secondary-000/80 data-[state=active]:border-border/10 data-[state=active]:bg-white data-[state=active]:text-secondary-000 data-[state=active]:shadow-md sm:text-base"
             >
               Upcoming
-              {upcomingAppointments.length > 0 && (
-                <span className="ml-1.5 text-xs font-bold bg-primary-100 text-white rounded-full px-1.5 py-0.5">
-                  {upcomingAppointments.length}
-                </span>
-              )}
+              <TabCountBadge count={tabCounts?.upcoming ?? 0} />
             </TabsTrigger>
             <TabsTrigger
               value="past"
-              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
+              className="h-12 w-full rounded-full border border-transparent text-sm font-bold text-secondary-300 transition-all hover:text-secondary-000/80 data-[state=active]:border-border/10 data-[state=active]:bg-white data-[state=active]:text-secondary-000 data-[state=active]:shadow-md sm:text-base"
             >
               Completed
-              {pastAppointments.length > 0 && (
-                <span className="ml-1.5 text-xs font-bold bg-primary-100 text-white rounded-full px-1.5 py-0.5">
-                  {pastAppointments.length}
-                </span>
-              )}
+              <TabCountBadge count={tabCounts?.past ?? 0} />
             </TabsTrigger>
             <TabsTrigger
               value="cancelled"
-              className="rounded-full h-12 w-full data-[state=active]:shadow-md data-[state=active]:bg-white data-[state=active]:text-secondary-000 text-secondary-300 font-bold transition-all hover:text-secondary-000/80 text-sm sm:text-base border border-transparent data-[state=active]:border-border/10"
+              className="h-12 w-full rounded-full border border-transparent text-sm font-bold text-secondary-300 transition-all hover:text-secondary-000/80 data-[state=active]:border-border/10 data-[state=active]:bg-white data-[state=active]:text-secondary-000 data-[state=active]:shadow-md sm:text-base"
             >
               Cancelled
-              {cancelledAppointments.length > 0 && (
-                <span className="ml-1.5 text-xs font-bold bg-primary-100 text-white rounded-full px-1.5 py-0.5">
-                  {cancelledAppointments.length}
-                </span>
-              )}
+              <TabCountBadge count={tabCounts?.cancelled ?? 0} />
             </TabsTrigger>
           </TabsList>
         </div>
@@ -157,84 +243,48 @@ export default function AppointmentPage() {
           value="pending"
           className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
         >
-          {pendingAppointments.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {pendingAppointments.map((appointment) => (
-                <AppointmentCard
-                  key={appointment.id}
-                  appointment={appointment}
-                  onViewDetails={handleViewDetails}
-                  onReschedule={handleReschedule}
-                  onMessageVendor={handleMessageVendor}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyTab message="No pending appointments found." />
-          )}
+          <TabPanel
+            tab="pending"
+            appointments={activeTab === "pending" ? appointments : []}
+            isLoading={activeTab === "pending" && tabLoading}
+            {...panelProps}
+          />
         </TabsContent>
 
         <TabsContent
           value="upcoming"
           className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
         >
-          {upcomingAppointments.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {upcomingAppointments.map((appointment) => (
-                <AppointmentCard
-                  key={appointment.id}
-                  appointment={appointment}
-                  onViewDetails={handleViewDetails}
-                  onReschedule={handleReschedule}
-                  onMessageVendor={handleMessageVendor}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyTab message="No upcoming appointments found." />
-          )}
+          <TabPanel
+            tab="upcoming"
+            appointments={activeTab === "upcoming" ? appointments : []}
+            isLoading={activeTab === "upcoming" && tabLoading}
+            {...panelProps}
+          />
         </TabsContent>
 
         <TabsContent
           value="past"
           className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
         >
-          {pastAppointments.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {pastAppointments.map((appointment) => (
-                <AppointmentCard
-                  key={appointment.id}
-                  appointment={appointment}
-                  onViewDetails={handleViewDetails}
-                  onReschedule={handleReschedule}
-                  onMessageVendor={handleMessageVendor}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyTab message="No completed appointments found." />
-          )}
+          <TabPanel
+            tab="past"
+            appointments={activeTab === "past" ? appointments : []}
+            isLoading={activeTab === "past" && tabLoading}
+            {...panelProps}
+          />
         </TabsContent>
 
         <TabsContent
           value="cancelled"
           className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
         >
-          {cancelledAppointments.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {cancelledAppointments.map((appointment) => (
-                <AppointmentCard
-                  key={appointment.id}
-                  appointment={appointment}
-                  onViewDetails={handleViewDetails}
-                  onReschedule={handleReschedule}
-                  onMessageVendor={handleMessageVendor}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyTab message="No cancelled appointments found." />
-          )}
+          <TabPanel
+            tab="cancelled"
+            appointments={activeTab === "cancelled" ? appointments : []}
+            isLoading={activeTab === "cancelled" && tabLoading}
+            {...panelProps}
+          />
         </TabsContent>
       </Tabs>
 
@@ -247,6 +297,69 @@ export default function AppointmentPage() {
           setSelectedAppointment(appointment);
           setIsDrawerOpen(false);
           setIsMessageOpen(true);
+        }}
+        onOpenDispute={(appointment) => {
+          setSelectedAppointment(appointment);
+          handleOpenDispute(appointment);
+        }}
+        onPayVendor={(appointment) => {
+          setSelectedAppointment(appointment);
+          handlePayVendor(appointment);
+        }}
+        onEscalateDispute={(appointment) => {
+          setSelectedAppointment(appointment);
+          handleEscalateDispute(appointment);
+        }}
+      />
+
+      <DisputeResolutionDialog
+        open={isPayVendorOpen}
+        onOpenChange={setIsPayVendorOpen}
+        title="Pay vendor & close dispute"
+        description="You agree the issue is resolved and payment should go to the vendor. Add a short note about what you agreed."
+        confirmLabel="Pay vendor"
+        isPending={isPayingVendor}
+        onConfirm={(resolution) => {
+          if (!payVendorAppointment) return;
+          resolvePayVendor(
+            { appointmentId: payVendorAppointment.id, resolution },
+            {
+              onSuccess: () => {
+                setIsPayVendorOpen(false);
+                setPayVendorAppointment(null);
+              },
+            }
+          );
+        }}
+      />
+
+      <DisputeResolutionDialog
+        open={isEscalateOpen}
+        onOpenChange={setIsEscalateOpen}
+        title="Escalate to Afrivendors"
+        description="Tell us why you could not resolve this with the vendor. Our team will review and decide."
+        confirmLabel="Submit escalation"
+        isPending={isEscalating}
+        onConfirm={(resolution) => {
+          if (!escalateAppointment) return;
+          escalateDispute(
+            { appointmentId: escalateAppointment.id, resolution },
+            {
+              onSuccess: () => {
+                setIsEscalateOpen(false);
+                setEscalateAppointment(null);
+              },
+            }
+          );
+        }}
+      />
+
+      <OpenAppointmentDisputeDialog
+        appointment={disputeAppointment}
+        open={isDisputeOpen}
+        onOpenChange={setIsDisputeOpen}
+        onSubmitted={() => {
+          setDisputeAppointment(null);
         }}
       />
 

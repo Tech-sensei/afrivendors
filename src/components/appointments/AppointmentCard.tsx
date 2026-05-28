@@ -1,36 +1,25 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MessageCircle, Eye, PenLine, RotateCcw, Banknote } from "lucide-react";
+import { Calendar, Clock, ChevronRight } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   type AppointmentCardProps,
-  isActiveBookingStatus,
-  isCancelledStatus,
-  isCompletedStatus,
+  isAppointmentDisputed,
+  isAppointmentFundsReleased,
 } from "@/types/appointments";
 import { formatVendorPrice } from "@/services/vendor";
-import { useReleaseAppointmentFunds } from "@/services/useAppointments";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop";
 
 export function AppointmentCard({
   appointment,
   onViewDetails,
-  onReschedule,
-  onMessageVendor,
 }: AppointmentCardProps) {
-  const router = useRouter();
-  const { mutate: releaseFunds, isPending: isReleasingFunds } =
-    useReleaseAppointmentFunds();
-
-  const isActive = isActiveBookingStatus(appointment.status);
-  const isCompleted = isCompletedStatus(appointment.status);
-  const isCancelled = isCancelledStatus(appointment.status);
+  const fundsReleased = isAppointmentFundsReleased(appointment);
+  const disputed = isAppointmentDisputed(appointment);
 
   const vendorName = `${appointment.vendor.firstName} ${appointment.vendor.lastName}`;
   const primaryService = appointment.services[0];
@@ -41,10 +30,10 @@ export function AppointmentCard({
       ? primaryService.serviceName
       : `${primaryService.serviceName} +${appointment.services.length - 1} more`;
 
-  // "15:00:00" → "15:00"
   const displayTime = appointment.time.slice(0, 5);
-
   const totalDuration = appointment.services.map((s) => s.duration).join(" + ");
+
+  const openDetails = () => onViewDetails(appointment);
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -84,9 +73,19 @@ export function AppointmentCard({
   };
 
   return (
-    <Card className="w-full overflow-hidden border-0 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-2px_rgba(0,0,0,0.1)] transition-all duration-300 group rounded-[2rem] bg-white py-0">
-      {/* Image */}
-      <div className="relative h-64 w-full bg-primary-300 rounded-t-[2rem] overflow-hidden">
+    <Card
+      className="group flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-[#EFE6E1] bg-white py-0 shadow-[0_4px_12px_rgba(35,19,5,0.08)] transition-all duration-300 hover:shadow-[0_8px_24px_rgba(35,19,5,0.1)]"
+      onClick={openDetails}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openDetails();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      <div className="relative h-56 w-full shrink-0 overflow-hidden bg-primary-300">
         <Image
           src={serviceImage}
           alt={displayServiceName}
@@ -94,100 +93,60 @@ export function AppointmentCard({
           className="object-cover transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
-        <div className="absolute bottom-4 left-5 right-5 flex justify-between items-end">
+        <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between gap-2">
           <Badge
             variant="secondary"
-            className={`backdrop-blur-md bg-white/90 border-0 px-3 py-1 text-xs font-semibold uppercase tracking-wider ${getStatusStyle(appointment.status)}`}
+            className={`border-0 bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur-md ${getStatusStyle(appointment.status)}`}
           >
             {getStatusLabel(appointment.status)}
           </Badge>
-          {appointment.paymentStatus === "paid" && (
-            <Badge className="bg-green-600/90 text-white border-0 px-3 py-1 text-xs font-semibold backdrop-blur-md">
+          {disputed ? (
+            <Badge className="border-0 bg-amber-600/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+              Dispute
+            </Badge>
+          ) : fundsReleased ? (
+            <Badge className="border-0 bg-slate-700/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+              Released
+            </Badge>
+          ) : appointment.paymentStatus === "paid" ? (
+            <Badge className="border-0 bg-green-600/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
               Paid
             </Badge>
-          )}
+          ) : null}
         </div>
       </div>
 
-      <CardContent className="px-4 py-2 space-y-6">
-        {/* Header */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-start gap-4">
-            <h3 className="font-bold text-xl leading-tight text-secondary-000 line-clamp-2 font-unbounded">
+      <CardContent className="flex flex-1 flex-col gap-4 p-5">
+        <div className="space-y-2.5">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="line-clamp-2 font-unbounded text-base font-semibold leading-snug text-secondary-000">
               {displayServiceName}
             </h3>
-            <span className="text-xl font-bold text-primary-100 shrink-0">
+            <span className="shrink-0 text-base font-bold text-primary-100">
               {formatVendorPrice(appointment.totalAmount)}
             </span>
           </div>
 
-          <div className="text-sm text-secondary-000/80">{vendorName}</div>
+          <p className="line-clamp-1 text-sm text-accent-80">{vendorName}</p>
 
-          <div className="flex flex-col gap-2 text-sm text-accent-100 pt-1">
+          <div className="flex flex-col gap-1.5 text-sm text-accent-100">
             <div className="flex items-center gap-2.5">
               <Calendar className="h-4 w-4 stroke-[1.5]" />
               <span>{format(parseISO(appointment.date), "MMMM d, yyyy")}</span>
             </div>
             <div className="flex items-center gap-2.5">
               <Clock className="h-4 w-4 stroke-[1.5]" />
-              <span>{displayTime} • {totalDuration}</span>
+              <span>
+                {displayTime} • {totalDuration}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="space-y-3 pt-2">
-          <Button
-            className="w-full gap-2 bg-primary-100 hover:bg-[#a65620] text-white font-semibold h-11 rounded-xl shadow-lg shadow-primary-100/20 tracking-wide transition-all active:scale-[0.98] cursor-pointer"
-            disabled={isCompleted && isReleasingFunds}
-            onClick={() => {
-              if (isCompleted) {
-                releaseFunds(appointment.id);
-              } else if (isCancelled) {
-                router.push(`/categories/${appointment.vendor.id}`);
-              } else {
-                onMessageVendor?.(appointment);
-              }
-            }}
-          >
-            {isCompleted ? (
-              <>
-                <Banknote className="h-4 w-4" />
-                Release Funds
-              </>
-            ) : isCancelled ? (
-              <>
-                <RotateCcw className="h-4 w-4" />
-                Book Again
-              </>
-            ) : (
-              <>
-                <MessageCircle className="h-4 w-4" />
-                Message Vendor
-              </>
-            )}
-          </Button>
-
-          {isActive && (
-            <Button
-              variant="outline"
-              className="w-full gap-2 h-11 rounded-xl border-border/60 hover:bg-primary-300/50 hover:text-secondary-000 hover:border-border font-medium text-accent-100 font-semibold transition-all active:scale-[0.98] cursor-pointer"
-              onClick={() => onReschedule(appointment)}
-            >
-              <PenLine className="h-4 w-4" />
-              Reschedule
-            </Button>
-          )}
-
-          <Button
-            variant="ghost"
-            className="w-full gap-2 h-11 rounded-xl hover:bg-primary-300/50 text-accent-100 font-semibold transition-all cursor-pointer"
-            onClick={() => onViewDetails(appointment)}
-          >
-            <Eye className="h-4 w-4" />
-            View Details
-          </Button>
-        </div>
+        <p className="mt-auto flex items-center justify-center gap-1 pt-1 text-sm font-semibold text-primary-100">
+          View details
+          <ChevronRight className="h-4 w-4" />
+        </p>
       </CardContent>
     </Card>
   );

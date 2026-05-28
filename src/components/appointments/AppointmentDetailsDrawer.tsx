@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import {
   Calendar, Clock, MapPin, MessageCircle, PenLine,
-  ExternalLink, RotateCcw, CreditCard, Loader2, Banknote,
+  ExternalLink, RotateCcw, CreditCard, Loader2, Banknote, AlertTriangle,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import http from "@/lib/http";
@@ -32,10 +32,18 @@ import { useCancelAppointment, useReleaseAppointmentFunds } from "@/services/use
 import {
   type Appointment,
   type AppointmentDetailsDrawerProps,
+  canEscalateAppointmentDispute,
+  canOpenAppointmentDispute,
+  canReleaseAppointmentFunds,
+  canRescheduleAppointment,
   isActiveBookingStatus,
+  isAppointmentDisputed,
+  isAppointmentFundsReleased,
   isCancelledStatus,
   isCompletedStatus,
   normalizeAppointmentStatus,
+  normalizePaymentStatus,
+  paymentStatusDisplayLabel,
 } from "@/types/appointments";
 import { formatVendorPrice } from "@/services/vendor";
 
@@ -87,6 +95,9 @@ export function AppointmentDetailsDrawer({
   onClose,
   onReschedule,
   onMessageVendor,
+  onOpenDispute,
+  onPayVendor,
+  onEscalateDispute,
 }: AppointmentDetailsDrawerProps) {
   const router = useRouter();
   const [isMobile, setIsMobile] = useState(false);
@@ -112,9 +123,15 @@ export function AppointmentDetailsDrawer({
     queryFn: async () => {
       const { data } = await http.get(`/users/appointments/${appointment!.id}`);
       const row = (data?.data ?? data) as Appointment;
+      const dispute =
+        row.dispute && typeof row.dispute === "object" && "reason" in row.dispute
+          ? row.dispute
+          : null;
       return {
         ...row,
         status: normalizeAppointmentStatus(String(row.status)),
+        paymentStatus: normalizePaymentStatus(String(row.paymentStatus ?? "pending")),
+        dispute,
       };
     },
     enabled: isOpen && !!appointment?.id,
@@ -132,6 +149,12 @@ export function AppointmentDetailsDrawer({
     appt?.status !== undefined && isCompletedStatus(appt.status);
   const isCancelled =
     appt?.status !== undefined && isCancelledStatus(appt.status);
+  const fundsReleased = appt ? isAppointmentFundsReleased(appt) : false;
+  const disputed = appt ? isAppointmentDisputed(appt) : false;
+  const canReleaseFunds = appt ? canReleaseAppointmentFunds(appt) : false;
+  const canDispute = appt ? canOpenAppointmentDispute(appt) : false;
+  const canEscalate = appt ? canEscalateAppointmentDispute(appt) : false;
+  const canReschedule = appt ? canRescheduleAppointment(appt) : false;
 
   const vendorName  = appt ? `${appt.vendor.firstName} ${appt.vendor.lastName}` : "";
   const displayTime = appt?.time?.slice(0, 5) ?? "";
@@ -140,9 +163,13 @@ export function AppointmentDetailsDrawer({
     appt?.paymentMethod === "online" ? "Paid Online" : "Wallet";
 
   const paymentStatusStyle =
-    appt?.paymentStatus === "paid"   ? "bg-green-100 text-green-700" :
-    appt?.paymentStatus === "failed" ? "bg-red-100 text-red-700"     :
-                                       "bg-amber-100 text-amber-700";
+    disputed ? "bg-amber-100 text-amber-900" :
+    appt?.paymentStatus === "released" ? "bg-slate-100 text-slate-700" :
+    appt?.paymentStatus === "disputed" ? "bg-amber-100 text-amber-900" :
+    appt?.paymentStatus === "refunded" ? "bg-blue-100 text-blue-800"   :
+    appt?.paymentStatus === "paid"      ? "bg-green-100 text-green-700" :
+    appt?.paymentStatus === "failed"    ? "bg-red-100 text-red-700"     :
+                                          "bg-amber-100 text-amber-700";
 
   return (
     <>
@@ -166,7 +193,6 @@ export function AppointmentDetailsDrawer({
           <DetailsSkeleton />
         ) : appt ? (
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-
             {/* Vendor */}
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-secondary-000">Vendor</h4>
@@ -255,8 +281,8 @@ export function AppointmentDetailsDrawer({
                   <CreditCard className="h-4 w-4" />
                   <span>{paymentMethodLabel}</span>
                 </div>
-                <Badge className={`text-xs font-semibold capitalize border-0 ${paymentStatusStyle}`}>
-                  {appt.paymentStatus}
+                <Badge className={`text-xs font-semibold border-0 ${paymentStatusStyle}`}>
+                  {paymentStatusDisplayLabel(appt.paymentStatus, appt.dispute)}
                 </Badge>
               </div>
             </div>
@@ -268,74 +294,184 @@ export function AppointmentDetailsDrawer({
                 <p className="text-sm text-accent-100 leading-relaxed">{appt.specificRequest}</p>
               </div>
             )}
+
+            {fundsReleased && isCompleted && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="text-xs font-semibold text-slate-800">Payment released</p>
+                <p className="mt-1 text-sm text-accent-80">
+                  Funds were sent to the vendor. This booking is closed.
+                </p>
+              </div>
+            )}
+
+            {disputed && appt.dispute?.reason && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3">
+                <p className="text-xs font-semibold text-amber-900">Dispute reason</p>
+                <p className="mt-1 text-sm text-secondary-000">{appt.dispute.reason}</p>
+                <p className="mt-2 text-xs text-accent-80">
+                  Message the vendor to resolve together, or pay the vendor if you have agreed.
+                </p>
+              </div>
+            )}
           </div>
         ) : null}
 
-        {/* Footer — always shown so drawer doesn't look broken during load */}
         <div className="p-6 border-t bg-background shrink-0 mt-auto space-y-3">
-          <Button
-            className="w-full gap-2 bg-primary-100 hover:bg-[#a65620] text-white h-11 rounded-xl shadow-md font-medium cursor-pointer"
-            disabled={!appt || isLoading || (isCompleted && isReleasingFunds)}
-            onClick={() => {
-              if (!appt) return;
-              if (isCompleted) {
-                releaseFunds(appt.id);
-              } else if (isCancelled) {
-                router.push(`/categories/${appt.vendor.id}`);
-              } else {
-                onMessageVendor?.(appt);
-              }
-            }}
-          >
-            {isCompleted ? (
-              <>
-                <Banknote className="h-4 w-4" />
-                Release Funds
-              </>
-            ) : isCancelled ? (
-              <>
-                <RotateCcw className="h-4 w-4" />
-                Book Again
-              </>
-            ) : (
-              <>
-                <MessageCircle className="h-4 w-4" />
-                Message Vendor
-              </>
-            )}
-          </Button>
-
-          {isActive && (
+          {isCompleted && fundsReleased ? (
             <Button
               variant="outline"
-              className="w-full gap-2 text-accent-100 cursor-pointer"
-              disabled={isLoading}
-              onClick={() => onReschedule(appt!)}
+              className="w-full gap-2 text-accent-100 cursor-pointer h-11 rounded-xl"
+              disabled={!appt || isLoading}
+              onClick={() => router.push(`/categories/${appt!.vendor.id}`)}
             >
-              <PenLine className="h-4 w-4" />
-              Reschedule
+              <ExternalLink className="h-4 w-4" />
+              Visit Vendor Page
             </Button>
+          ) : isCompleted ? (
+            disputed ? (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    className="min-w-0 w-full gap-2 bg-primary-100 hover:bg-[#a65620] text-white h-11 rounded-xl shadow-md font-medium cursor-pointer"
+                    disabled={!appt || isLoading}
+                    onClick={() => appt && onPayVendor?.(appt)}
+                  >
+                    <Banknote className="h-4 w-4 shrink-0" />
+                    <span className="truncate">Pay vendor</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="min-w-0 w-full gap-2 text-accent-100 h-11 rounded-xl cursor-pointer"
+                    disabled={!appt || isLoading}
+                    onClick={() => appt && onMessageVendor?.(appt)}
+                  >
+                    <MessageCircle className="h-4 w-4 shrink-0" />
+                    <span className="truncate">Message</span>
+                  </Button>
+                </div>
+                {canEscalate && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full gap-2 h-11 rounded-xl border-amber-200 bg-amber-50/50 font-semibold text-amber-950 hover:bg-amber-100"
+                    disabled={!appt || isLoading}
+                    onClick={() => appt && onEscalateDispute?.(appt)}
+                  >
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    Escalate to Afrivendors
+                  </Button>
+                )}
+              </>
+            ) : !fundsReleased ? (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    className="min-w-0 w-full gap-2 bg-primary-100 hover:bg-[#a65620] text-white h-11 rounded-xl shadow-md font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={
+                      !appt ||
+                      isLoading ||
+                      isReleasingFunds ||
+                      !canReleaseFunds
+                    }
+                    onClick={() => {
+                      if (!appt || !canReleaseFunds) return;
+                      releaseFunds(appt.id);
+                    }}
+                  >
+                    <Banknote className="h-4 w-4 shrink-0" />
+                    <span className="truncate">
+                      {isReleasingFunds ? "Releasing…" : "Release funds"}
+                    </span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-w-0 w-full gap-2 h-11 rounded-xl border-amber-200 bg-amber-50/50 font-semibold text-amber-950 hover:bg-amber-100 cursor-pointer"
+                    disabled={isLoading || !canDispute}
+                    onClick={() => appt && onOpenDispute?.(appt)}
+                  >
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span className="truncate">Open dispute</span>
+                  </Button>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 text-accent-100 h-11 rounded-xl cursor-pointer"
+                  disabled={!appt || isLoading}
+                  onClick={() => appt && onMessageVendor?.(appt)}
+                >
+                  <MessageCircle className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Message</span>
+                </Button>
+              </>
+            ) : null
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  className={`min-w-0 w-full gap-2 bg-primary-100 hover:bg-[#a65620] text-white h-11 rounded-xl shadow-md font-medium cursor-pointer ${
+                    !isActive && isCancelled ? "col-span-2" : !canReschedule && isActive ? "col-span-2" : ""
+                  }`}
+                  disabled={!appt || isLoading}
+                  onClick={() => {
+                    if (!appt) return;
+                    if (isCancelled) {
+                      router.push(`/categories/${appt.vendor.id}`);
+                    } else {
+                      onMessageVendor?.(appt);
+                    }
+                  }}
+                >
+                  {isCancelled ? (
+                    <>
+                      <RotateCcw className="h-4 w-4 shrink-0" />
+                      <span className="truncate">Book again</span>
+                    </>
+                  ) : (
+                    <>
+                      <MessageCircle className="h-4 w-4 shrink-0" />
+                      <span className="truncate">Message</span>
+                    </>
+                  )}
+                </Button>
+                {canReschedule && (
+                  <Button
+                    variant="outline"
+                    className="min-w-0 w-full gap-2 text-accent-100 cursor-pointer h-11 rounded-xl"
+                    disabled={isLoading}
+                    onClick={() => onReschedule(appt!)}
+                  >
+                    <PenLine className="h-4 w-4 shrink-0" />
+                    <span className="truncate">Reschedule</span>
+                  </Button>
+                )}
+              </div>
+            </>
           )}
 
-          <Button
-            variant="outline"
-            className="w-full gap-2 text-accent-100 cursor-pointer"
-            disabled={!appt || isLoading}
-            onClick={() => router.push(`/categories/${appt!.vendor.id}`)}
-          >
-            <ExternalLink className="h-4 w-4" />
-            View Vendor Page
-          </Button>
+          {!(isCompleted && fundsReleased) && (
+            <>
+              <Button
+                variant="outline"
+                className="w-full gap-2 text-accent-100 cursor-pointer h-11 rounded-xl"
+                disabled={!appt || isLoading}
+                onClick={() => router.push(`/categories/${appt!.vendor.id}`)}
+              >
+                <ExternalLink className="h-4 w-4" />
+                Visit Vendor Page
+              </Button>
 
-          {isActive && (
-            <Button
-              variant="destructive"
-              className="w-full bg-red-700 hover:bg-red-800 cursor-pointer"
-              disabled={isLoading || isCancelling}
-              onClick={() => setShowCancelConfirm(true)}
-            >
-              Cancel Appointment
-            </Button>
+              {isActive && (
+                <Button
+                  variant="destructive"
+                  className="w-full bg-red-700 hover:bg-red-800 cursor-pointer"
+                  disabled={isLoading || isCancelling}
+                  onClick={() => setShowCancelConfirm(true)}
+                >
+                  Cancel Appointment
+                </Button>
+              )}
+            </>
           )}
         </div>
       </SheetContent>

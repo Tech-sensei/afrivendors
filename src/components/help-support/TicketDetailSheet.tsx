@@ -106,8 +106,6 @@ export function TicketDetailSheet({
               <TicketActionsPanel
                 status={ticket.status}
                 onEdit={onStartEdit}
-                onMarkInProgress={() => onUpdateStatus("in-progress")}
-                onMarkResolved={() => onUpdateStatus("resolved")}
                 onReopen={() => onUpdateStatus("open")}
                 onCloseTicket={() => onUpdateStatus("closed")}
               />

@@ -28,6 +28,7 @@ import type {
     ProfileAddressDrawerProps,
     ProfileAddressFormValues,
 } from "@/types/profile";
+import { PostalCodeAutocomplete } from "@/components/ui/PostalCodeAutocomplete";
 
 /** Maximum saved addresses per account (enforced in UI and on save). */
 export const MAX_PROFILE_ADDRESSES = 3;
@@ -49,6 +50,7 @@ export function ProfileAddressDrawer({
 }: ProfileAddressDrawerProps) {
     const [isMobile, setIsMobile] = useState(false);
     const [form, setForm] = useState<ProfileAddressFormValues>(emptyForm);
+    const [postalCode, setPostalCode] = useState("");
     const [errors, setErrors] = useState<
         Partial<Record<keyof ProfileAddressFormValues, string>>
     >({});
@@ -72,6 +74,7 @@ export function ProfileAddressDrawer({
         } else {
             setForm(emptyForm());
         }
+        setPostalCode("");
         setErrors({});
     }, [isOpen, mode, address]);
 
@@ -134,6 +137,26 @@ export function ProfileAddressDrawer({
                     </SheetHeader>
 
                     <div className="mt-6 space-y-6 px-0">
+                        <div>
+                            <Label className="mb-2 block text-sm font-semibold text-secondary-000">
+                                Postal / Zip Code
+                            </Label>
+                            <PostalCodeAutocomplete
+                                value={postalCode}
+                                onChange={setPostalCode}
+                                onAddressSelect={(addr) =>
+                                    patchForm({
+                                        street: addr.street || form.street,
+                                        city: addr.city,
+                                        region: addr.state,
+                                    })
+                                }
+                                disabled={isSubmitting}
+                                placeholder="Type postal code to auto-fill address"
+                                inputClassName="h-12 w-full rounded-xl border border-accent-20 bg-white px-3 text-sm outline-none transition-colors focus:border-primary-100 disabled:opacity-50"
+                            />
+                        </div>
+
                         <div>
                             <Label className="mb-2 block text-sm font-semibold text-secondary-000">
                                 Label <span className="text-primary-100">*</span>

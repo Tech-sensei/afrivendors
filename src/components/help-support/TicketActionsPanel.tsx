@@ -7,15 +7,11 @@ import type { SupportTicketStatus } from "@/types/support";
 export function TicketActionsPanel({
   status,
   onEdit,
-  onMarkInProgress,
-  onMarkResolved,
   onReopen,
   onCloseTicket,
 }: {
   status: SupportTicketStatus;
   onEdit: () => void;
-  onMarkInProgress: () => void;
-  onMarkResolved: () => void;
   onReopen: () => void;
   onCloseTicket: () => void;
 }) {
@@ -34,27 +30,6 @@ export function TicketActionsPanel({
           >
             <Edit2 className="mr-2 h-4 w-4" />
             Edit ticket
-          </Button>
-        )}
-        {status === "open" && (
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 rounded-xl border-accent-20 font-unageo font-semibold"
-            onClick={onMarkInProgress}
-          >
-            Mark in progress
-          </Button>
-        )}
-        {(status === "open" ||
-          status === "in-progress" ||
-          status === "pending") && (
-          <Button
-            type="button"
-            className="h-11 rounded-xl bg-emerald-600 font-unageo font-semibold text-white hover:bg-emerald-600/90"
-            onClick={onMarkResolved}
-          >
-            Mark resolved
           </Button>
         )}
         {status === "resolved" && (

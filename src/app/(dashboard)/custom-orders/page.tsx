@@ -289,9 +289,9 @@ export default function CustomOrdersPage() {
       status: "pending",
       createdAt: new Date().toLocaleDateString("en-GB", {
         month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
+          day: "numeric",
+          year: "numeric",
+        }),
     };
     setOrders((prev) =>
       prev.map((o) =>
@@ -406,9 +406,9 @@ export default function CustomOrdersPage() {
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="font-unbounded text-[28px] leading-8 font-semibold text-secondary-200">
+        <h1 className="font-unbounded text-[28px] leading-8 font-semibold text-secondary-200">
             Custom orders
-          </h1>
+        </h1>
           <p className="mt-2 max-w-xl text-sm text-accent-80">
             Pick a category, describe what you need, and every vendor in that
             category can quote. Accept a quote and pay in one step, then track

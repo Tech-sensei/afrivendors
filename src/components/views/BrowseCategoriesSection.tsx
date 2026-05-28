@@ -1,27 +1,79 @@
 "use client";
-import { Sparkles, Scissors, UtensilsCrossed, PartyPopper, Briefcase, Dumbbell, Camera, Sofa, Palette } from "lucide-react";
+
+import { useMemo } from "react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
-import { Card, CardContent } from "../ui/card";
 import { useRouter } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { usePublicCategories } from "@/services/usePublicCategories";
+import { getCategoryIconComponent } from "@/lib/categoryIcons";
+import type { PublicCategory } from "@/types/category";
 
-const categories = [
-  { id: "wellness-beauty", name: "Wellness & Beauty", icon: Sparkles, count: 2 },
-  { id: "event-planning", name: "Event Planning & Decor", icon: PartyPopper, count: 4 },
-  { id: "food-catering", name: "Food & Catering", icon: UtensilsCrossed, count: 6 },
-  { id: "barbershop", name: "Barbershop", icon: Scissors, count: 2 },
-  { id: "corporate-services", name: "Corporate Services", icon: Briefcase, count: 2 },
-  { id: "fitness-wellness", name: "Fitness & Wellness", icon: Dumbbell, count: 1 },
-  { id: "photography-media", name: "Photography & Media", icon: Camera, count: 3 },
-  { id: "furniture", name: "Furniture & Woodwork", icon: Sofa, count: 1 },
-  { id: "interior-decor", name: "Interior Decor", icon: Palette, count: 1 },
-];
+const INITIAL_VISIBLE = 8;
 
-const BrowseCategoriesSection = () => {
-  const router = useRouter();
+function CategoryCard({
+  category,
+  index,
+  onNavigate,
+}: {
+  category: PublicCategory;
+  index: number;
+  onNavigate: (c: PublicCategory) => void;
+}) {
+  const Icon = getCategoryIconComponent(category.iconName);
+  const count = category.vendorCount ?? 0;
+
   return (
-    <section className="py-12 sm:py-16 md:py-20 lg:py-24 px-6 sm:px-8 lg:px-24 bg-white">
-      <div className="max-w-[1440px] mx-auto">
-        {/* Header */}
+    <motion.div
+      key={category.id}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.4), ease: "easeOut" }}
+    >
+      <Card
+        className="cursor-pointer py-0 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-3xl border-2 border-[#EFE6E1] shadow-[0_2px_8px_rgba(35,19,5,0.06)]"
+        onClick={() => onNavigate(category)}
+      >
+        <CardContent className="flex flex-col items-center gap-3 p-4 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(188,109,57,0.1)]">
+            <Icon className="h-8 w-8 text-primary-100" strokeWidth={1.75} />
+          </div>
+          <div>
+            <h4 className="mb-1 text-base font-semibold text-secondary-000">{category.name}</h4>
+            <p className="text-xs tracking-[-0.16px] text-secondary-100">
+              {count} vendor{count !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+export default function BrowseCategoriesSection() {
+  const router = useRouter();
+  const { data: categories = [], isLoading, isError, refetch } = usePublicCategories();
+
+  const sorted = useMemo(
+    () =>
+      [...categories].sort((a, b) => {
+        const diff = (b.vendorCount ?? 0) - (a.vendorCount ?? 0);
+        return diff !== 0 ? diff : a.name.localeCompare(b.name);
+      }),
+    [categories]
+  );
+
+  const visible = sorted.slice(0, INITIAL_VISIBLE);
+  const hasMore = sorted.length > INITIAL_VISIBLE;
+
+  const goToBrowse = (category: PublicCategory) => {
+    router.push(`/categories?categoryId=${category.id}`);
+  };
+
+  return (
+    <section className="bg-white px-6 py-12 sm:px-8 sm:py-16 md:py-20 lg:px-24 lg:py-24">
+      <div className="mx-auto max-w-[1440px]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -29,45 +81,59 @@ const BrowseCategoriesSection = () => {
           viewport={{ once: true }}
           className="mb-8"
         >
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold font-unbounded text-secondary-000 leading-[125%] mb-2">
+          <h2 className="mb-2 font-unbounded text-2xl font-semibold leading-[125%] text-secondary-000 md:text-3xl lg:text-4xl">
             Browse by Category
           </h2>
-          <p className="text-accent-80 text-base tracking-[-0.16px]">Find vendors in your preferred service category</p>
+          <p className="text-base tracking-[-0.16px] text-accent-80">
+            Find vendors in your preferred service category
+          </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
-          {categories.map((category, index) => {
-            const Icon = category.icon;
-            return (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05, ease: "easeOut" }}
-              >
-                <Card
-                  className=" py-0 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl rounded-3xl border-2 border-[#EFE6E1] shadow-[0_2px_8px_rgba(35,19,5,0.06)]"
+        {isLoading ? (
+          <div className="flex min-h-[200px] items-center justify-center rounded-3xl border border-[#EFE6E1] bg-accent-10/30 py-16">
+            <Loader2 className="h-10 w-10 animate-spin text-primary-100" aria-hidden />
+            <span className="sr-only">Loading categories</span>
+          </div>
+        ) : isError ? (
+          <div className="rounded-3xl border border-accent-30 bg-accent-10/50 px-6 py-12 text-center">
+            <p className="mb-3 font-unageo text-secondary-000">Couldn&apos;t load categories</p>
+            <Button type="button" variant="outline" className="rounded-xl" onClick={() => refetch()}>
+              Try again
+            </Button>
+          </div>
+        ) : sorted.length === 0 ? (
+          <p className="rounded-3xl border border-[#EFE6E1] py-12 text-center text-accent-80">
+            No categories available yet.
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4 lg:grid-cols-4">
+              {visible.map((category, index) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                  index={index}
+                  onNavigate={goToBrowse}
+                />
+              ))}
+            </div>
+
+            {hasMore && (
+              <div className="mt-8 w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 w-full rounded-2xl border-2 border-[#EFE6E1] font-semibold text-secondary-000 hover:bg-primary-300/20"
                   onClick={() => router.push("/categories")}
                 >
-                  <CardContent className="flex flex-col items-center text-center gap-3 p-4">
-                    <div className="h-16 w-16 rounded-full flex items-center justify-center bg-[rgba(188, 109, 57, 0.1)]">
-                      <Icon className="h-8 w-8 text-primary-100" />
-                    </div>
-                    <div>
-                      <h4 className="mb-1 font-semibold  text-secondary-000 text-base">{category.name}</h4>
-                      <p className="text-secondary-100 text-xs tracking-[-0.16px]">
-                        {category.count} vendor{category.count !== 1 ? "s" : ""}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
+                  Browse all categories
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </section>
   );
-};
-
-export default BrowseCategoriesSection;
+}

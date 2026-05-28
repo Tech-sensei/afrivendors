@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import signUpChoiceImg from "../../../../public/assets/images/signUpChoiceImg.png"
 import type { OptionCardProps } from '@/types/ui';
+import { VENDOR_TRIAL_MONTHS } from '@/data/vendorSubscription';
 
 // No useState — hover/focus effects handled entirely with CSS (zero re-renders)
 const OptionCard = ({ title, description, onClick }: OptionCardProps) => (
@@ -50,13 +51,13 @@ const SignUpChoice = () => {
                         <div className="flex flex-col gap-6">
                             <OptionCard
                                 title="For Customers"
-                                description="Search, book services as a customer, sign up here"
-                                onClick={() => router.push('/sign-in')}
+                                description="Search, book services, and manage appointments"
+                                onClick={() => router.push('/sign-up')}
                             />
                             <OptionCard
                                 title="For Vendors"
-                                description="View and manage bookings, earnings and chats"
-                                onClick={() => window.open('https://afrivendors-vendor-dashboard.vercel.app/', '_blank')}
+                                description={`List your business — ${VENDOR_TRIAL_MONTHS} months free, then flexible billing`}
+                                onClick={() => router.push('/vendor/register')}
                             />
                         </div>
                     </div>
@@ -67,7 +68,7 @@ const SignUpChoice = () => {
                             © {new Date().getFullYear()} Afrivendors.co.uk ltd
                         </p>
                         <button
-                            onClick={() => router.push('/support')}
+                            onClick={() => router.push('/help-and-support')}
                             className="text-base leading-5 font-semibold text-secondary-000 bg-transparent border-none cursor-pointer underline min-w-11 min-h-11 p-3 transition-opacity duration-200 ease-out hover:opacity-70"
                         >
                             Help & Support

@@ -8,15 +8,11 @@ import {
     Star,
     MapPin,
     Clock,
-    Phone,
-    Mail,
     Heart,
     Loader2,
     Share2,
-    ChevronLeft,
     Check,
     FileText,
-    Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,7 +27,8 @@ import type { User } from "@/types/auth";
 import type { VendorDetailReview } from "@/types/vendor";
 import { ReviewForm } from "@/components/views/ReviewForm";
 import { ReviewsList } from "@/components/views/ReviewsList";
-import { VendorOpeningHours } from "@/components/views/VendorOpeningHours";
+import { VendorAboutTab } from "@/components/views/VendorAboutTab";
+import { VendorProfileBanner } from "@/components/views/VendorProfileBanner";
 
 function profileDisplayName(user: User | null | undefined) {
     if (!user) return "";
@@ -176,29 +173,12 @@ const VendorDetailPage = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            <div className="mx-auto py-4 px-4 md:px-6 lg:px-24 max-w-[1440px] w-full">
-                <Button
-                    variant="ghost"
-                    onClick={() => router.push("/categories")}
-                    className="gap-2 text-sm font-semibold text-secondary-000 hover:bg-accent-10"
-                >
-                    <ChevronLeft className="h-4 w-4" />
-                    Back to Browse
-                </Button>
-            </div>
+            <VendorProfileBanner
+                imageSrc={vendor.bannerImage}
+                alt={`${vendor.name} banner`}
+            />
 
-            <section className="relative h-64 lg:h-96 overflow-hidden bg-accent-10 container">
-                <Image
-                    src={vendor.bannerImage}
-                    alt={vendor.name}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    priority
-                />
-            </section>
-
-            <section className="py-8 lg:py-12 px-4 md:px-6 lg:px-24">
+            <section className="py-6 lg:py-10 px-4 md:px-6 lg:px-24">
                 <div className="mx-auto max-w-[1440px]">
                     <div className="flex flex-col lg:flex-row gap-8">
                         <div className="flex-1">
@@ -338,55 +318,7 @@ const VendorDetailPage = () => {
                                 </TabsContent>
 
                                 <TabsContent value="about">
-                                    <Card className="rounded-2xl border border-accent-20 py-0">
-                                        <CardContent className="p-6 space-y-6">
-                                            <p className="text-base text-secondary-000 leading-relaxed">
-                                                {vendor.about}
-                                            </p>
-                                            <div className="space-y-3">
-                                                <div className="flex items-center gap-3">
-                                                    <MapPin className="h-5 w-5 text-accent-80" />
-                                                    <span className="text-sm text-secondary-000">
-                                                        {vendor.location}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <Phone className="h-5 w-5 text-accent-80" />
-                                                    <span className="text-sm text-secondary-000">
-                                                        {vendor.phoneNumber}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <Mail className="h-5 w-5 text-accent-80" />
-                                                    <span className="text-sm text-secondary-000">
-                                                        {vendor.email}
-                                                    </span>
-                                                </div>
-                                                {vendor.website && (
-                                                    <div className="flex items-center gap-3">
-                                                        <Globe className="h-5 w-5 text-accent-80" />
-                                                        <a
-                                                            href={vendor.website}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="text-sm text-primary-100 underline-offset-2 hover:underline"
-                                                        >
-                                                            {vendor.website}
-                                                        </a>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="pt-4 border-t border-accent-20">
-                                                <h4 className="mb-4 text-base font-semibold text-secondary-000">
-                                                    Opening hours
-                                                </h4>
-                                                <VendorOpeningHours
-                                                    schedule={vendor.openingHoursSchedule}
-                                                    fallbackText={vendor.openingHours}
-                                                />
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                    <VendorAboutTab vendor={vendor} />
                                 </TabsContent>
 
                                 <TabsContent value="reviews" className="space-y-6">

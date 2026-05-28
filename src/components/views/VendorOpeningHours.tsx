@@ -21,14 +21,31 @@ interface VendorOpeningHoursProps {
   schedule: VendorOpeningHoursDay[];
   /** Shown when the schedule is empty (e.g. API returned no rows). */
   fallbackText?: string;
+  /** `embedded` drops the outer card chrome when nested in another panel. */
+  variant?: "card" | "embedded";
 }
 
-export function VendorOpeningHours({ schedule, fallbackText }: VendorOpeningHoursProps) {
+export function VendorOpeningHours({
+  schedule,
+  fallbackText,
+  variant = "card",
+}: VendorOpeningHoursProps) {
   const todayKey = getTodayDayKey();
+
+  const shellClass =
+    variant === "embedded"
+      ? "overflow-hidden rounded-xl border border-accent-20 bg-white"
+      : "overflow-hidden rounded-xl border border-accent-20 bg-primary-300/5";
 
   if (!schedule.length) {
     return (
-      <div className="rounded-xl border border-accent-20 bg-primary-300/10 px-4 py-3">
+      <div
+        className={
+          variant === "embedded"
+            ? "rounded-xl border border-accent-20 bg-[#FAF7F5] px-4 py-3"
+            : "rounded-xl border border-accent-20 bg-primary-300/10 px-4 py-3"
+        }
+      >
         <p className="text-sm text-secondary-000">
           {fallbackText?.trim() || "Hours unavailable"}
         </p>
@@ -37,7 +54,7 @@ export function VendorOpeningHours({ schedule, fallbackText }: VendorOpeningHour
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-accent-20 bg-primary-300/5">
+    <div className={shellClass}>
       <div className="border-b border-accent-20 bg-primary-300/10 px-4 py-3">
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-primary-100" />

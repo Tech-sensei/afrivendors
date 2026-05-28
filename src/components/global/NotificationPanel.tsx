@@ -15,7 +15,6 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { buildClientNotificationHref } from "@/lib/notificationRoutes";
@@ -128,9 +127,9 @@ export function NotificationPanel({
               stiffness: 300,
               opacity: { duration: 0.2 },
             }}
-            className="fixed right-0 top-20 z-50 flex h-[calc(100vh-60px)] w-full flex-col rounded-tl-2xl rounded-bl-2xl bg-white shadow-lg sm:w-[420px] lg:h-[calc(100vh-90px)]"
+            className="fixed right-0 top-20 z-50 flex h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] w-full flex-col overflow-hidden rounded-tl-2xl rounded-bl-2xl bg-white shadow-lg sm:w-[420px] lg:top-[5.625rem] lg:h-[calc(100vh-5.625rem)] lg:max-h-[calc(100vh-5.625rem)]"
           >
-            <div className="border-b border-accent-20 px-6 py-5">
+            <div className="shrink-0 border-b border-accent-20 px-6 py-5">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h3 className="text-xl font-semibold leading-[1.4] text-secondary-000">
@@ -169,7 +168,7 @@ export function NotificationPanel({
               )}
             </div>
 
-            <ScrollArea className="flex-1">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
               {isLoading && (
                 <div className="flex flex-col items-center gap-3 py-16">
                   <Loader2 className="h-8 w-8 animate-spin text-primary-100" />
@@ -314,7 +313,7 @@ export function NotificationPanel({
                   )}
                 </div>
               )}
-            </ScrollArea>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
