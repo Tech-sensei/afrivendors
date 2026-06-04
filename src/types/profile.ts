@@ -6,6 +6,7 @@ export interface ProfileAddress {
   street: string;
   city: string;
   region: string;
+  postCode: string;
   country?: string;
   isDefault: boolean;
 }
@@ -15,6 +16,7 @@ export interface ProfileAddressFormValues {
   street: string;
   city: string;
   region: string;
+  postCode: string;
 }
 
 export interface UpdateProfilePayload {
@@ -27,6 +29,7 @@ export interface UpdateProfilePayload {
 
 export interface AddAddressPayload {
   label: string;
+  postCode: string;
   streetAddress: string;
   city: string;
   state: string;

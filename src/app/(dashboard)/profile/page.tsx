@@ -51,7 +51,7 @@ const initialPersonal = {
 };
 
 function formatAddressLine(a: ProfileAddress) {
-    return [a.street, a.city, a.country].filter(Boolean).join(", ");
+    return [a.street, a.city, a.postCode, a.region, a.country].filter(Boolean).join(", ");
 }
 
 /** Profile API may return E.164 string or signup-style { code, number }. */
@@ -78,6 +78,7 @@ function mapApiEntryToProfile(entry: unknown): ProfileAddress | null {
         street: String(o.street ?? o.streetAddress ?? o.line1 ?? ""),
         city: String(o.city ?? ""),
         region: String(o.region ?? o.state ?? o.stateOrRegion ?? ""),
+        postCode: String(o.postCode ?? o.postcode ?? o.zipCode ?? o.zip ?? ""),
         country: String(o.country ?? ""),
         isDefault: Boolean(o.isDefault ?? o.is_default ?? o.default),
     };
@@ -274,6 +275,7 @@ export default function ProfilePage() {
     ) => {
         const payload = {
             label: profileLabelToApi(values.label),
+            postCode: values.postCode.trim(),
             streetAddress: values.street.trim(),
             city: values.city.trim(),
             state: values.region.trim(),

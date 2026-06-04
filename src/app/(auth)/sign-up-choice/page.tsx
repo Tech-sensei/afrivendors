@@ -47,17 +47,18 @@ const SignUpChoice = () => {
                             Sign up/log in
                         </h1>
 
+
                         {/* Option Cards */}
                         <div className="flex flex-col gap-6">
                             <OptionCard
                                 title="For Customers"
-                                description="Search, book services, and manage appointments"
-                                onClick={() => router.push('/sign-up')}
+                                description="Search, book services as a customer, sign up here"
+                                onClick={() => router.push('/sign-in')}
                             />
                             <OptionCard
                                 title="For Vendors"
-                                description={`List your business — ${VENDOR_TRIAL_MONTHS} months free, then flexible billing`}
-                                onClick={() => router.push('/vendor/register')}
+                                description="View and manage bookings, earnings and chats"
+                                onClick={() => window.open('https://afrivendors-vendor-dashboard.vercel.app/', '_blank')}
                             />
                         </div>
                     </div>

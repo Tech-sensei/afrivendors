@@ -38,6 +38,7 @@ const emptyForm = (): ProfileAddressFormValues => ({
     street: "",
     city: "",
     region: "",
+    postCode: "",
 });
 
 export function ProfileAddressDrawer({
@@ -50,7 +51,6 @@ export function ProfileAddressDrawer({
 }: ProfileAddressDrawerProps) {
     const [isMobile, setIsMobile] = useState(false);
     const [form, setForm] = useState<ProfileAddressFormValues>(emptyForm);
-    const [postalCode, setPostalCode] = useState("");
     const [errors, setErrors] = useState<
         Partial<Record<keyof ProfileAddressFormValues, string>>
     >({});
@@ -70,11 +70,11 @@ export function ProfileAddressDrawer({
                 street: address.street,
                 city: address.city,
                 region: address.region,
+                postCode: address.postCode,
             });
         } else {
             setForm(emptyForm());
         }
-        setPostalCode("");
         setErrors({});
     }, [isOpen, mode, address]);
 
@@ -139,22 +139,29 @@ export function ProfileAddressDrawer({
                     <div className="mt-6 space-y-6 px-0">
                         <div>
                             <Label className="mb-2 block text-sm font-semibold text-secondary-000">
-                                Postal / Zip Code
+                                Post code <span className="text-primary-100">*</span>
                             </Label>
                             <PostalCodeAutocomplete
-                                value={postalCode}
-                                onChange={setPostalCode}
+                                value={form.postCode}
+                                onChange={(val) => patchForm({ postCode: val })}
                                 onAddressSelect={(addr) =>
                                     patchForm({
                                         street: addr.street || form.street,
                                         city: addr.city,
                                         region: addr.state,
+                                        postCode: addr.postalCode,
                                     })
                                 }
                                 disabled={isSubmitting}
-                                placeholder="Type postal code to auto-fill address"
-                                inputClassName="h-12 w-full rounded-xl border border-accent-20 bg-white px-3 text-sm outline-none transition-colors focus:border-primary-100 disabled:opacity-50"
+                                error={errors.postCode}
+                                placeholder="Type post code to auto-fill address"
+                                inputClassName={`h-12 w-full rounded-xl border bg-white px-3 text-sm outline-none transition-colors focus:border-primary-100 disabled:opacity-50 ${
+                                    errors.postCode ? "border-red-500" : "border-accent-20"
+                                }`}
                             />
+                            {errors.postCode && (
+                                <p className="mt-1 text-sm text-red-600">{errors.postCode}</p>
+                            )}
                         </div>
 
                         <div>

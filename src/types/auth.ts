@@ -6,6 +6,7 @@ export interface AuthPhoneNumber {
 export interface Address {
   id: number;
   label: string;
+  postCode?: string;
   streetAddress: string;
   city: string;
   state: string;

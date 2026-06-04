@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from "react";
 import {
-  Plus, ArrowDownCircle, ArrowUpCircle, RotateCcw,
-  ChevronRight, Loader2, Eye, EyeOff,
+  Plus,
+  ChevronRight,
+  Loader2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,16 +19,16 @@ import type { Transaction } from "@/types/wallet";
 
 const LIMIT = 10;
 
-function getTransactionMeta(type: Transaction["type"]) {
+function getTypeLabel(type: Transaction["type"]) {
   switch (type) {
     case "wallet_top_up":
-      return { Icon: ArrowDownCircle, iconColor: "text-green-600", iconBg: "bg-green-50", credit: true };
+      return "Wallet top-up";
     case "appointment_payment":
-      return { Icon: ArrowUpCircle, iconColor: "text-red-600", iconBg: "bg-red-50", credit: false };
+      return "Appointment payment";
     case "refund":
-      return { Icon: RotateCcw, iconColor: "text-blue-600", iconBg: "bg-blue-50", credit: true };
+      return "Refund";
     default:
-      return { Icon: ArrowUpCircle, iconColor: "text-accent-60", iconBg: "bg-accent-10", credit: false };
+      return type;
   }
 }
 
@@ -39,18 +42,8 @@ function getStatusStyle(status: Transaction["status"]) {
   }
 }
 
-function getTitle(txn: Transaction) {
-  if (txn.type === "wallet_top_up") return "Wallet Top-up";
-  if (txn.vendor) return `${txn.vendor.firstName} ${txn.vendor.lastName}`;
-  return txn.description;
-}
-
-function getSubtitle(txn: Transaction) {
-  if (txn.appointment?.services.length) {
-    const s = txn.appointment.services;
-    return s.length === 1 ? s[0].serviceName : `${s[0].serviceName} +${s.length - 1} more`;
-  }
-  return txn.description;
+function isCredit(type: Transaction["type"]) {
+  return type === "wallet_top_up" || type === "refund";
 }
 
 export default function WalletPage() {
@@ -156,46 +149,37 @@ export default function WalletPage() {
         <>
           <div className="space-y-2">
             {allTransactions.map((txn) => {
-              const { Icon, iconColor, iconBg, credit } = getTransactionMeta(txn.type);
+              const credit = isCredit(txn.type);
               return (
-                <div
-                  key={txn.id}
-                  onClick={() => handleViewDetails(txn)}
-                  className="flex items-center gap-4 p-4 rounded-xl bg-white border border-accent-20 cursor-pointer hover:border-accent-40 hover:shadow-sm transition-all"
-                >
-                  <div className={`shrink-0 w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center`}>
-                    <Icon className={`h-6 w-6 ${iconColor}`} />
+              <div
+                key={txn.id}
+                onClick={() => handleViewDetails(txn)}
+                className="flex items-center gap-3 p-4 rounded-xl bg-white border border-accent-20 cursor-pointer hover:border-accent-40 hover:shadow-sm transition-all"
+              >
+                <div className="flex-1 min-w-0 space-y-2">
+                  <p className="text-sm font-semibold text-secondary-000 line-clamp-2">
+                    {txn.description}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge className="text-[10px] font-semibold capitalize border-0 px-2 py-0.5 bg-accent-10 text-accent-80">
+                      {getTypeLabel(txn.type)}
+                    </Badge>
+                    <Badge className={`text-[10px] font-semibold capitalize border-0 px-2 py-0.5 ${getStatusStyle(txn.status)}`}>
+                      {txn.status}
+                    </Badge>
                   </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3 mb-1">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-secondary-000 truncate">
-                          {getTitle(txn)}
-                        </p>
-                        <p className="text-xs text-accent-80 mt-0.5 truncate">
-                          {getSubtitle(txn)}
-                        </p>
-                      </div>
-                      <p className={`text-base font-bold whitespace-nowrap shrink-0 ${credit ? "text-green-600" : "text-red-600"}`}>
-                        {credit ? "+" : "-"}£{txn.amount.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs text-accent-60">
-                          {format(parseISO(txn.createdAt), "MMM d, yyyy")}
-                        </p>
-                        <span className="text-accent-40">•</span>
-                        <Badge className={`text-[10px] font-semibold capitalize border-0 px-2 py-0.5 ${getStatusStyle(txn.status)}`}>
-                          {txn.status}
-                        </Badge>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-accent-60" />
-                    </div>
-                  </div>
+                  <p className="text-xs text-accent-60">
+                    {format(parseISO(txn.createdAt), "MMM d, yyyy")}
+                  </p>
                 </div>
-              );
+                <div className="flex items-center gap-2 shrink-0">
+                  <p className={`text-base font-bold whitespace-nowrap ${credit ? "text-green-600" : "text-red-600"}`}>
+                    {credit ? "+" : "-"}£{txn.amount.toFixed(2)}
+                  </p>
+                  <ChevronRight className="h-4 w-4 text-accent-60" />
+                </div>
+              </div>
+            );
             })}
           </div>
 

@@ -15,6 +15,11 @@ export const profileAddressFormSchema = z.object({
     .trim()
     .min(1, "State / region is required")
     .max(120, "State / region is too long"),
+  postCode: z
+    .string()
+    .trim()
+    .min(1, "Post code is required")
+    .max(12, "Post code is too long"),
 });
 
 export type ProfileAddressFormValues = z.infer<typeof profileAddressFormSchema>;
