@@ -27,22 +27,21 @@ import {
   ExternalLink, RotateCcw, CreditCard, Loader2, Banknote, AlertTriangle,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import http from "@/lib/http";
-import { useCancelAppointment, useReleaseAppointmentFunds } from "@/services/useAppointments";
+import { useCancelAppointment, useReleaseAppointmentFunds, fetchUserAppointmentById } from "@/services/useAppointments";
 import {
   type Appointment,
   type AppointmentDetailsDrawerProps,
   canEscalateAppointmentDispute,
   canOpenAppointmentDispute,
   canReleaseAppointmentFunds,
+  canResolveDisputePayVendor,
   canRescheduleAppointment,
   isActiveBookingStatus,
+  isAppointmentDisputeEscalated,
   isAppointmentDisputed,
   isAppointmentFundsReleased,
   isCancelledStatus,
   isCompletedStatus,
-  normalizeAppointmentStatus,
-  normalizePaymentStatus,
   paymentStatusDisplayLabel,
 } from "@/types/appointments";
 import { formatVendorPrice } from "@/services/vendor";
@@ -120,20 +119,7 @@ export function AppointmentDetailsDrawer({
   // Fetch full detail when drawer is open
   const { data: detail, isLoading } = useQuery<Appointment>({
     queryKey: ["appointment-detail", appointment?.id],
-    queryFn: async () => {
-      const { data } = await http.get(`/users/appointments/${appointment!.id}`);
-      const row = (data?.data ?? data) as Appointment;
-      const dispute =
-        row.dispute && typeof row.dispute === "object" && "reason" in row.dispute
-          ? row.dispute
-          : null;
-      return {
-        ...row,
-        status: normalizeAppointmentStatus(String(row.status)),
-        paymentStatus: normalizePaymentStatus(String(row.paymentStatus ?? "pending")),
-        dispute,
-      };
-    },
+    queryFn: () => fetchUserAppointmentById(appointment!.id),
     enabled: isOpen && !!appointment?.id,
     staleTime: 30_000,
   });
@@ -151,9 +137,11 @@ export function AppointmentDetailsDrawer({
     appt?.status !== undefined && isCancelledStatus(appt.status);
   const fundsReleased = appt ? isAppointmentFundsReleased(appt) : false;
   const disputed = appt ? isAppointmentDisputed(appt) : false;
+  const disputeEscalated = appt ? isAppointmentDisputeEscalated(appt.dispute) : false;
   const canReleaseFunds = appt ? canReleaseAppointmentFunds(appt) : false;
   const canDispute = appt ? canOpenAppointmentDispute(appt) : false;
   const canEscalate = appt ? canEscalateAppointmentDispute(appt) : false;
+  const canPayVendor = appt ? canResolveDisputePayVendor(appt) : false;
   const canReschedule = appt ? canRescheduleAppointment(appt) : false;
 
   const vendorName  = appt ? `${appt.vendor.firstName} ${appt.vendor.lastName}` : "";
@@ -163,6 +151,7 @@ export function AppointmentDetailsDrawer({
     appt?.paymentMethod === "online" ? "Paid Online" : "Wallet";
 
   const paymentStatusStyle =
+    disputeEscalated ? "bg-blue-100 text-blue-800" :
     disputed ? "bg-amber-100 text-amber-900" :
     appt?.paymentStatus === "released" ? "bg-slate-100 text-slate-700" :
     appt?.paymentStatus === "disputed" ? "bg-amber-100 text-amber-900" :
@@ -305,11 +294,15 @@ export function AppointmentDetailsDrawer({
             )}
 
             {disputed && appt.dispute?.reason && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3">
-                <p className="text-xs font-semibold text-amber-900">Dispute reason</p>
+              <div className={`rounded-xl border px-4 py-3 ${disputeEscalated ? "border-blue-200 bg-blue-50/80" : "border-amber-200 bg-amber-50/80"}`}>
+                <p className={`text-xs font-semibold ${disputeEscalated ? "text-blue-900" : "text-amber-900"}`}>
+                  {disputeEscalated ? "Escalated to Afrivendors" : "Dispute reason"}
+                </p>
                 <p className="mt-1 text-sm text-secondary-000">{appt.dispute.reason}</p>
                 <p className="mt-2 text-xs text-accent-80">
-                  Message the vendor to resolve together, or pay the vendor if you have agreed.
+                  {disputeEscalated
+                    ? "Afrivendors is reviewing this dispute and will decide on the payout. You can still message the vendor."
+                    : "Message the vendor to resolve together, pay the vendor if you have agreed, or escalate to Afrivendors."}
                 </p>
               </div>
             )}
@@ -330,15 +323,17 @@ export function AppointmentDetailsDrawer({
           ) : isCompleted ? (
             disputed ? (
               <>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    className="min-w-0 w-full gap-2 bg-primary-100 hover:bg-[#a65620] text-white h-11 rounded-xl shadow-md font-medium cursor-pointer"
-                    disabled={!appt || isLoading}
-                    onClick={() => appt && onPayVendor?.(appt)}
-                  >
-                    <Banknote className="h-4 w-4 shrink-0" />
-                    <span className="truncate">Pay vendor</span>
-                  </Button>
+                <div className={`grid gap-3 ${canPayVendor ? "grid-cols-2" : "grid-cols-1"}`}>
+                  {canPayVendor && (
+                    <Button
+                      className="min-w-0 w-full gap-2 bg-primary-100 hover:bg-[#a65620] text-white h-11 rounded-xl shadow-md font-medium cursor-pointer"
+                      disabled={!appt || isLoading}
+                      onClick={() => appt && onPayVendor?.(appt)}
+                    >
+                      <Banknote className="h-4 w-4 shrink-0" />
+                      <span className="truncate">Pay vendor</span>
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     className="min-w-0 w-full gap-2 text-accent-100 h-11 rounded-xl cursor-pointer"

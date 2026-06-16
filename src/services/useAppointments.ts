@@ -32,6 +32,8 @@ function normalizeDisputeFromApi(raw: unknown): Appointment["dispute"] {
     resolver: (d.resolver as string | null) ?? null,
     resolvedBy: d.resolvedBy != null ? Number(d.resolvedBy) : null,
     resolvedAt: (d.resolvedAt as string | null) ?? null,
+    escalatedBy: d.escalatedBy != null ? String(d.escalatedBy) : null,
+    escalatedAt: (d.escalatedAt as string | null) ?? null,
     createdAt: String(d.createdAt ?? ""),
     updatedAt: String(d.updatedAt ?? ""),
   };
@@ -204,20 +206,13 @@ export function useEscalateAppointmentDispute() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      appointmentId,
-      resolution,
-    }: {
-      appointmentId: number;
-      resolution: string;
-    }) => {
-      const { data } = await http.post(
-        `/users/appointments/${appointmentId}/dispute/escalate`,
-        { resolution }
+    mutationFn: async (appointmentId: number) => {
+      const { data } = await http.patch(
+        `/users/appointments/${appointmentId}/dispute/escalate`
       );
       return data;
     },
-    onSuccess: (_data, { appointmentId }) => {
+    onSuccess: (_data, appointmentId) => {
       toast.success("Escalated to Afrivendors. Our team will review and update you.");
       invalidateAppointmentLists(queryClient);
       queryClient.invalidateQueries({

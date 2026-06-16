@@ -11,6 +11,7 @@ import { RescheduleModal } from "@/components/appointments/RescheduleModal";
 import { MessageVendorDrawer } from "@/components/appointments/MessageVendorDrawer";
 import { OpenAppointmentDisputeDialog } from "@/components/appointments/OpenAppointmentDisputeDialog";
 import { DisputeResolutionDialog } from "@/components/appointments/DisputeResolutionDialog";
+import { EscalateDisputeDialog } from "@/components/appointments/EscalateDisputeDialog";
 import { AppointmentEmptyState } from "@/components/appointments/AppointmentEmptyState";
 import {
   useAppointments,
@@ -333,24 +334,18 @@ export default function AppointmentPage() {
         }}
       />
 
-      <DisputeResolutionDialog
+      <EscalateDisputeDialog
         open={isEscalateOpen}
         onOpenChange={setIsEscalateOpen}
-        title="Escalate to Afrivendors"
-        description="Tell us why you could not resolve this with the vendor. Our team will review and decide."
-        confirmLabel="Submit escalation"
         isPending={isEscalating}
-        onConfirm={(resolution) => {
+        onConfirm={() => {
           if (!escalateAppointment) return;
-          escalateDispute(
-            { appointmentId: escalateAppointment.id, resolution },
-            {
-              onSuccess: () => {
-                setIsEscalateOpen(false);
-                setEscalateAppointment(null);
-              },
-            }
-          );
+          escalateDispute(escalateAppointment.id, {
+            onSuccess: () => {
+              setIsEscalateOpen(false);
+              setEscalateAppointment(null);
+            },
+          });
         }}
       />
 

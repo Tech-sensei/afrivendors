@@ -99,6 +99,8 @@ export interface AppointmentDispute {
   resolver: string | null;
   resolvedBy: number | null;
   resolvedAt: string | null;
+  escalatedBy: string | null;
+  escalatedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -112,10 +114,20 @@ export function isAppointmentDisputeOpen(
 }
 
 /** Client may escalate when peer resolution failed (status still pending). */
+export function isAppointmentDisputeEscalated(
+  dispute: AppointmentDispute | null | undefined
+): boolean {
+  if (!dispute) return false;
+  if (dispute.escalatedBy != null || dispute.escalatedAt != null) return true;
+  const s = dispute.status.toLowerCase();
+  return s === "escalated" || dispute.resolver?.toLowerCase() === "admin";
+}
+
 export function canEscalateAppointmentDispute(appointment: {
   dispute?: AppointmentDispute | null;
 }): boolean {
   if (!isAppointmentDisputeOpen(appointment.dispute)) return false;
+  if (isAppointmentDisputeEscalated(appointment.dispute)) return false;
   const s = appointment.dispute!.status.toLowerCase();
   return s === "pending" || s === "open";
 }
@@ -125,7 +137,11 @@ export function canResolveDisputePayVendor(appointment: {
   paymentStatus: PaymentStatus;
   dispute?: AppointmentDispute | null;
 }): boolean {
-  return isAppointmentDisputeOpen(appointment.dispute) && appointment.paymentStatus === "paid";
+  return (
+    isAppointmentDisputeOpen(appointment.dispute) &&
+    appointment.paymentStatus === "paid" &&
+    !isAppointmentDisputeEscalated(appointment.dispute)
+  );
 }
 
 /** Completed booking with payment held — client may release if no open dispute. */
@@ -169,6 +185,9 @@ export function paymentStatusDisplayLabel(
   status: PaymentStatus,
   dispute?: AppointmentDispute | null
 ): string {
+  if (isAppointmentDisputeEscalated(dispute)) {
+    return "Under admin review";
+  }
   if (isAppointmentDisputeOpen(dispute)) {
     return "Dispute open";
   }
