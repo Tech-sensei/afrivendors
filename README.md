@@ -228,7 +228,7 @@ This project is proprietary and confidential.
 
 ## 📞 Support
 
-For support, please visit the Help & Support section in the dashboard or contact the development team at info@afrivendors.com.
+For support, please visit the Help & Support section in the dashboard or contact the development team at info@afrivendors.com
 
 ---
 
