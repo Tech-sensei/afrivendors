@@ -23,7 +23,6 @@ const NAV_LINKS = [
 ];
 
 import { buildClientNotificationHref } from "@/lib/notificationRoutes";
-import type { Notification } from "@/types/notifications";
 
 const Header = () => {
   const router = useRouter();
@@ -95,7 +94,7 @@ const Header = () => {
                           asChild
                         >
                           <Link
-                            href="/vendor/register"
+                            href="https://afrivendors-vendor-dashboard.vercel.app/"
                             className="text-secondary-000 font-semibold text-base transition-colors tracking-[-0.01em]"
                           >
                             Become a Vendor
@@ -168,7 +167,7 @@ const Header = () => {
               className="hidden lg:flex border-secondary-000 text-secondary-000 bg-white hover:bg-secondary-000 hover:text-white rounded-full transition-all duration-300"
               asChild
             >
-              <Link href="/vendor/register" className="text-secondary-000 font-semibold text-base transition-colors tracking-[-0.01em]">
+              <Link href="https://afrivendors-vendor-dashboard.vercel.app/" className="text-secondary-000 font-semibold text-base transition-colors tracking-[-0.01em]">
                 Become a Vendor
               </Link>
             </Button>
@@ -212,7 +211,11 @@ const Header = () => {
               </>
             ) : (
               /* Log In/Sign Up Button - Desktop */
-              <Button size="lg" className="hidden md:flex bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full" asChild>
+              <Button
+                size="lg"
+                className="hidden md:flex bg-primary-100 text-white hover:bg-primary-100/90 transition-colors rounded-full"
+                asChild
+              >
                 <Link
                   href="/sign-up-choice"
                   className="flex items-center gap-2 text-white font-semibold text-base transition-colors tracking-[-0.01em]"
@@ -248,7 +251,7 @@ const Header = () => {
         onConfirm={async () => {
           await logoutAsync();
           setIsLogoutModalOpen(false);
-          router.push('/');
+          router.push("/");
         }}
       />
     </header>

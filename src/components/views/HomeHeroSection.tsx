@@ -60,7 +60,9 @@ const HomeHeroSection = () => {
                 size="lg"
                 variant="outline"
                 className="transition-all duration-300 rounded-full px-8 h-14 text-base font-semibold bg-transparent border-2 border-secondary-000 text-secondary-000 hover:bg-secondary-000 hover:text-white hover:border-secondary-000 cursor-pointer w-full md:w-fit"
-                onClick={() => { }}
+                onClick={() => { 
+                  window.open("https://afrivendors-vendor-dashboard.vercel.app/", "_blank");
+                }}
               >
                 List Your Business
               </Button>

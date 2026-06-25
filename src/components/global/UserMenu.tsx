@@ -60,7 +60,7 @@ export function UserMenu({
         },
         {
             id: "dashboard-custom-orders",
-            label: "Custom Orders",
+            label: "Custom Requests",
             icon: FileText,
             page: "dashboard-custom-orders",
         },
@@ -171,8 +171,8 @@ export function UserMenu({
                         onLogout?.();
                     }}
                 >
-                    <LogOut className="mr-3 shrink-0 size-5 text-accent-80" strokeWidth={2} />
-                    <span className="text-base font-normal text-secondary-000">Log Out</span>
+                    <LogOut className="mr-3 shrink-0 size-5 text-red-600" strokeWidth={2} />
+                    <span className="text-base font-normal text-red-600">Log Out</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

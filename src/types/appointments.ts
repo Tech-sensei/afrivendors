@@ -120,7 +120,8 @@ export function isAppointmentDisputeEscalated(
   if (!dispute) return false;
   if (dispute.escalatedBy != null || dispute.escalatedAt != null) return true;
   const s = dispute.status.toLowerCase();
-  return s === "escalated" || dispute.resolver?.toLowerCase() === "admin";
+  const resolverKey = String(dispute.resolver ?? "").toLowerCase();
+  return s === "escalated" || resolverKey === "admin";
 }
 
 export function canEscalateAppointmentDispute(appointment: {

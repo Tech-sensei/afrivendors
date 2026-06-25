@@ -1,3 +1,5 @@
+import type { OrderDispute } from "@/types/dispute";
+
 export type CustomOrderStatus =
   | "draft"
   | "submitted"
@@ -57,29 +59,27 @@ export interface CustomOrder {
   createdAt: string;
   quotes: CustomOrderQuote[];
   acceptedQuoteId?: string;
-  paymentStatus?: "unpaid" | "paid" | "refunded";
+  paymentStatus?: "unpaid" | "paid" | "refunded" | "released" | "disputed";
   paymentMethod?: "online" | "wallet";
+  dispute?: OrderDispute | null;
   scheduledAt?: string;
   notes?: string;
   timeline: CustomOrderTimelineEvent[];
 }
 
 export interface CustomOrderDraft {
+  /** Maps to `requestTitle` */
   title: string;
-  category: string;
-  description: string;
-  attachments: string[];
-  preferredDate: string;
-  isFlexibleDates: boolean;
-  flexibleStart: string;
-  flexibleEnd: string;
-  preferredTime: string;
+  /** Maps to `categoryId` */
+  categoryId: number | null;
   budget: string;
+  date: string;
+  time: string;
   location: string;
-  customerName: string;
-  urgency: "normal" | "priority";
-  allowMultipleQuotes: boolean;
-  agreeToTerms: boolean;
+  priority: "low" | "medium" | "high";
+  description: string;
+  imageUrl: string;
+  image: File | null;
 }
 
 export type CustomOrderTabId =

@@ -12,9 +12,9 @@ const FOOTER_SECTIONS = {
     { label: "Blog", href: "/blog" },
   ],
   forVendors: [
-    { label: "Become a vendor", href: "/vendor/register" },
+    { label: "Become a vendor", href: "https://afrivendors-vendor-dashboard.vercel.app/", target: "_blank" },
     { label: "Pricing", href: "/pricing" },
-    { label: "Vendor programme", href: "/vendor/register" },
+    { label: "Vendor programme", href: "https://afrivendors-vendor-dashboard.vercel.app/", target: "_blank" },
   ],
   legal: [
     { label: "Privacy Policy", href: "/privacy-policy" },

@@ -1,12 +1,10 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
-import { MapPin, PoundSterling } from "lucide-react";
+import type { ChangeEvent, Dispatch, SetStateAction } from "react";
+import { ImagePlus, MapPin, PoundSterling } from "lucide-react";
 import { Drawer, DrawerSection } from "@/app/(dashboard)/Drawer";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -16,8 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { MockVendor } from "@/types/misc";
 import type { CustomOrderDraft } from "@/types/customOrders";
+import type { PublicCategory } from "@/types/category";
 import { formField } from "./form-field-styles";
 import { cn } from "@/lib/utils";
 
@@ -27,8 +25,8 @@ type Props = {
   isEditMode: boolean;
   formData: CustomOrderDraft;
   setFormData: Dispatch<SetStateAction<CustomOrderDraft>>;
-  categories: string[];
-  vendorsInCategory: MockVendor[];
+  categories: PublicCategory[];
+  selectedCategoryVendorCount: number;
   onSubmit: () => void;
   isValid: boolean;
   fieldErrors?: Partial<Record<keyof CustomOrderDraft, string>>;
@@ -41,7 +39,7 @@ export function ServiceFormEditorDrawer({
   formData,
   setFormData,
   categories,
-  vendorsInCategory,
+  selectedCategoryVendorCount,
   onSubmit,
   isValid,
   fieldErrors = {},
@@ -50,6 +48,15 @@ export function ServiceFormEditorDrawer({
     fieldErrors[key] ? (
       <p className="mt-1 font-unageo text-sm text-red-600">{fieldErrors[key]}</p>
     ) : null;
+
+  const selectedCategoryName =
+    categories.find((item) => item.id === formData.categoryId)?.name ?? "";
+
+  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setFormData({ ...formData, image: file, imageUrl: "" });
+  };
+
   return (
     <Drawer
       open={open}
@@ -88,7 +95,7 @@ export function ServiceFormEditorDrawer({
         <div className="space-y-4">
           <div>
             <Label htmlFor="title" className={formField.label}>
-              Request Title *
+              Request title *
             </Label>
             <Input
               id="title"
@@ -96,7 +103,7 @@ export function ServiceFormEditorDrawer({
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              placeholder="e.g., Box Braids for Birthday Event"
+              placeholder="e.g. Wedding makeup and gele styling"
               className={formField.input}
             />
             {err("title")}
@@ -107,11 +114,11 @@ export function ServiceFormEditorDrawer({
               Category *
             </Label>
             <Select
-              value={formData.category}
+              value={formData.categoryId ? String(formData.categoryId) : ""}
               onValueChange={(value) => {
                 setFormData({
                   ...formData,
-                  category: value,
+                  categoryId: Number(value),
                 });
               }}
             >
@@ -120,22 +127,21 @@ export function ServiceFormEditorDrawer({
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
+                  <SelectItem key={cat.id} value={String(cat.id)}>
+                    {cat.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {err("category")}
-            {formData.category ? (
+            {err("categoryId")}
+            {formData.categoryId ? (
               <p className={cn(formField.hint, "mt-2")}>
                 Your request will be sent to all{" "}
                 <span className="font-semibold text-secondary-000">
-                  {vendorsInCategory.length} vendor
-                  {vendorsInCategory.length !== 1 ? "s" : ""}
+                  {selectedCategoryVendorCount} vendor
+                  {selectedCategoryVendorCount !== 1 ? "s" : ""}
                 </span>{" "}
-                in {formData.category}. Describe exactly what you need below —
-                no fixed service menu required.
+                in {selectedCategoryName}.
               </p>
             ) : (
               <p className={formField.hint}>
@@ -144,123 +150,59 @@ export function ServiceFormEditorDrawer({
               </p>
             )}
           </div>
-        </div>
-      </DrawerSection>
 
-      <DrawerSection title="What you need">
-        <div>
-          <Label htmlFor="description" className={formField.label}>
-            Description & Scope *
-          </Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            placeholder="Describe what you need in detail..."
-            rows={4}
-            className={formField.textarea}
-          />
-          <p className={formField.hint}>
-            Be specific about your requirements, preferences, and any special
-            considerations
-          </p>
-          {err("description")}
+          <div>
+            <Label htmlFor="description" className={formField.label}>
+              Description
+            </Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              placeholder="Describe what you need in detail..."
+              rows={4}
+              className={formField.textarea}
+            />
+            {err("description")}
+          </div>
         </div>
       </DrawerSection>
 
       <DrawerSection title="Schedule">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Checkbox
-              id="flexibleDates"
-              checked={formData.isFlexibleDates}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, isFlexibleDates: !!checked })
-              }
-            />
-            <Label htmlFor="flexibleDates" className={formField.labelInline}>
-              I have flexible dates
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="date" className={formField.label}>
+              Date *
             </Label>
+            <Input
+              id="date"
+              type="date"
+              value={formData.date}
+              onChange={(e) =>
+                setFormData({ ...formData, date: e.target.value })
+              }
+              className={formField.input}
+            />
+            {err("date")}
           </div>
-
-          {formData.isFlexibleDates ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="flexibleStart" className={formField.label}>
-                  Start Date *
-                </Label>
-                <Input
-                  id="flexibleStart"
-                  type="date"
-                  value={formData.flexibleStart}
-                  onChange={(e) =>
-                    setFormData({ ...formData, flexibleStart: e.target.value })
-                  }
-                  className={formField.input}
-                />
-              </div>
-              <div>
-                <Label htmlFor="flexibleEnd" className={formField.label}>
-                  End Date *
-                </Label>
-                <Input
-                  id="flexibleEnd"
-                  type="date"
-                  value={formData.flexibleEnd}
-                  onChange={(e) =>
-                    setFormData({ ...formData, flexibleEnd: e.target.value })
-                  }
-                  className={formField.input}
-                />
-              </div>
-            </div>
-          ) : (
-            <div>
-              <Label htmlFor="preferredDate" className={formField.label}>
-                Preferred Date *
-              </Label>
-              <Input
-                id="preferredDate"
-                type="date"
-                value={formData.preferredDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, preferredDate: e.target.value })
-                }
-                className={formField.input}
-              />
-            </div>
-          )}
 
           <div>
-            <Label htmlFor="preferredTime" className={formField.label}>
-              Preferred Time Window *
+            <Label htmlFor="time" className={formField.label}>
+              Time *
             </Label>
-            <Select
-              value={formData.preferredTime}
-              onValueChange={(value) =>
-                setFormData({ ...formData, preferredTime: value })
+            <Input
+              id="time"
+              type="time"
+              value={formData.time}
+              onChange={(e) =>
+                setFormData({ ...formData, time: e.target.value })
               }
-            >
-              <SelectTrigger
-                id="preferredTime"
-                className={formField.selectTrigger}
-              >
-                <SelectValue placeholder="Select time window" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Morning">Morning (8 AM - 12 PM)</SelectItem>
-                <SelectItem value="Afternoon">
-                  Afternoon (12 PM - 5 PM)
-                </SelectItem>
-                <SelectItem value="Evening">Evening (5 PM - 9 PM)</SelectItem>
-                <SelectItem value="Flexible">Flexible / Anytime</SelectItem>
-              </SelectContent>
-            </Select>
-            {err("preferredTime")}
+              className={formField.input}
+            />
+            {err("time")}
           </div>
-          {err("preferredDate")}
         </div>
       </DrawerSection>
 
@@ -268,7 +210,7 @@ export function ServiceFormEditorDrawer({
         <div className="space-y-4">
           <div>
             <Label htmlFor="budget" className={formField.label}>
-              Estimated Budget (GBP) *
+              Budget *
             </Label>
             <div className="relative">
               <PoundSterling className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-accent-60" />
@@ -285,15 +227,12 @@ export function ServiceFormEditorDrawer({
                 className={cn(formField.input, "pl-10")}
               />
             </div>
-            <p className={formField.hint}>
-              Vendors will use this as guidance when preparing quotes
-            </p>
             {err("budget")}
           </div>
 
           <div>
             <Label htmlFor="location" className={formField.label}>
-              Service location *
+              Location
             </Label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-accent-60" />
@@ -309,86 +248,75 @@ export function ServiceFormEditorDrawer({
             </div>
             {err("location")}
           </div>
+
+          <div>
+            <Label htmlFor="priority" className={formField.label}>
+              Priority
+            </Label>
+            <Select
+              value={formData.priority}
+              onValueChange={(value: CustomOrderDraft["priority"]) =>
+                setFormData({ ...formData, priority: value })
+              }
+            >
+              <SelectTrigger id="priority" className={formField.selectTrigger}>
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
+            {err("priority")}
+          </div>
         </div>
       </DrawerSection>
 
-      <DrawerSection title="Contact & preferences">
+      <DrawerSection title="Image">
         <div className="space-y-4">
           <div>
-            <Label htmlFor="customerName" className={formField.label}>
-              Your Name *
+            <Label htmlFor="image" className={formField.label}>
+              Upload image
             </Label>
-            <Input
-              id="customerName"
-              value={formData.customerName}
-              onChange={(e) =>
-                setFormData({ ...formData, customerName: e.target.value })
-              }
-              placeholder="Enter your full name"
-              className={formField.input}
-            />
-            <p className={formField.hint}>
-              Vendors will contact you through chat for further details
-            </p>
-            {err("customerName")}
+            <div className="flex items-center gap-3">
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className={formField.input}
+              />
+              <ImagePlus className="h-5 w-5 shrink-0 text-accent-60" />
+            </div>
+            {formData.image ? (
+              <p className={cn(formField.hint, "mt-2")}>{formData.image.name}</p>
+            ) : null}
+            {err("image")}
           </div>
 
           <div>
-            <Label className={formField.label}>Urgency Level</Label>
-            <RadioGroup
-              value={formData.urgency}
-              onValueChange={(value: "normal" | "priority") =>
-                setFormData({ ...formData, urgency: value })
-              }
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="normal" id="normal" />
-                <Label htmlFor="normal" className={formField.labelInline}>
-                  Normal
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="priority" id="priority" />
-                <Label htmlFor="priority" className={formField.labelInline}>
-                  Priority
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Checkbox
-              id="allowMultipleQuotes"
-              checked={formData.allowMultipleQuotes}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, allowMultipleQuotes: !!checked })
-              }
-            />
-            <Label
-              htmlFor="allowMultipleQuotes"
-              className={formField.labelInline}
-            >
-              Allow multiple quotes from different vendors
+            <Label htmlFor="imageUrl" className={formField.label}>
+              Image URL
             </Label>
+            <Input
+              id="imageUrl"
+              type="url"
+              value={formData.imageUrl}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  imageUrl: e.target.value,
+                  image: null,
+                })
+              }
+              placeholder="https://..."
+              className={formField.input}
+              disabled={Boolean(formData.image)}
+            />
+            {err("imageUrl")}
           </div>
         </div>
-      </DrawerSection>
-
-      <DrawerSection>
-        <div className="flex items-start gap-3">
-          <Checkbox
-            id="agreeToTerms"
-            checked={formData.agreeToTerms}
-            onCheckedChange={(checked) =>
-              setFormData({ ...formData, agreeToTerms: !!checked })
-            }
-          />
-          <Label htmlFor="agreeToTerms" className={formField.labelInline}>
-            I agree to receive quotes and communications from the selected
-            vendor regarding this custom order
-          </Label>
-        </div>
-        {err("agreeToTerms")}
       </DrawerSection>
     </Drawer>
   );

@@ -20,7 +20,7 @@ const DASHBOARD_TABS = [
     { id: 'dashboard-messages', label: 'Messages', icon: MessageCircle, page: '/messages' },
     { id: 'dashboard-wallet', label: 'Wallet', icon: Wallet, page: '/wallet' },
     { id: 'dashboard-favourites', label: 'Favourites', icon: Heart, page: '/favourites' },
-    { id: 'dashboard-custom-orders', label: 'Custom Orders', icon: FileText, page: '/custom-orders' },
+    { id: 'dashboard-custom-orders', label: 'Custom Requests', icon: FileText, page: '/custom-orders' },
     { id: 'dashboard-settings', label: 'Settings', icon: Settings, page: '/settings' },
 ];
 

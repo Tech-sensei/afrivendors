@@ -9,13 +9,12 @@ import { VendorTrialHighlight } from "@/components/vendor-subscription/VendorTri
 import { VendorVisibilityComparison } from "@/components/vendor-subscription/VendorVisibilityComparison";
 import { VendorBillingPlans } from "@/components/vendor-subscription/VendorBillingPlans";
 import { VendorProgrammeFAQ } from "@/components/vendor-subscription/VendorProgrammeFAQ";
-import { VENDOR_TRIAL_MONTHS, type VendorBillingIntervalId } from "@/data/vendorSubscription";
+import { VENDOR_TRIAL_MONTHS } from "@/data/vendorSubscription";
 import { getVendorAppUrl } from "@/lib/vendorAppUrl";
 
 const PricingPage = () => {
-  const goToVendorSignUp = (intervalId?: VendorBillingIntervalId) => {
-    const path = intervalId ? `/sign-up?plan=${intervalId}` : "/sign-up";
-    window.location.href = getVendorAppUrl(path);
+  const goToVendorDashboard = () => {
+    window.location.href = getVendorAppUrl();
   };
 
   return (
@@ -73,7 +72,7 @@ const PricingPage = () => {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button
               type="button"
-              onClick={() => goToVendorSignUp()}
+              onClick={goToVendorDashboard}
               className="h-12 rounded-full bg-primary-100 px-6 font-semibold text-white hover:bg-primary-100/90"
             >
               Start free trial
@@ -99,7 +98,7 @@ const PricingPage = () => {
         <section className="px-6 sm:px-8 lg:px-24">
           <div className="mx-auto max-w-6xl">
             <VendorBillingPlans
-              onSelectPlan={goToVendorSignUp}
+              onSelectPlan={goToVendorDashboard}
               ctaLabel="Register free"
               showFeatures
             />

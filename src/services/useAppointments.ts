@@ -2,6 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import http from "@/lib/http";
 import type { QueryClient } from "@tanstack/react-query";
+import { normalizeDisputeFromApi } from "@/lib/normalizeDispute";
+import {
+  useEscalateDispute,
+  useOpenDispute,
+  useResolveDisputeReleaseFunds,
+} from "@/services/useDisputes";
 import {
   normalizeAppointmentStatus,
   normalizePaymentStatus,
@@ -19,25 +25,6 @@ export type OpenAppointmentDisputePayload = {
 
 const APPOINTMENTS_QUERY_KEY = "user-appointments";
 const APPOINTMENTS_COUNTS_KEY = "user-appointments-counts";
-
-function normalizeDisputeFromApi(raw: unknown): Appointment["dispute"] {
-  if (!raw || typeof raw !== "object") return null;
-  const d = raw as Record<string, unknown>;
-  if (typeof d.reason !== "string") return null;
-  return {
-    id: Number(d.id),
-    reason: d.reason,
-    resolution: (d.resolution as string | null) ?? null,
-    status: String(d.status ?? "pending"),
-    resolver: (d.resolver as string | null) ?? null,
-    resolvedBy: d.resolvedBy != null ? Number(d.resolvedBy) : null,
-    resolvedAt: (d.resolvedAt as string | null) ?? null,
-    escalatedBy: d.escalatedBy != null ? String(d.escalatedBy) : null,
-    escalatedAt: (d.escalatedAt as string | null) ?? null,
-    createdAt: String(d.createdAt ?? ""),
-    updatedAt: String(d.updatedAt ?? ""),
-  };
-}
 
 function normalizeAppointmentFromApi(a: Appointment): Appointment {
   return {
@@ -171,88 +158,98 @@ export function useReleaseAppointmentFunds() {
 export function useResolveDisputePayVendor() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async ({
-      appointmentId,
-      resolution,
-    }: {
-      appointmentId: number;
-      resolution: string;
-    }) => {
-      const { data } = await http.post(
-        `/users/appointments/${appointmentId}/dispute/resolve/release-funds`,
-        { resolution }
-      );
-      return data;
-    },
-    onSuccess: (_data, { appointmentId }) => {
-      toast.success("Dispute closed. Funds have been released to the vendor.");
+  const mutation = useResolveDisputeReleaseFunds({
+    onSuccess: ({ orderId }) => {
       invalidateAppointmentLists(queryClient);
       queryClient.invalidateQueries({
-        queryKey: ["appointment-detail", appointmentId],
+        queryKey: ["appointment-detail", orderId],
       });
     },
-    onError: (error: { response?: { data?: { message?: string; responseMessage?: string } } }) => {
-      toast.error(
-        error?.response?.data?.responseMessage ??
-          error?.response?.data?.message ??
-          "Could not close dispute. Please try again."
-      );
-    },
   });
+
+  return {
+    ...mutation,
+    mutate: (
+      variables: { appointmentId: number; resolution: string },
+      options?: Parameters<typeof mutation.mutate>[1]
+    ) =>
+      mutation.mutate(
+        {
+          type: "appointment",
+          orderId: variables.appointmentId,
+          resolution: variables.resolution,
+        },
+        options
+      ),
+    mutateAsync: (variables: { appointmentId: number; resolution: string }) =>
+      mutation.mutateAsync({
+        type: "appointment",
+        orderId: variables.appointmentId,
+        resolution: variables.resolution,
+      }),
+  };
 }
 
 export function useEscalateAppointmentDispute() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (appointmentId: number) => {
-      const { data } = await http.patch(
-        `/users/appointments/${appointmentId}/dispute/escalate`
-      );
-      return data;
-    },
-    onSuccess: (_data, appointmentId) => {
-      toast.success("Escalated to Afrivendors. Our team will review and update you.");
+  const mutation = useEscalateDispute({
+    onSuccess: ({ orderId }) => {
       invalidateAppointmentLists(queryClient);
       queryClient.invalidateQueries({
-        queryKey: ["appointment-detail", appointmentId],
+        queryKey: ["appointment-detail", orderId],
       });
     },
-    onError: (error: { response?: { data?: { message?: string; responseMessage?: string } } }) => {
-      toast.error(
-        error?.response?.data?.responseMessage ??
-          error?.response?.data?.message ??
-          "Could not escalate. Please try again."
-      );
-    },
   });
+
+  return {
+    ...mutation,
+    mutate: (
+      appointmentId: number,
+      options?: Parameters<typeof mutation.mutate>[1]
+    ) =>
+      mutation.mutate(
+        { type: "appointment", orderId: appointmentId },
+        options
+      ),
+    mutateAsync: (appointmentId: number) =>
+      mutation.mutateAsync({ type: "appointment", orderId: appointmentId }),
+  };
 }
 
 export function useOpenAppointmentDispute() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (payload: OpenAppointmentDisputePayload) => {
-      const { data } = await http.post("/users/disputes", {
-        appointmentId: payload.appointmentId,
-        reason: payload.reason,
-      });
-      return data;
-    },
-    onSuccess: (_data, { appointmentId }) => {
-      toast.success(
-        "Dispute submitted. Message the vendor to resolve it, or wait for Afrivendors to review."
-      );
+  const mutation = useOpenDispute({
+    onSuccess: ({ orderId }) => {
       invalidateAppointmentLists(queryClient);
       queryClient.invalidateQueries({
-        queryKey: ["appointment-detail", appointmentId],
+        queryKey: ["appointment-detail", orderId],
       });
     },
-    onError: () => {
-      toast.error("Could not submit dispute. Please try again.");
-    },
   });
+
+  return {
+    ...mutation,
+    mutate: (
+      variables: OpenAppointmentDisputePayload,
+      options?: Parameters<typeof mutation.mutate>[1]
+    ) =>
+      mutation.mutate(
+        {
+          type: "appointment",
+          orderId: variables.appointmentId,
+          reason: variables.reason,
+        },
+        options
+      ),
+    mutateAsync: (variables: OpenAppointmentDisputePayload) =>
+      mutation.mutateAsync({
+        type: "appointment",
+        orderId: variables.appointmentId,
+        reason: variables.reason,
+      }),
+  };
 }
 
 export function useCancelAppointment() {
