@@ -101,9 +101,16 @@ function normalizeQuote(quote: CustomRequestQuoteApi): CustomOrderQuote {
     quote.totalAmount ?? quote.total ?? quote.amount ?? lineItems.reduce((sum, row) => sum + row.amount, 0)
   );
 
+  const vendorUserIdRaw = vendor?.id ?? quote.vendorId;
+  const vendorUserId =
+    vendorUserIdRaw != null && vendorUserIdRaw !== ""
+      ? Number(vendorUserIdRaw)
+      : null;
+
   return {
     id: String(quote.id),
     vendorId: String(quote.vendorId ?? vendor?.id ?? ""),
+    vendorUserId: Number.isFinite(vendorUserId) ? vendorUserId : null,
     vendorName:
       quote.vendorName ??
       vendor?.businessName ??

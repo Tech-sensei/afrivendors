@@ -5,20 +5,19 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatVendorPrice } from "@/services/vendor";
 import type { CustomOrder, CustomOrderQuote } from "@/types/customOrders";
-import { toast } from "sonner";
 
 type Props = {
   order: CustomOrder;
   quote: CustomOrderQuote;
   onAccept: (quoteId: string) => void;
-  onDecline: (quoteId: string) => void;
+  onMessage?: (quote: CustomOrderQuote) => void;
 };
 
 export function CustomOrderQuoteCard({
   order,
   quote,
   onAccept,
-  onDecline,
+  onMessage,
 }: Props) {
   const isAccepted = quote.status === "accepted";
   const isRejected =
@@ -85,32 +84,22 @@ export function CustomOrderQuoteCard({
       )}
 
       {canAct && (
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="grid grid-cols-2 gap-2 pt-1">
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="rounded-[18px] gap-1.5"
-            onClick={() => {
-              toast.info("Messaging will open when chat is linked to this order.");
-            }}
+            className="h-10 w-full rounded-[18px] gap-1.5"
+            disabled={quote.vendorUserId == null}
+            onClick={() => onMessage?.(quote)}
           >
             <MessageCircle className="h-3.5 w-3.5" />
             Message
           </Button>
           <Button
             type="button"
-            variant="outline"
             size="sm"
-            className="rounded-[18px]"
-            onClick={() => onDecline(quote.id)}
-          >
-            Decline
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            className="rounded-[18px] bg-primary-100 text-white hover:bg-primary-100/90"
+            className="h-10 w-full rounded-[18px] bg-primary-100 text-white hover:bg-primary-100/90"
             onClick={() => onAccept(quote.id)}
           >
             Accept quote

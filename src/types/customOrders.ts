@@ -24,6 +24,7 @@ export type CustomOrderQuoteStatus =
 export interface CustomOrderQuote {
   id: string;
   vendorId: string;
+  vendorUserId: number | null;
   vendorName: string;
   vendorAvatar?: string;
   totalAmount: number;
@@ -88,3 +89,12 @@ export type CustomOrderTabId =
   | "active"
   | "completed"
   | "cancelled";
+
+export type CustomOrderMessageContext = {
+  orderId: string;
+  orderTitle: string;
+  otherUserId: number;
+  contactName: string;
+  contactAvatar?: string;
+  contactSubtitle?: string;
+};

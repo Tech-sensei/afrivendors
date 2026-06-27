@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { AlertTriangle, Banknote, Loader2 } from "lucide-react";
+import { AlertTriangle, Banknote, Loader2, MessageCircle } from "lucide-react";
 import {
   Calendar,
   Clock,
@@ -14,7 +14,7 @@ import { Drawer, DrawerSection } from "@/app/(dashboard)/Drawer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import type { CustomOrder } from "@/types/customOrders";
+import type { CustomOrder, CustomOrderQuote } from "@/types/customOrders";
 import { CustomOrderStatusBadge } from "./CustomOrderStatusBadge";
 import { CustomOrderTimeline } from "./CustomOrderTimeline";
 import { CustomOrderQuoteCard } from "./CustomOrderQuoteCard";
@@ -59,11 +59,12 @@ type Props = {
   isLoading?: boolean;
   onCancel?: (orderId: string) => void;
   onAcceptQuote: (orderId: string, quoteId: string) => void;
-  onDeclineQuote: (orderId: string, quoteId: string) => void;
   onReleaseFunds: (orderId: string) => void;
   onOpenDispute?: (orderId: string) => void;
   onPayVendor?: (orderId: string) => void;
   onEscalateDispute?: (orderId: string) => void;
+  onMessageQuote?: (order: CustomOrder, quote: CustomOrderQuote) => void;
+  onMessageVendor?: (order: CustomOrder) => void;
   isReleasingFunds?: boolean;
   onSimulateQuote?: (orderId: string) => void;
 };
@@ -75,11 +76,12 @@ export function CustomOrderDetailDrawer({
   isLoading = false,
   onCancel,
   onAcceptQuote,
-  onDeclineQuote,
   onReleaseFunds,
   onOpenDispute,
   onPayVendor,
   onEscalateDispute,
+  onMessageQuote,
+  onMessageVendor,
   isReleasingFunds = false,
   onSimulateQuote,
 }: Props) {
@@ -114,6 +116,10 @@ export function CustomOrderDetailDrawer({
       order.status
     );
 
+  const canMessageAcceptedVendor =
+    acceptedQuote?.vendorUserId != null &&
+    !["cancelled", "expired", "draft"].includes(order.status);
+
   const dateDisplay = order.flexibleDates
     ? `${order.flexibleDates.start} to ${order.flexibleDates.end}`
     : order.preferredDate
@@ -140,6 +146,17 @@ export function CustomOrderDetailDrawer({
                   <span className="truncate">Pay vendor</span>
                 </Button>
               )}
+              {canMessageAcceptedVendor && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 min-w-0 w-full gap-2 rounded-[18px]"
+                  onClick={() => onMessageVendor?.(order)}
+                >
+                  <MessageCircle className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Message</span>
+                </Button>
+              )}
             </div>
             {canEscalate && (
               <Button
@@ -154,30 +171,53 @@ export function CustomOrderDetailDrawer({
             )}
           </>
         ) : !fundsReleased ? (
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              type="button"
-              className="h-11 min-w-0 w-full gap-2 rounded-[18px] bg-primary-100 text-white hover:bg-primary-100/90 disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={!canRelease || isReleasingFunds}
-              onClick={() => onReleaseFunds(order.id)}
-            >
-              <Banknote className="h-4 w-4 shrink-0" />
-              <span className="truncate">
-                {isReleasingFunds ? "Releasing…" : "Release funds"}
-              </span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11 min-w-0 w-full gap-2 rounded-[18px] border-amber-200 bg-amber-50/50 font-semibold text-amber-950 hover:bg-amber-100"
-              disabled={!canDispute}
-              onClick={() => onOpenDispute?.(order.id)}
-            >
-              <AlertTriangle className="h-4 w-4 shrink-0" />
-              <span className="truncate">Open dispute</span>
-            </Button>
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                type="button"
+                className="h-11 min-w-0 w-full gap-2 rounded-[18px] bg-primary-100 text-white hover:bg-primary-100/90 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={!canRelease || isReleasingFunds}
+                onClick={() => onReleaseFunds(order.id)}
+              >
+                <Banknote className="h-4 w-4 shrink-0" />
+                <span className="truncate">
+                  {isReleasingFunds ? "Releasing…" : "Release funds"}
+                </span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 min-w-0 w-full gap-2 rounded-[18px] border-amber-200 bg-amber-50/50 font-semibold text-amber-950 hover:bg-amber-100"
+                disabled={!canDispute}
+                onClick={() => onOpenDispute?.(order.id)}
+              >
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span className="truncate">Open dispute</span>
+              </Button>
+            </div>
+            {canMessageAcceptedVendor && (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 w-full gap-2 rounded-[18px]"
+                onClick={() => onMessageVendor?.(order)}
+              >
+                <MessageCircle className="h-4 w-4 shrink-0" />
+                <span className="truncate">Message vendor</span>
+              </Button>
+            )}
+          </>
         ) : null
+      ) : canMessageAcceptedVendor ? (
+        <Button
+          type="button"
+          variant="outline"
+          className="h-11 w-full gap-2 rounded-[18px]"
+          onClick={() => onMessageVendor?.(order)}
+        >
+          <MessageCircle className="h-4 w-4 shrink-0" />
+          <span className="truncate">Message vendor</span>
+        </Button>
       ) : null}
       {onCancel && canCancelOrder(order) && (
         <div className="flex flex-wrap gap-3">
@@ -319,7 +359,7 @@ export function CustomOrderDetailDrawer({
                 order={order}
                 quote={quote}
                 onAccept={(quoteId) => onAcceptQuote(order.id, quoteId)}
-                onDecline={(quoteId) => onDeclineQuote(order.id, quoteId)}
+                onMessage={(quote) => onMessageQuote?.(order, quote)}
               />
             ))}
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -22,7 +22,8 @@ import { CUSTOM_ORDER_TABS } from "@/lib/customOrderFilters";
 import {
   getAcceptedQuote,
 } from "@/lib/customOrderUi";
-import type { CustomOrder, CustomOrderDraft, CustomOrderQuote, CustomOrderTabId } from "@/types/customOrders";
+import type { CustomOrder, CustomOrderDraft, CustomOrderQuote, CustomOrderTabId, CustomOrderMessageContext } from "@/types/customOrders";
+import { MessageCustomOrderDrawer } from "@/components/custom-orders/MessageCustomOrderDrawer";
 import {
   validateCustomOrderDraft,
   zodFieldErrors,
@@ -85,6 +86,8 @@ export default function CustomOrdersPage() {
   const [isPayVendorOpen, setIsPayVendorOpen] = useState(false);
   const [escalateOrderId, setEscalateOrderId] = useState<number | null>(null);
   const [isEscalateOpen, setIsEscalateOpen] = useState(false);
+  const [messageContext, setMessageContext] = useState<CustomOrderMessageContext | null>(null);
+  const [isMessageOpen, setIsMessageOpen] = useState(false);
 
   const { data: categories = [], isLoading: categoriesLoading } = usePublicCategories();
   const { data: orders = [], isLoading: ordersLoading } = useCustomOrders(activeTab);
@@ -95,6 +98,7 @@ export default function CustomOrdersPage() {
   );
 
   const createOrder = useCreateCustomOrder();
+  const submitInFlightRef = useRef(false);
   const payOrder = usePayCustomOrder();
   const releaseFunds = useReleaseCustomOrderFunds();
   const { mutate: resolveDispute, isPending: isResolvingDispute } =
@@ -205,10 +209,6 @@ export default function CustomOrdersPage() {
     }
   };
 
-  const handleDeclineQuote = () => {
-    toast.message("Quote declined on this device. Refresh to see the latest quotes.");
-  };
-
   const handleReleaseFunds = async (orderId: string) => {
     try {
       await releaseFunds.mutateAsync(Number(orderId));
@@ -234,6 +234,38 @@ export default function CustomOrdersPage() {
   const handleEscalateDispute = (orderId: string) => {
     setEscalateOrderId(Number(orderId));
     setIsEscalateOpen(true);
+  };
+
+  const openMessageForQuote = (order: CustomOrder, quote: CustomOrderQuote) => {
+    if (quote.vendorUserId == null) return;
+    setMessageContext({
+      orderId: order.id,
+      orderTitle: order.title,
+      otherUserId: quote.vendorUserId,
+      contactName: quote.vendorName,
+      contactAvatar: quote.vendorAvatar,
+      contactSubtitle: order.category,
+    });
+    setIsMessageOpen(true);
+  };
+
+  const openMessageForAcceptedVendor = (order: CustomOrder) => {
+    const quote = getAcceptedQuote(order);
+    if (!quote?.vendorUserId) return;
+    setMessageContext({
+      orderId: order.id,
+      orderTitle: order.title,
+      otherUserId: quote.vendorUserId,
+      contactName: quote.vendorName,
+      contactAvatar: quote.vendorAvatar,
+      contactSubtitle: order.title,
+    });
+    setIsMessageOpen(true);
+  };
+
+  const closeMessageDrawer = () => {
+    setIsMessageOpen(false);
+    setMessageContext(null);
   };
 
   const invalidateCustomOrders = (orderId?: number) => {
@@ -263,8 +295,10 @@ export default function CustomOrdersPage() {
   };
 
   const handleSubmitForm = async () => {
+    if (submitInFlightRef.current || createOrder.isPending) return;
     if (!validateBeforeSubmit()) return;
 
+    submitInFlightRef.current = true;
     try {
       await createOrder.mutateAsync(formData);
       const categoryName =
@@ -277,6 +311,8 @@ export default function CustomOrdersPage() {
       toast.error("Could not submit request", {
         description: getCustomOrderErrorMessage(err),
       });
+    } finally {
+      submitInFlightRef.current = false;
     }
   };
 
@@ -369,12 +405,19 @@ export default function CustomOrdersPage() {
         order={selectedForDrawer}
         isLoading={detailLoading}
         onAcceptQuote={handleAcceptQuote}
-        onDeclineQuote={() => handleDeclineQuote()}
         onReleaseFunds={handleReleaseFunds}
         onOpenDispute={handleOpenDispute}
         onPayVendor={handlePayVendor}
         onEscalateDispute={handleEscalateDispute}
+        onMessageQuote={openMessageForQuote}
+        onMessageVendor={openMessageForAcceptedVendor}
         isReleasingFunds={releaseFunds.isPending}
+      />
+
+      <MessageCustomOrderDrawer
+        context={messageContext}
+        isOpen={isMessageOpen}
+        onClose={closeMessageDrawer}
       />
 
       <OpenDisputeDialog
@@ -446,6 +489,7 @@ export default function CustomOrdersPage() {
         selectedCategoryVendorCount={selectedCategoryVendorCount}
         onSubmit={handleSubmitForm}
         isValid={validateCustomOrderDraft(formData).success}
+        isSubmitting={isSubmitting}
         fieldErrors={formErrors}
       />
 

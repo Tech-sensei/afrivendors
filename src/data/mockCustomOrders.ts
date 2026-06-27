@@ -48,6 +48,7 @@ export const mockCustomOrders: CustomOrder[] = [
     quotes: [
       {
         id: "q-2a",
+        vendorUserId: null,
         vendorId: "chef-aisha-kitchen",
         vendorName: "Chef Aisha's Kitchen",
         totalAmount: 185,
@@ -63,6 +64,7 @@ export const mockCustomOrders: CustomOrder[] = [
       },
       {
         id: "q-2b",
+        vendorUserId: null,
         vendorId: "nile-feast-catering",
         vendorName: "Nile Feast Catering",
         totalAmount: 210,
@@ -76,6 +78,7 @@ export const mockCustomOrders: CustomOrder[] = [
       },
       {
         id: "q-2c",
+        vendorUserId: null,
         vendorId: "lagos-plate-co",
         vendorName: "Lagos Plate Co.",
         totalAmount: 195,
@@ -117,6 +120,7 @@ export const mockCustomOrders: CustomOrder[] = [
     quotes: [
       {
         id: "q-3a",
+        vendorUserId: null,
         vendorId: "sparkle-pro-clean",
         vendorName: "Sparkle Pro Clean",
         totalAmount: 115,
@@ -158,6 +162,7 @@ export const mockCustomOrders: CustomOrder[] = [
     quotes: [
       {
         id: "q-4a",
+        vendorUserId: null,
         vendorId: "glam-by-adanna",
         vendorName: "Glam by Adanna",
         totalAmount: 240,
@@ -200,6 +205,7 @@ export const mockCustomOrders: CustomOrder[] = [
     quotes: [
       {
         id: "q-5a",
+        vendorUserId: null,
         vendorId: "johnny-english-wellness",
         vendorName: "Johnny English",
         totalAmount: 72,
@@ -238,6 +244,7 @@ export const mockCustomOrders: CustomOrder[] = [
     quotes: [
       {
         id: "q-6a",
+        vendorUserId: null,
         vendorId: "fade-district",
         vendorName: "Fade District Barbershop",
         totalAmount: 60,
@@ -276,6 +283,7 @@ export const mockCustomOrders: CustomOrder[] = [
     quotes: [
       {
         id: "q-7a",
+        vendorUserId: null,
         vendorId: "sweet-layers-bakery",
         vendorName: "Sweet Layers Bakery",
         totalAmount: 320,
@@ -289,6 +297,7 @@ export const mockCustomOrders: CustomOrder[] = [
       },
       {
         id: "q-7b",
+        vendorUserId: null,
         vendorId: "oven-art-studio",
         vendorName: "Oven Art Studio",
         totalAmount: 340,

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent, Dispatch, SetStateAction } from "react";
-import { ImagePlus, MapPin, PoundSterling } from "lucide-react";
+import { ImagePlus, Loader2, MapPin, PoundSterling } from "lucide-react";
 import { Drawer, DrawerSection } from "@/app/(dashboard)/Drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ type Props = {
   selectedCategoryVendorCount: number;
   onSubmit: () => void;
   isValid: boolean;
+  isSubmitting?: boolean;
   fieldErrors?: Partial<Record<keyof CustomOrderDraft, string>>;
 };
 
@@ -42,6 +43,7 @@ export function ServiceFormEditorDrawer({
   selectedCategoryVendorCount,
   onSubmit,
   isValid,
+  isSubmitting = false,
   fieldErrors = {},
 }: Props) {
   const err = (key: keyof CustomOrderDraft) =>
@@ -77,16 +79,25 @@ export function ServiceFormEditorDrawer({
           </Button>
           <Button
             type="button"
-            disabled={!isValid}
+            disabled={!isValid || isSubmitting}
             className={cn(
               "h-11 rounded-[18px] px-6 font-semibold",
-              isValid
+              isValid && !isSubmitting
                 ? "bg-primary-100 text-white hover:bg-primary-100/90"
                 : "cursor-not-allowed bg-accent-30 text-accent-60",
             )}
             onClick={onSubmit}
           >
-            {isEditMode ? "Save Changes" : "Submit Request"}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Submitting…
+              </>
+            ) : isEditMode ? (
+              "Save Changes"
+            ) : (
+              "Submit Request"
+            )}
           </Button>
         </div>
       }
